@@ -12,14 +12,18 @@
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
         <server name="SYMFONY_PHPUNIT_VERSION" value="10.0" />
+        <env name="KERNEL_CLASS" value="App\Kernel" />
     </php>
 
     <testsuites>
-        <testsuite name="unit">
-            <directory>tests/Unit</directory>
+        <testsuite name="Domain">
+            <directory>tests/Domain</directory>
         </testsuite>
-        <testsuite name="integration">
-            <directory>tests/Integration</directory>
+        <testsuite name="Application">
+            <directory>tests/Application</directory>
+        </testsuite>
+        <testsuite name="Infrastructure">
+            <directory>tests/Infrastructure</directory>
         </testsuite>
     </testsuites>
 

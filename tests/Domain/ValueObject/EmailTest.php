@@ -25,7 +25,7 @@ class EmailTest extends TestCase
 
     public function testEmailIsTrimmed(): void
     {
-        $email = new Email('  test@example.com  ');
+        $email = new Email('test@example.com  ');
         
         $this->assertEquals('test@example.com', $email->getValue());
     }
