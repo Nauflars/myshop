@@ -1,0 +1,42 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Domain/Entity/'
+            - '../src/Domain/ValueObject/'
+            - '../src/Kernel.php'
+
+    # Domain Repository Interfaces -> Infrastructure Implementations
+    App\Domain\Repository\UserRepositoryInterface:
+        class: App\Infrastructure\Repository\DoctrineUserRepository
+
+    App\Domain\Repository\ProductRepositoryInterface:
+        class: App\Infrastructure\Repository\DoctrineProductRepository
+
+    App\Domain\Repository\CartRepositoryInterface:
+        class: App\Infrastructure\Repository\DoctrineCartRepository
+
+    App\Domain\Repository\OrderRepositoryInterface:
+        class: App\Infrastructure\Repository\DoctrineOrderRepository
+
+    # Controllers
+    App\Infrastructure\Controller\:
+        resource: '../src/Infrastructure/Controller/'
+        tags: ['controller.service_arguments']
+
+    # Use Cases
+    App\Application\UseCase\:
+        resource: '../src/Application/UseCase/'
+
+    # Chatbot Services (commented out - stub implementation only)
+    # App\Infrastructure\Chatbot\:
+    #     resource: '../src/Infrastructure/Chatbot/'
+
+when@test:
+    services:
+        _defaults:
+            public: true

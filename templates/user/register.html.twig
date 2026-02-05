@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center my-5">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Create Account</h2>
+                    
+                    <div id="error-message" class="alert alert-danger d-none" role="alert"></div>
+                    
+                    <form id="register-form">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" required minlength="6">
+                            <div class="form-text">Minimum 6 characters</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password-confirm" class="form-label">Confirm Password *</label>
+                            <input type="password" class="form-control" id="password-confirm" required minlength="6">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Account Type *</label>
+                            <select class="form-select" id="role" required>
+                                <option value="ROLE_CUSTOMER" selected>Customer</option>
+                                <option value="ROLE_SELLER">Seller</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the Terms of Service and Privacy Policy *
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="register-btn">
+                                Register
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <p class="text-center mb-0">
+                        Already have an account? <a href="/login">Sign in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('register-form');
+    const registerBtn = document.getElementById('register-btn');
+    const errorMessage = document.getElementById('error-message');
+    
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('password-confirm').value;
+        const role = document.getElementById('role').value;
+        
+        errorMessage.classList.add('d-none');
+        
+        if (password !== passwordConfirm) {
+            errorMessage.textContent = 'Passwords do not match.';
+            errorMessage.classList.remove('d-none');
+            return;
+        }
+        
+        if (password.length < 6) {
+            errorMessage.textContent = 'Password must be at least 6 characters long.';
+            errorMessage.classList.remove('d-none');
+            return;
+        }
+        
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account...';
+        
+        fetch('/api/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                roles: [role]
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Registration failed');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Registration successful - redirect to login
+            window.location.href = '/login?registered=1';
+        })
+        .catch(error => {
+            console.error('Registration error:', error);
+            errorMessage.textContent = error.message || 'Registration failed. Please try again.';
+            errorMessage.classList.remove('d-none');
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = 'Register';
+        });
+    });
+});
+</script>
+{% endblock %}

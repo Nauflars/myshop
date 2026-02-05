@@ -1,0 +1,169 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Shopping Cart{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1 class="my-4">Shopping Cart</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div id="cart-items">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Items:</span>
+                        <strong id="total-quantity">0</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Total:</h5>
+                        <h5 id="total-price">$0.00</h5>
+                    </div>
+                    <div class="d-grid">
+                        <a href="/checkout" class="btn btn-primary btn-lg" id="checkout-btn">
+                            Proceed to Checkout
+                        </a>
+                        <a href="/products" class="btn btn-outline-secondary mt-2">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cartItemsContainer = document.getElementById('cart-items');
+    const totalQuantityEl = document.getElementById('total-quantity');
+    const totalPriceEl = document.getElementById('total-price');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const cartManager = window.cartManager || new CartManager();
+    
+    function loadCart() {
+        cartItemsContainer.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+        
+        fetch('/api/cart')
+            .then(response => response.json())
+            .then(cart => {
+                if (!cart.items || cart.items.length === 0) {
+                    cartItemsContainer.innerHTML = `
+                        <div class="alert alert-info" role="alert">
+                            <h4 class="alert-heading">Your cart is empty</h4>
+                            <p>Start shopping and add items to your cart!</p>
+                            <hr>
+                            <a href="/products" class="btn btn-primary">Browse Products</a>
+                        </div>
+                    `;
+                    totalQuantityEl.textContent = '0';
+                    totalPriceEl.textContent = '$0.00';
+                    checkoutBtn.disabled = true;
+                    return;
+                }
+                
+                checkoutBtn.disabled = false;
+                
+                cartItemsContainer.innerHTML = cart.items.map(item => `
+                    <div class="card mb-3" data-item-id="${item.productId}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <div class="d-flex align-items-center justify-content-center" style="height: 80px; background-color: #f8f9fa; border-radius: 0.25rem;">
+                                        <i class="bi bi-box-seam" style="font-size: 2rem; color: #dee2e6;"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="mb-1">${escapeHtml(item.productName)}</h5>
+                                    <p class="text-muted mb-0">Quantity: ${item.quantity}</p>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <p class="mb-0"><strong>${cart.currency} ${(item.priceInCents / 100).toFixed(2)}</strong></p>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary btn-sm decrease-qty" data-product-id="${item.productId}">-</button>
+                                        <input type="number" class="form-control form-control-sm text-center quantity-input" 
+                                               value="${item.quantity}" min="1"
+                                               data-product-id="${item.productId}">
+                                        <button class="btn btn-outline-secondary btn-sm increase-qty" data-product-id="${item.productId}">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <p class="mb-2"><strong>${cart.currency} ${(item.subtotalInCents / 100).toFixed(2)}</strong></p>
+                                    <button class="btn btn-sm btn-outline-danger remove-item" data-product-id="${item.productId}">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                totalQuantityEl.textContent = cart.totalQuantity;
+                totalPriceEl.textContent = cart.total;
+                
+                // Attach event listeners
+                document.querySelectorAll('.decrease-qty').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const productId = btn.dataset.productId;
+                        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                        const newQty = Math.max(1, parseInt(input.value) - 1);
+                        cartManager.updateQuantity(productId, newQty).then(() => loadCart());
+                    });
+                });
+                
+                document.querySelectorAll('.increase-qty').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const productId = btn.dataset.productId;
+                        const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                        const newQty = parseInt(input.value) + 1;
+                        cartManager.updateQuantity(productId, newQty).then(() => loadCart());
+                    });
+                });
+                
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.addEventListener('change', () => {
+                        const productId = input.dataset.productId;
+                        const newQty = Math.max(1, parseInt(input.value));
+                        cartManager.updateQuantity(productId, newQty).then(() => loadCart());
+                    });
+                });
+                
+                document.querySelectorAll('.remove-item').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (confirm('Are you sure you want to remove this item from your cart?')) {
+                            cartManager.removeFromCart(btn.dataset.productId).then(() => loadCart());
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error loading cart:', error);
+                cartItemsContainer.innerHTML = '<div class="alert alert-danger">Error loading cart. Please try again.</div>';
+            });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Load cart on page load
+    loadCart();
+});
+</script>
+{% endblock %}
