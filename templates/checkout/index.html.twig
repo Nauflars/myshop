@@ -1,0 +1,186 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1 class="my-4">Checkout</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Order Review</h5>
+                </div>
+                <div class="card-body">
+                    <div id="order-items">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Delivery Information</h5>
+                </div>
+                <div class="card-body">
+                    <form id="checkout-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="first-name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="first-name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last-name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="last-name" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="address" class="form-label">Address *</label>
+                                <input type="text" class="form-control" id="address" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">City *</label>
+                                <input type="text" class="form-control" id="city" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="postal-code" class="form-label">Postal Code *</label>
+                                <input type="text" class="form-control" id="postal-code" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="country" class="form-label">Country *</label>
+                                <input type="text" class="form-control" id="country" value="US" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="phone" class="form-label">Phone *</label>
+                                <input type="tel" class="form-control" id="phone" required>
+                            </div>
+                            <div class="col-12">
+                                <label for="notes" class="form-label">Order Notes</label>
+                                <textarea class="form-control" id="notes" rows="3" placeholder="Any special instructions?"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong id="subtotal">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <strong id="shipping">FREE</strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5>Total:</h5>
+                        <h5 id="total-price">$0.00</h5>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg" id="place-order-btn">
+                            Place Order
+                        </button>
+                        <a href="/cart" class="btn btn-outline-secondary">
+                            Back to Cart
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderItemsContainer = document.getElementById('order-items');
+    const subtotalEl = document.getElementById('subtotal');
+    const totalPriceEl = document.getElementById('total-price');
+    const placeOrderBtn = document.getElementById('place-order-btn');
+    const checkoutForm = document.getElementById('checkout-form');
+    
+    function loadCart() {
+        fetch('/api/cart')
+            .then(response => response.json())
+            .then(cart => {
+                if (!cart.items || cart.items.length === 0) {
+                    orderItemsContainer.innerHTML = `
+                        <div class="alert alert-warning" role="alert">
+                            Your cart is empty. Please add items before checking out.
+                        </div>
+                    `;
+                    placeOrderBtn.disabled = true;
+                    return;
+                }
+                
+                orderItemsContainer.innerHTML = cart.items.map(item => `
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">${escapeHtml(item.product.name)}</h6>
+                            <small class="text-muted">Quantity: ${item.quantity} × ${item.price.currency} ${(item.price.amount / 100).toFixed(2)}</small>
+                        </div>
+                        <strong>${item.price.currency} ${(item.subtotal.amount / 100).toFixed(2)}</strong>
+                    </div>
+                `).join('');
+                
+                subtotalEl.textContent = `${cart.total.currency} ${(cart.total.amount / 100).toFixed(2)}`;
+                totalPriceEl.textContent = `${cart.total.currency} ${(cart.total.amount / 100).toFixed(2)}`;
+            })
+            .catch(error => {
+                console.error('Error loading cart:', error);
+                orderItemsContainer.innerHTML = '<div class="alert alert-danger">Error loading cart.</div>';
+            });
+    }
+    
+    placeOrderBtn.addEventListener('click', function() {
+        if (!checkoutForm.checkValidity()) {
+            checkoutForm.reportValidity();
+            return;
+        }
+        
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+        
+        fetch('/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Order failed');
+            }
+            return response.json();
+        })
+        .then(order => {
+            window.location.href = `/orders?success=1&orderNumber=${order.orderNumber}`;
+        })
+        .catch(error => {
+            console.error('Error placing order:', error);
+            alert('Failed to place order. Please ensure you are logged in and try again.');
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = 'Place Order';
+        });
+    });
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    loadCart();
+});
+</script>
+{% endblock %}

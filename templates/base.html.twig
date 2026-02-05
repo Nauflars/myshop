@@ -1,0 +1,97 @@
+(<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyShop{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ path('app_home') }}" class="logo">MyShop</a>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+                ☰
+            </button>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="{{ path('app_home') }}">Home</a></li>
+                <li><a href="{{ path('product_list') }}">Products</a></li>
+                {% if app.user %}
+                    <li><a href="{{ path('cart_view') }}">Cart <span id="cart-badge">0</span></a></li>
+                    <li><a href="{{ path('order_list') }}">Orders</a></li>
+                    <li class="user-info">
+                        {{ app.user.name }} ({{ app.user.roles[0] }})
+                    </li>
+                    <li><a href="{{ path('app_logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ path('app_login') }}">Login</a></li>
+                    <li><a href="{{ path('app_register') }}">Register</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; {{ 'now'|date('Y') }} MyShop. Built with Symfony 7 &amp; DDD.</p>
+        </div>
+    </footer>
+
+    {% if app.user %}
+    <div id="chatbot-widget" class="chatbot-widget">
+        <div class="chatbot-header">
+            <span>AI Assistant</span>
+            <button id="chatbot-close">&times;</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages"></div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbot-input" placeholder="Ask me anything...">
+            <button id="chatbot-send">Send</button>
+        </div>
+    </div>
+    <button id="chatbot-trigger" class="chatbot-trigger">💬</button>
+    {% endif %}
+
+    <script src="{{ asset('js/cart.js') }}"></script>
+    <script src="{{ asset('js/chatbot.js') }}"></script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('mobile-menu-toggle');
+            const navMenu = document.getElementById('nav-menu');
+            
+            if (menuToggle && navMenu) {
+                menuToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    this.textContent = navMenu.classList.contains('active') ? '✕' : '☰';
+                });
+
+                // Close menu when clicking on a link
+                const menuLinks = navMenu.querySelectorAll('a');
+                menuLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 768) {
+                            navMenu.classList.remove('active');
+                            menuToggle.textContent = '☰';
+                        }
+                    });
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('.navbar')) {
+                        navMenu.classList.remove('active');
+                        menuToggle.textContent = '☰';
+                    }
+                });
+            }
+        });
+    </script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>
