@@ -32,6 +32,18 @@ services:
     App\Application\UseCase\:
         resource: '../src/Application/UseCase/'
 
+    # AI Infrastructure Services
+    App\Infrastructure\AI\Service\:
+        resource: '../src/Infrastructure/AI/Service/'
+    
+    # AI Tools
+    App\Infrastructure\AI\Tool\:
+        resource: '../src/Infrastructure/AI/Tool/'
+    
+    # AI Agents
+    App\Infrastructure\AI\Agent\:
+        resource: '../src/Infrastructure/AI/Agent/'
+
     # Chatbot Services (commented out - stub implementation only)
     # App\Infrastructure\Chatbot\:
     #     resource: '../src/Infrastructure/Chatbot/'
