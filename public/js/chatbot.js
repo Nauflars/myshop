@@ -60,7 +60,7 @@ class Chatbot {
         this.showTypingIndicator();
 
         try {
-            const response = await fetch('/api/ai/chat', {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

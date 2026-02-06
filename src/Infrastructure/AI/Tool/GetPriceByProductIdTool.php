@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\GetPriceByProductId;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * GetPriceByProductIdTool - AI Tool for product price lookup
@@ -17,6 +18,7 @@ use App\Application\UseCase\AI\GetPriceByProductId;
  * 
  * @author AI Shopping Assistant Team
  */
+#[AsTool('GetPriceByProductId', 'Get detailed price, currency, and stock status for a specific product by its ID.')]
 class GetPriceByProductIdTool
 {
     public function __construct(

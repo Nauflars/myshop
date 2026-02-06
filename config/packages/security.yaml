@@ -16,6 +16,11 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         
+        api_chat:
+            pattern: ^/api/(chat|ai/chat)
+            stateless: true
+            security: false
+        
         main:
             lazy: true
             provider: app_user_provider
@@ -40,9 +45,10 @@ security:
         - { path: ^/api/users/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/products, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/cart$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/chat, roles: PUBLIC_ACCESS }
+        - { path: ^/api/ai/chat, roles: PUBLIC_ACCESS }
         - { path: ^/api/cart, roles: ROLE_CUSTOMER }
         - { path: ^/api/orders, roles: ROLE_CUSTOMER }
-        - { path: ^/api/chat, roles: ROLE_CUSTOMER }
         - { path: ^/admin, roles: ROLE_ADMIN }
 
     role_hierarchy:

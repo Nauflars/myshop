@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\AddToCart;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * AddToCartTool - AI Tool for adding products to cart
@@ -17,7 +18,8 @@ use App\Application\UseCase\AI\AddToCart;
  * 
  * @author AI Shopping Assistant Team
  */
-class AddToCartTool
+#[AsTool('AddToCart', 'Add a product to the shopping cart with specified quantity. Requires userId, productId, and quantity (default: 1).')]
+final class AddToCartTool
 {
     public function __construct(
         private readonly AddToCart $addToCart

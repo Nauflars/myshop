@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\GetProductImagesByProductId;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * GetProductImagesByProductIdTool - AI Tool for product image retrieval
@@ -17,7 +18,7 @@ use App\Application\UseCase\AI\GetProductImagesByProductId;
  * 
  * @author AI Shopping Assistant Team
  */
-
+#[AsTool('GetProductImagesByProductId', 'Retrieve all images for a specific product by its ID. Returns image URLs and metadata.')]
 class GetProductImagesByProductIdTool
 {
     public function __construct(
