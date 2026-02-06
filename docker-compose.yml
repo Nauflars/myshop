@@ -14,7 +14,9 @@ services:
     environment:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-rootpassword}@mysql:3306/${MYSQL_DATABASE:-myshop}
       APP_ENV: ${APP_ENV:-dev}
-      OPENAI_API_KEY: sk-nbHyQl28JEfovznijHyTtrIRXsKL3TQhHSvJkiF8_hT3BlbkFJVRjlAAygPqn0mT93MTXfLTk89ad7YYMzQZBvidzbEA
+      APP_SECRET: ${APP_SECRET:-8ce516593a3682d05d249ef72edac2e5}
+      DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       - mysql
     networks:
