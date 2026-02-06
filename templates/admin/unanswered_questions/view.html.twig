@@ -1,0 +1,121 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Detalles de Pregunta Sin Respuesta</h2>
+    <a href="{{ path('admin_unanswered_questions_list') }}" class="btn btn-secondary">← Volver a la lista</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div>
+        {# Question Details #}
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0 0 1rem 0; color: #2c3e50; font-size: 1.25rem;">Pregunta</h3>
+            <p style="margin: 0; font-size: 1.1rem; line-height: 1.6;">{{ question.questionText }}</p>
+        </div>
+        
+        {# Update Form #}
+        <form method="post" style="background: white; border: 1px solid #ecf0f1; padding: 1.5rem; border-radius: 8px;">
+            <h3 style="margin: 0 0 1.5rem 0; color: #2c3e50;">Actualizar Estado y Notas</h3>
+            
+            <div class="form-group">
+                <label for="status">Estado</label>
+                <select name="status" id="status" required>
+                    {% for statusValue, statusLabel in availableStatuses %}
+                        <option value="{{ statusValue }}" {{ question.status == statusValue ? 'selected' : '' }}>
+                            {{ statusLabel }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <small style="display: block; margin-top: 0.5rem; color: #7f8c8d;">
+                    Cambiar el estado a "Revisada" registrará la fecha de revisión. Cambiar a "Resuelta" registrará la fecha de resolución.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="admin_notes">Notas Internas (solo visibles para administradores)</label>
+                <textarea name="admin_notes" id="admin_notes" placeholder="Agrega notas sobre esta pregunta, planes de resolución, o referencias a especificaciones...">{{ question.adminNotes }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-success">Guardar Cambios</button>
+        </form>
+    </div>
+    
+    <div>
+        {# Metadata Card #}
+        <div style="background: white; border: 1px solid #ecf0f1; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0 0 1rem 0; color: #2c3e50; font-size: 1.1rem;">Información</h3>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Usuario:</strong><br>
+                {% if question.user %}
+                    <a href="{{ path('admin_users_view', {id: question.user.id}) }}" style="color: #3498db; text-decoration: underline;">
+                        {{ question.user.name }}
+                    </a>
+                {% else %}
+                    <span style="color: #95a5a6; font-style: italic;">Anónimo</span>
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Rol:</strong><br>
+                <span class="badge" style="background-color: #95a5a6;">{{ question.userRole }}</span>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Fecha de Pregunta:</strong><br>
+                {{ question.askedAt|date('d/m/Y H:i:s') }}
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Razón:</strong><br>
+                {% if question.reasonCategory == 'missing_tool' %}
+                    🔧 Herramienta faltante
+                {% elseif question.reasonCategory == 'unsupported_request' %}
+                    ❌ Solicitud no soportada
+                {% elseif question.reasonCategory == 'tool_error' %}
+                    ⚠️ Error de herramienta
+                {% elseif question.reasonCategory == 'insufficient_data' %}
+                    📊 Datos insuficientes
+                {% else %}
+                    {{ question.reasonCategory }}
+                {% endif %}
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">ID de Conversación:</strong><br>
+                {% if question.conversationId %}
+                    <code style="background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem;">{{ question.conversationId }}</code>
+                {% else %}
+                    <span style="color: #95a5a6;">N/A</span>
+                {% endif %}
+            </div>
+            
+            {% if question.reviewedAt %}
+                <div style="margin-bottom: 1rem;">
+                    <strong style="color: #7f8c8d; font-size: 0.875rem;">Fecha de Revisión:</strong><br>
+                    {{ question.reviewedAt|date('d/m/Y H:i:s') }}
+                </div>
+            {% endif %}
+            
+            {% if question.resolvedAt %}
+                <div style="margin-bottom: 1rem;">
+                    <strong style="color: #7f8c8d; font-size: 0.875rem;">Fecha de Resolución:</strong><br>
+                    {{ question.resolvedAt|date('d/m/Y H:i:s') }}
+                </div>
+            {% endif %}
+        </div>
+        
+        {# Status Workflow #}
+        <div style="background: #e8f4f8; border: 1px solid #3498db; padding: 1.5rem; border-radius: 8px;">
+            <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50; font-size: 1rem;">Flujo de Estados</h4>
+            <p style="margin: 0; font-size: 0.875rem; line-height: 1.6;">
+                <strong>Nueva</strong> → La pregunta acaba de ser capturada<br>
+                <strong>Revisada</strong> → Un admin ha evaluado la pregunta<br>
+                <strong>Planificada</strong> → Se planea abordar esta necesidad<br>
+                <strong>Resuelta</strong> → La funcionalidad/herramienta fue implementada
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

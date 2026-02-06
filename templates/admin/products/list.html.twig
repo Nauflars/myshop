@@ -1,0 +1,88 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Gestión de Productos</h2>
+    <a href="{{ path('admin_products_create') }}" class="btn btn-success">+ Crear Producto</a>
+</div>
+
+{# Sorting and filtering #}
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+    <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <label for="sort">Ordenar por</label>
+            <select name="sort" id="sort" style="padding: 0.5rem;">
+                <option value="name" {{ currentSort == 'name' ? 'selected' : '' }}>Nombre</option>
+                <option value="price" {{ currentSort == 'price' ? 'selected' : '' }}>Precio</option>
+                <option value="stock" {{ currentSort == 'stock' ? 'selected' : '' }}>Stock</option>
+                <option value="category" {{ currentSort == 'category' ? 'selected' : '' }}>Categoría</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+            <label for="order">Orden</label>
+            <select name="order" id="order" style="padding: 0.5rem;">
+                <option value="ASC" {{ currentOrder == 'ASC' ? 'selected' : '' }}>Ascendente</option>
+                <option value="DESC" {{ currentOrder == 'DESC' ? 'selected' : '' }}>Descendente</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Aplicar</button>
+        <a href="{{ path('admin_products_list') }}" class="btn btn-secondary">Limpiar</a>
+    </form>
+</div>
+
+{% if products|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Categoría</th>
+                <th style="width: 200px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    <strong>{{ product.name }}</strong>
+                </td>
+                <td>
+                    {{ (product.price.amountInCents / 100)|number_format(2, ',', '.') }} €
+                </td>
+                <td>
+                    {% if product.stock == 0 %}
+                        <span style="color: #e74c3c; font-weight: bold;">Sin stock</span>
+                    {% elseif product.isLowStock %}
+                        <span style="color: #f39c12;">{{ product.stock }} (bajo)</span>
+                    {% else %}
+                        {{ product.stock }}
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge" style="background-color: #3498db;">{{ product.category }}</span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{{ path('admin_products_edit', {id: product.id}) }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Editar</a>
+                        <form method="post" action="{{ path('admin_products_delete', {id: product.id}) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de eliminar este producto?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete-product-' ~ product.id) }}">
+                            <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Eliminar</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <h3>No hay productos</h3>
+        <p>Crea tu primer producto para empezar.</p>
+        <a href="{{ path('admin_products_create') }}" class="btn btn-success">+ Crear Primer Producto</a>
+    </div>
+{% endif %}
+{% endblock %}
