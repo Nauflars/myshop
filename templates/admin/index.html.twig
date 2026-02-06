@@ -1,0 +1,44 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Panel de Control</h2>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; opacity: 0.9;">Preguntas Sin Respuesta</h3>
+        <p style="margin: 0; font-size: 2.5rem; font-weight: 700;">-</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">Total de preguntas capturadas</p>
+        <a href="{{ path('admin_unanswered_questions_list') }}" style="display: inline-block; margin-top: 1rem; color: white; text-decoration: underline;">Ver todas →</a>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; opacity: 0.9;">Productos</h3>
+        <p style="margin: 0; font-size: 2.5rem; font-weight: 700;">-</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">Total en catálogo</p>
+        <a href="{{ path('admin_products_list') }}" style="display: inline-block; margin-top: 1rem; color: white; text-decoration: underline;">Gestionar productos →</a>
+    </div>
+    
+    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1rem; opacity: 0.9;">Usuarios Registrados</h3>
+        <p style="margin: 0; font-size: 2.5rem; font-weight: 700;">-</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.8;">Total de cuentas</p>
+        <a href="{{ path('admin_users_list') }}" style="display: inline-block; margin-top: 1rem; color: white; text-decoration: underline;">Ver usuarios →</a>
+    </div>
+</div>
+
+<div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+    <h3 style="margin: 0 0 0.5rem 0; color: #856404;">🚀 Bienvenido al Panel de Administración</h3>
+    <p style="margin: 0; color: #856404;">Desde aquí puedes gestionar productos, revisar preguntas sin respuesta del chatbot, y visualizar información de usuarios. Usa el menú superior para navegar entre secciones.</p>
+</div>
+
+<div>
+    <h3 style="margin: 0 0 1rem 0; color: #2c3e50;">Acciones Rápidas</h3>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ path('admin_products_create') }}" class="btn btn-primary">+ Crear Producto</a>
+        <a href="{{ path('admin_unanswered_questions_list') }}?status=new" class="btn btn-primary">Ver Preguntas Nuevas</a>
+        <a href="{{ path('admin_users_list') }}" class="btn btn-primary">Buscar Usuario</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Preguntas Sin Respuesta</h2>
+    <div>
+        <span class="user-info-text">Mostrando página {{ currentPage }} de {{ totalPages }} ({{ totalQuestions }} total)</span>
+    </div>
+</div>
+
+{# Filters #}
+<div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+    <form method="get" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <label for="status">Estado</label>
+            <select name="status" id="status" style="padding: 0.5rem;">
+                <option value="">Todos</option>
+                <option value="new" {{ currentFilters.status == 'new' ? 'selected' : '' }}>Nueva ({{ statusCounts.new|default(0) }})</option>
+                <option value="reviewed" {{ currentFilters.status == 'reviewed' ? 'selected' : '' }}>Revisada ({{ statusCounts.reviewed|default(0) }})</option>
+                <option value="planned" {{ currentFilters.status == 'planned' ? 'selected' : '' }}>Planificada ({{ statusCounts.planned|default(0) }})</option>
+                <option value="resolved" {{ currentFilters.status == 'resolved' ? 'selected' : '' }}>Resuelta ({{ statusCounts.resolved|default(0) }})</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <label for="reason">Razón</label>
+            <select name="reason" id="reason" style="padding: 0.5rem;">
+                <option value="">Todas</option>
+                <option value="missing_tool" {{ currentFilters.reason == 'missing_tool' ? 'selected' : '' }}>Herramienta faltante ({{ reasonCounts.missing_tool|default(0) }})</option>
+                <option value="unsupported_request" {{ currentFilters.reason == 'unsupported_request' ? 'selected' : '' }}>Solicitud no soportada ({{ reasonCounts.unsupported_request|default(0) }})</option>
+                <option value="tool_error" {{ currentFilters.reason == 'tool_error' ? 'selected' : '' }}>Error de herramienta ({{ reasonCounts.tool_error|default(0) }})</option>
+                <option value="insufficient_data" {{ currentFilters.reason == 'insufficient_data' ? 'selected' : '' }}>Datos insuficientes ({{ reasonCounts.insufficient_data|default(0) }})</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="{{ path('admin_unanswered_questions_list') }}" class="btn btn-secondary">Limpiar</a>
+    </form>
+</div>
+
+{% if questions|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 40%;">Pregunta</th>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Fecha</th>
+                <th>Razón</th>
+                <th>Estado</th>
+                <th style="width: 100px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question in questions %}
+            <tr>
+                <td>
+                    <div style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ question.questionText }}
+                    </div>
+                </td>
+                <td>
+                    {% if question.user %}
+                        {{ question.user.name }}
+                    {% else %}
+                        <span style="color: #95a5a6; font-style: italic;">Anónimo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge" style="background-color: #95a5a6;">{{ question.userRole }}</span>
+                </td>
+                <td>
+                    <small>{{ question.askedAt|date('Y-m-d H:i') }}</small>
+                </td>
+                <td>
+                    <small style="color: #7f8c8d;">
+                        {% if question.reasonCategory == 'missing_tool' %}
+                            Herramienta faltante
+                        {% elseif question.reasonCategory == 'unsupported_request' %}
+                            No soportado
+                        {% elseif question.reasonCategory == 'tool_error' %}
+                            Error de herramienta
+                        {% elseif question.reasonCategory == 'insufficient_data' %}
+                            Datos insuficientes
+                        {% else %}
+                            {{ question.reasonCategory }}
+                        {% endif %}
+                    </small>
+                </td>
+                <td>
+                    {% set statusClass = 'badge-new' %}
+                    {% if question.status == 'reviewed' %}
+                        {% set statusClass = 'badge-reviewed' %}
+                    {% elseif question.status == 'planned' %}
+                        {% set statusClass = 'badge-planned' %}
+                    {% elseif question.status == 'resolved' %}
+                        {% set statusClass = 'badge-resolved' %}
+                    {% endif %}
+                    <span class="badge {{ statusClass }}">
+                        {% if question.status == 'new' %}
+                            Nueva
+                        {% elseif question.status == 'reviewed' %}
+                            Revisada
+                        {% elseif question.status == 'planned' %}
+                            Planificada
+                        {% elseif question.status == 'resolved' %}
+                            Resuelta
+                        {% else %}
+                            {{ question.status }}
+                        {% endif %}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ path('admin_unanswered_questions_view', {id: question.id}) }}" class="btn btn-primary" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">Ver</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {# Pagination #}
+    {% if totalPages > 1 %}
+        <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+            {% if currentPage > 1 %}
+                <a href="{{ path('admin_unanswered_questions_list', {page: currentPage - 1, status: currentFilters.status, reason: currentFilters.reason}) }}" class="btn btn-secondary">← Anterior</a>
+            {% endif %}
+            
+            <span style="padding: 0.5rem 1rem; align-self: center;">Página {{ currentPage }} de {{ totalPages }}</span>
+            
+            {% if currentPage < totalPages %}
+                <a href="{{ path('admin_unanswered_questions_list', {page: currentPage + 1, status: currentFilters.status, reason: currentFilters.reason}) }}" class="btn btn-secondary">Siguiente →</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>No hay preguntas sin respuesta</h3>
+        <p>Las preguntas que el chatbot no pueda responder aparecerán aquí.</p>
+    </div>
+{% endif %}
+{% endblock %}

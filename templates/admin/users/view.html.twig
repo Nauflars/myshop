@@ -1,0 +1,133 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Detalles de Usuario</h2>
+    <a href="{{ path('admin_users_list') }}" class="btn btn-secondary">← Volver a la lista</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    {# User Info Card #}
+    <div style="background: white; border: 1px solid #ecf0f1; padding: 1.5rem; border-radius: 8px;">
+        <h3 style="margin: 0 0 1rem 0; color: #2c3e50;">Información del Usuario</h3>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">Nombre:</strong><br>
+            <span style="font-size: 1.1rem;">{{ user.name }}</span>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">Email:</strong><br>
+            <span style="font-size: 1.1rem;">{{ user.email }}</span>
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">Roles:</strong><br>
+            {% for role in user.roles %}
+                {% if role == 'ROLE_ADMIN' %}
+                    <span class="badge" style="background-color: #e74c3c;">Admin</span>
+                {% elseif role == 'ROLE_SELLER' %}
+                    <span class="badge" style="background-color: #f39c12;">Vendedor</span>
+                {% elseif role == 'ROLE_CUSTOMER' %}
+                    <span class="badge" style="background-color: #3498db;">Cliente</span>
+                {% else %}
+                    <span class="badge" style="background-color: #95a5a6;">{{ role }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">Fecha de Registro:</strong><br>
+            {{ user.createdAt|date('d/m/Y H:i:s') }}
+        </div>
+        
+        <div style="margin-bottom: 0;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">ID de Usuario:</strong><br>
+            <code style="background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem;">{{ user.id }}</code>
+        </div>
+    </div>
+    
+    {# Order Statistics Card #}
+    <div style="background: white; border: 1px solid #ecf0f1; padding: 1.5rem; border-radius: 8px;">
+        <h3 style="margin: 0 0 1rem 0; color: #2c3e50;">Estadísticas de Pedidos</h3>
+        
+        <div style="margin-bottom: 1rem;">
+            <strong style="color: #7f8c8d; font-size: 0.875rem;">Total de Pedidos:</strong><br>
+            <span style="font-size: 1.5rem; font-weight: bold; color: #3498db;">{{ orderStats.total }}</span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Completados:</strong><br>
+                <span style="font-size: 1.25rem; color: #27ae60;">{{ orderStats.completed }}</span>
+            </div>
+            <div>
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Pendientes:</strong><br>
+                <span style="font-size: 1.25rem; color: #f39c12;">{{ orderStats.pending }}</span>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Cancelados:</strong><br>
+                <span style="font-size: 1.25rem; color: #e74c3c;">{{ orderStats.cancelled }}</span>
+            </div>
+            <div>
+                <strong style="color: #7f8c8d; font-size: 0.875rem;">Total Gastado:</strong><br>
+                <span style="font-size: 1.25rem; color: #2c3e50;">{{ orderStats.totalSpent|number_format(2, ',', '.') }} €</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Order History #}
+<div style="background: white; border: 1px solid #ecf0f1; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+    <h3 style="margin: 0 0 1rem 0; color: #2c3e50;">Historial de Pedidos</h3>
+    <p style="margin: 0 0 1rem 0; color: #7f8c8d; font-size: 0.875rem;">
+        Vista de solo lectura del historial de pedidos del usuario.
+    </p>
+    
+    {% if orders|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>
+                        <code style="background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.875rem;">{{ order.id|slice(0,8) }}...</code>
+                    </td>
+                    <td>
+                        {{ order.createdAt|date('d/m/Y H:i') }}
+                    </td>
+                    <td>
+                        {{ order.total|number_format(2, ',', '.') }} €
+                    </td>
+                    <td>
+                        {% if order.status == 'completed' %}
+                            <span class="badge badge-resolved">Completado</span>
+                        {% elseif order.status == 'pending' %}
+                            <span class="badge badge-reviewed">Pendiente</span>
+                        {% elseif order.status == 'cancelled' %}
+                            <span class="badge" style="background-color: #e74c3c;">Cancelado</span>
+                        {% else %}
+                            <span class="badge" style="background-color: #95a5a6;">{{ order.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+            <p>Este usuario no tiene pedidos registrados.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
