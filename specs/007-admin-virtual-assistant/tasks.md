@@ -74,17 +74,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Create CreateProduct UseCase in src/Application/UseCase/Admin/CreateProduct.php
-- [ ] T022 [P] [US2] Create UpdateProduct UseCase in src/Application/UseCase/Admin/UpdateProduct.php  
-- [ ] T023 [P] [US2] Create DeleteProduct UseCase with order check in src/Application/UseCase/Admin/DeleteProduct.php
-- [ ] T024 [P] [US2] Create AdminCreateProductTool with validation in src/Infrastructure/AI/Tool/Admin/AdminCreateProductTool.php
-- [ ] T025 [P] [US2] Create AdminUpdateProductTool with disambiguation in src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
-- [ ] T026 [P] [US2] Create AdminDeleteProductTool with confirmation in src/Infrastructure/AI/Tool/Admin/AdminDeleteProductTool.php
-- [ ] T027 [US2] Add #[AsTool] attributes and Spanish descriptions to all 3 admin product tools
-- [ ] T028 [US2] Update adminAssistant prompt in config/packages/ai.yaml to list product management tools with usage examples
-- [ ] T029 [US2] Implement proactive clarification logic: if required fields missing, tool returns prompt for admin to ask
-- [ ] T030 [US2] Implement product name disambiguation: if multiple matches, return numbered list for admin selection
-- [ ] T031 [US2] Add audit logging for all product operations in AdminAssistantLogger.php
+- [X] T021 [P] [US2] Create CreateProduct UseCase in src/Application/UseCase/Admin/CreateProduct.php
+- [X] T022 [P] [US2] Create UpdateProduct UseCase in src/Application/UseCase/Admin/UpdateProduct.php  
+- [X] T023 [P] [US2] Create DeleteProduct UseCase with order check in src/Application/UseCase/Admin/DeleteProduct.php
+- [X] T024 [P] [US2] Create AdminCreateProductTool with validation in src/Infrastructure/AI/Tool/Admin/AdminCreateProductTool.php
+- [X] T025 [P] [US2] Create AdminUpdateProductTool with disambiguation in src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+- [X] T026 [P] [US2] Create AdminDeleteProductTool with confirmation in src/Infrastructure/AI/Tool/Admin/AdminDeleteProductTool.php
+- [X] T027 [US2] Add #[AsTool] attributes and Spanish descriptions to all 3 admin product tools
+- [X] T028 [US2] Update adminAssistant prompt in config/packages/ai.yaml to list product management tools with usage examples
+- [X] T029 [US2] Implement proactive clarification logic: if required fields missing, tool returns prompt for admin to ask
+- [X] T030 [US2] Implement product name disambiguation: if multiple matches, return numbered list for admin selection
+- [X] T031 [US2] Add audit logging for all product operations in AdminAssistantLogger.php
 
 **Checkpoint**: Admin can create/update/delete products through chat, validation works, confirmation required, audit log populated
 
