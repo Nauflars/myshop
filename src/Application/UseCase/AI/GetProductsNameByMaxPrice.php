@@ -30,7 +30,7 @@ class GetProductsNameByMaxPrice
      * @param float $maxPrice Maximum price in dollars (or major currency unit)
      * @param string $currency Currency code (e.g., 'USD', 'EUR')
      * @param string|null $category Optional category filter
-     * @return array<int, array{id: string, name: string, price: float, currency: string, category: string}> Array of products
+     * @return array<int, array{id: string, name: string, description: string, price: float, currency: string, stock: int, inStock: bool, category: string}> Array of products with enriched data
      */
     public function execute(float $maxPrice, string $currency = 'USD', ?string $category = null): array
     {
@@ -45,15 +45,18 @@ class GetProductsNameByMaxPrice
             $maxPriceInCents // Max price in cents
         );
         
-        // Transform products to include price information
+        // Transform products to enriched array format for AI consumption
         return array_map(function ($product) {
             $price = $product->getPrice();
             
             return [
                 'id' => (string) $product->getId(),
                 'name' => $product->getName(),
-                'price' => $price->getAmount(), // Returns price as float
+                'description' => $product->getDescription(),
+                'price' => $price->getAmountAsDecimal(),
                 'currency' => $price->getCurrency(),
+                'stock' => $product->getStock(),
+                'inStock' => $product->isInStock(),
                 'category' => $product->getCategory(),
             ];
         }, $products);

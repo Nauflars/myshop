@@ -4,37 +4,37 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\AI\Tool;
 
-use App\Application\UseCase\AI\GetPriceByProductId;
+use App\Application\UseCase\AI\GetPriceByProductName;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
- * GetPriceByProductIdTool - AI Tool for product price lookup
+ * GetPriceByProductIdTool - AI Tool for product price lookup by name
  * 
- * This tool enables the AI agent to retrieve a product's price and stock information.
- * It delegates to the GetPriceByProductId use case.
+ * This tool enables the AI agent to retrieve a product's price and stock information by name.
+ * Refactored to use name-based interactions instead of internal IDs.
  * 
  * Architecture: Infrastructure layer (AI adapter)
  * DDD Role: Technical adapter - NO business logic
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('GetPriceByProductId', 'Get detailed price, currency, and stock status for a specific product by its ID.')]
+#[AsTool('GetPriceByProductId', 'Obtener precio detallado, moneda y estado de stock para un producto específico por su nombre. NO usa IDs internos.')]
 class GetPriceByProductIdTool
 {
     public function __construct(
-        private readonly GetPriceByProductId $getPriceByProductId
+        private readonly GetPriceByProductName $getPriceByProductName
     ) {
     }
     
     /**
      * Execute the tool with parameters from AI agent
      *
-     * @param string $productId The UUID of the product to look up
+     * @param string $productName The name of the product to look up
      * @return array{
      *     success: bool,
      *     data: array{
-     *         id: string|null,
      *         name: string|null,
+     *         description: string|null,
      *         price: float|null,
      *         currency: string|null,
      *         inStock: bool,
@@ -43,35 +43,35 @@ class GetPriceByProductIdTool
      *     message: string
      * }
      */
-    public function __invoke(string $productId): array
+    public function __invoke(string $productName): array
     {
         try {
             // Validate input
-            if (empty(trim($productId))) {
+            if (empty(trim($productName))) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'Product ID is required.',
+                    'message' => 'El nombre del producto es requerido.',
                 ];
             }
             
             // Delegate to Application layer use case
-            $result = $this->getPriceByProductId->execute(trim($productId));
+            $result = $this->getPriceByProductName->execute(trim($productName));
             
             if (!$result['found']) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => "Product with ID '{$productId}' not found.",
+                    'message' => "Producto con nombre '{$productName}' no encontrado.",
                 ];
             }
             
-            // Format response for AI agent
+            // Format response for AI agent (without internal ID)
             return [
                 'success' => true,
                 'data' => [
-                    'id' => $result['id'],
                     'name' => $result['name'],
+                    'description' => $result['description'],
                     'price' => $result['price'],
                     'currency' => $result['currency'],
                     'inStock' => $result['inStock'],
@@ -90,7 +90,7 @@ class GetPriceByProductIdTool
             return [
                 'success' => false,
                 'data' => null,
-                'message' => 'Failed to retrieve product price. Please try again.',
+                'message' => 'No se pudo recuperar el precio del producto. Por favor, intente nuevamente.',
             ];
         }
     }
@@ -103,12 +103,12 @@ class GetPriceByProductIdTool
         $currencySymbol = $this->getCurrencySymbol($result['currency']);
         $priceFormatted = number_format($result['price'], 2);
         
-        $message = "{$result['name']} costs {$currencySymbol}{$priceFormatted}";
+        $message = "{$result['name']} cuesta {$currencySymbol}{$priceFormatted}";
         
         if ($result['inStock']) {
-            $message .= " and is currently in stock ({$result['stockQuantity']} units available).";
+            $message .= " y actualmente está en stock ({$result['stockQuantity']} unidades disponibles).";
         } else {
-            $message .= " but is currently out of stock.";
+            $message .= " pero actualmente está fuera de stock.";
         }
         
         return $message;

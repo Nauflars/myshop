@@ -7,7 +7,7 @@ namespace App\Infrastructure\AI\Tool;
 use App\Application\UseCase\AI\GetProductsName;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
-#[AsTool('GetProductsNameTool', 'Browse and search products by name or category. Returns a list of products with their IDs, names, and categories.')]
+#[AsTool('GetProductsNameTool', 'Buscar y explorar productos por nombre o categoría. Devuelve una lista de productos con sus nombres, descripciones, precios y disponibilidad. NO devuelve IDs internos.')]
 final class GetProductsNameTool
 {
     public function __construct(
@@ -20,11 +20,17 @@ final class GetProductsNameTool
         try {
             $products = $this->getProductsName->execute($searchTerm, $category);
 
+            // Remove IDs from response to prevent exposure
+            $productsWithoutIds = array_map(function($product) {
+                unset($product['id']);
+                return $product;
+            }, $products);
+
             return [
                 'success' => true,
-                'data' => $products,
-                'count' => count($products),
-                'message' => $this->formatMessage($products, $searchTerm, $category),
+                'data' => $productsWithoutIds,
+                'count' => count($productsWithoutIds),
+                'message' => $this->formatMessage($productsWithoutIds, $searchTerm, $category),
             ];
             
         } catch (\Exception $e) {
@@ -32,7 +38,7 @@ final class GetProductsNameTool
                 'success' => false,
                 'data' => [],
                 'count' => 0,
-                'message' => 'Failed to retrieve products. Please try again.',
+                'message' => 'No se pudieron recuperar los productos. Por favor, intente nuevamente.',
             ];
         }
     }
@@ -44,18 +50,18 @@ final class GetProductsNameTool
         
         if ($count === 0) {
             if ($searchTerm && $category) {
-                return "No products found matching '{$searchTerm}' in category '{$category}'.";
+                return "No se encontraron productos que coincidan con '{$searchTerm}' en la categoría '{$category}'.";
             } elseif ($searchTerm) {
-                return "No products found matching '{$searchTerm}'.";
+                return "No se encontraron productos que coincidan con '{$searchTerm}'.";
             } elseif ($category) {
-                return "No products found in category '{$category}'.";
+                return "No se encontraron productos en la categoría '{$category}'.";
             }
-            return 'No products found in the catalog.';
+            return 'No se encontraron productos en el catálogo.';
         }
         
-        $suffix = $searchTerm ? " matching '{$searchTerm}'" : '';
-        $suffix .= $category ? " in category '{$category}'" : '';
+        $suffix = $searchTerm ? " que coinciden con '{$searchTerm}'" : '';
+        $suffix .= $category ? " en la categoría '{$category}'" : '';
         
-        return "Found {$count} product" . ($count > 1 ? 's' : '') . $suffix . '.';
+        return "Se encontraron {$count} producto" . ($count > 1 ? 's' : '') . $suffix . '.';
     }
 }

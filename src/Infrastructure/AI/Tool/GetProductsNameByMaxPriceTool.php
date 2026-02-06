@@ -8,7 +8,7 @@ use App\Application\UseCase\AI\GetProductsNameByMaxPrice;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 
-#[AsTool('GetProductsNameByMaxPrice', 'Find products within a budget. Returns products with prices less than or equal to the specified maximum price.')]
+#[AsTool('GetProductsNameByMaxPrice', 'Buscar productos dentro de un presupuesto. Devuelve productos con precios menores o iguales al precio máximo especificado. NO devuelve IDs internos.')]
 final class GetProductsNameByMaxPriceTool
 {
     public function __construct(
@@ -25,19 +25,25 @@ final class GetProductsNameByMaxPriceTool
                     'success' => false,
                     'data' => [],
                     'count' => 0,
-                    'message' => 'Maximum price must be greater than zero.',
+                    'message' => 'El precio máximo debe ser mayor que cero.',
                 ];
             }
             
             // Delegate to Application layer use case
             $products = $this->getProductsNameByMaxPrice->execute($maxPrice, $currency, $category);
             
+            // Remove IDs from response to prevent exposure
+            $productsWithoutIds = array_map(function($product) {
+                unset($product['id']);
+                return $product;
+            }, $products);
+            
             // Format response for AI agent
             return [
                 'success' => true,
-                'data' => $products,
-                'count' => count($products),
-                'message' => $this->formatMessage($products, $maxPrice, $currency, $category),
+                'data' => $productsWithoutIds,
+                'count' => count($productsWithoutIds),
+                'message' => $this->formatMessage($productsWithoutIds, $maxPrice, $currency, $category),
             ];
             
         } catch (\Exception $e) {
@@ -46,7 +52,7 @@ final class GetProductsNameByMaxPriceTool
                 'success' => false,
                 'data' => [],
                 'count' => 0,
-                'message' => 'Failed to retrieve products by price. Please try again.',
+                'message' => 'No se pudieron recuperar los productos por precio. Por favor, intente nuevamente.',
             ];
         }
     }
@@ -61,16 +67,16 @@ final class GetProductsNameByMaxPriceTool
         $currencySymbol = $this->getCurrencySymbol($currency);
         
         if ($count === 0) {
-            $message = "No products found under {$currencySymbol}{$priceFormatted}";
+            $message = "No se encontraron productos por debajo de {$currencySymbol}{$priceFormatted}";
             if ($category) {
-                $message .= " in category '{$category}'";
+                $message .= " en la categoría '{$category}'";
             }
             return $message . '.';
         }
         
-        $message = "Found {$count} product" . ($count > 1 ? 's' : '') . " under {$currencySymbol}{$priceFormatted}";
+        $message = "Se encontraron {$count} producto" . ($count > 1 ? 's' : '') . " por debajo de {$currencySymbol}{$priceFormatted}";
         if ($category) {
-            $message .= " in category '{$category}'";
+            $message .= " en la categoría '{$category}'";
         }
         
         return $message . '.';
