@@ -8,6 +8,14 @@ class CartManager {
     init() {
         this.updateCartBadge();
         this.attachEventListeners();
+        this.listenForCartUpdates();
+    }
+    
+    listenForCartUpdates() {
+        // Listen for cart updates from chatbot or other sources
+        window.addEventListener('cartUpdated', () => {
+            this.updateCartBadge();
+        });
     }
 
     async updateCartBadge() {

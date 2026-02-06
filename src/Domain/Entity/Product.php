@@ -18,6 +18,9 @@ class Product
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
+    
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $nameEs = null;
 
     #[ORM\Column(type: 'text')]
     private string $description;
@@ -72,6 +75,25 @@ class Product
     {
         $this->name = $name;
         $this->touch();
+    }
+    
+    public function getNameEs(): ?string
+    {
+        return $this->nameEs;
+    }
+    
+    public function setNameEs(?string $nameEs): void
+    {
+        $this->nameEs = $nameEs;
+        $this->touch();
+    }
+    
+    public function getDisplayName(string $locale = 'en'): string
+    {
+        if ($locale === 'es' && $this->nameEs !== null) {
+            return $this->nameEs;
+        }
+        return $this->name;
     }
 
     public function getDescription(): string
