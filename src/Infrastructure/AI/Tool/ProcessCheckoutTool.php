@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\ProcessCheckout;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * ProcessCheckoutTool - AI Tool for processing orders
@@ -17,6 +18,7 @@ use App\Application\UseCase\AI\ProcessCheckout;
  * 
  * @author AI Shopping Assistant Team
  */
+#[AsTool('ProcessCheckout', 'Complete the order, update stock, and clear cart. Requires userId. Returns order number and confirmation.')]
 class ProcessCheckoutTool
 {
     public function __construct(

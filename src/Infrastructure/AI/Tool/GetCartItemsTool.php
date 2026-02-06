@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\GetCartItems;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * GetCartItemsTool - AI Tool for viewing shopping cart
@@ -17,6 +18,7 @@ use App\Application\UseCase\AI\GetCartItems;
  * 
  * @author AI Shopping Assistant Team
  */
+#[AsTool('GetCartItems', 'View current cart contents with product names, quantities, prices, and total amount. Requires userId.')]
 class GetCartItemsTool
 {
     public function __construct(

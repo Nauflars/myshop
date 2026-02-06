@@ -6,9 +6,9 @@ namespace App\Infrastructure\Controller;
 
 use App\Infrastructure\AI\Service\ConversationManager;
 use App\Infrastructure\AI\Service\RoleAwareAssistant;
-use Symfony\AI\AgentInterface;
+use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,7 +31,7 @@ class AIAssistantController extends AbstractController
     public function __construct(
         private readonly ConversationManager $conversationManager,
         private readonly RoleAwareAssistant $roleAwareAssistant,
-        #[Autowire(service: 'ai.agent.local_ollama')]
+        #[Autowire(service: 'ai.agent.openAiAgent')]
         private readonly AgentInterface $agent
     ) {
     }
@@ -72,16 +72,25 @@ class AIAssistantController extends AbstractController
             
             // Use Symfony AI Agent to process the message
             try {
-                // Create MessageBag with user message
-                $messageBag = new MessageBag();
-                $messageBag->add(new UserMessage($userMessage));
+                // Create MessageBag with user message  
+                $messageBag = new MessageBag(
+                    Message::ofUser($userMessage)
+                );
                 
                 // Call agent with MessageBag
                 $result = $this->agent->call($messageBag);
-                $assistantResponse = $result->content;
+                $assistantResponse = $result->getContent();
             } catch (\Exception $e) {
                 error_log('Symfony AI Agent Error: ' . $e->getMessage());
-                $assistantResponse = "I apologize, but I'm having trouble processing your request right now. Please try again later.";
+                error_log('Stack trace: ' . $e->getTraceAsString());
+                
+                // Return detailed error in dev environment
+                return $this->json([
+                    'error' => 'AI Agent Error',
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'file' => $e->getFile() . ':' . $e->getLine(),
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             
             // Add assistant response to history

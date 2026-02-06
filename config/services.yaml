@@ -36,10 +36,14 @@ services:
     App\Infrastructure\AI\Service\:
         resource: '../src/Infrastructure/AI/Service/'
     
-    # AI Tools
+    # AI Tools - Tagged for automatic discovery by AIBundle
     App\Infrastructure\AI\Tool\:
         resource: '../src/Infrastructure/AI/Tool/'
-    
+        autowire: true
+        autoconfigure: true
+        tags: ['ai.tool']
+        public: true
+
     # AI Agents
     App\Infrastructure\AI\Agent\:
         resource: '../src/Infrastructure/AI/Agent/'

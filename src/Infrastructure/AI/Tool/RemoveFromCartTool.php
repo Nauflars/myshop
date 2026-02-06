@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\RemoveFromCart;
+use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
  * RemoveFromCartTool - AI Tool for removing products from cart
@@ -17,6 +18,7 @@ use App\Application\UseCase\AI\RemoveFromCart;
  * 
  * @author AI Shopping Assistant Team
  */
+#[AsTool('RemoveFromCart', 'Remove a product from the shopping cart completely. Requires userId and productId.')]
 class RemoveFromCartTool
 {
     public function __construct(

@@ -86,10 +86,10 @@ config/
 
 ## AI Agent Configuration
 
-### Primary Agent: "local_ollama"
+### Primary Agent: "openAiAgent"
 
 ```yaml
-agent_name: local_ollama
+agent_name: openAiAgent
 model: gpt-4o-mini  # or llama3.1:8b for Ollama
 capabilities:
   - tool_calling: true
