@@ -126,6 +126,44 @@ class ChatbotController extends AbstractController
         }
     }
     
+    #[Route('/history/{conversationId}', name: 'api_chatbot_history', methods: ['GET'])]
+    public function getHistory(string $conversationId): JsonResponse
+    {
+        try {
+            $user = $this->security->getUser();
+            if (!$user instanceof User) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Usuario no autenticado',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            
+            $result = $this->conversationManager->loadConversation($user, $conversationId);
+            
+            if ($result['success']) {
+                return $this->json([
+                    'success' => true,
+                    'messages' => $result['messages'],
+                    'conversation' => $result['conversation'],
+                ]);
+            }
+            
+            return $this->json([
+                'success' => false,
+                'error' => $result['message'],
+                'messages' => [],
+            ], Response::HTTP_NOT_FOUND);
+            
+        } catch (\Exception $e) {
+            error_log('Get History Error: ' . $e->getMessage());
+            return $this->json([
+                'success' => false,
+                'error' => 'Error al cargar el historial',
+                'messages' => [],
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
     #[Route('/clear', name: 'api_chatbot_clear', methods: ['POST'])]
     public function clearChat(Request $request): JsonResponse
     {

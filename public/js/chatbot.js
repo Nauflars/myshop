@@ -205,19 +205,36 @@ class Chatbot {
         const cartKeywords = [
             'añadido al carrito',
             'agregado al carrito',
+            'añadí',
+            'agregué',
+            'he añadido',
+            'he agregado',
             'carrito actualizado',
             'producto añadido',
             'producto agregado',
             'eliminado del carrito',
             'removido del carrito',
+            'eliminé',
+            'removí',
             'carrito vaciado',
             'pedido creado',
             'orden creada',
-            'compra completada'
+            'compra completada',
+            'añadir',
+            'total',
+            'item',
+            'cantidad'
         ];
         
         const lowerMessage = message.toLowerCase();
-        return cartKeywords.some(keyword => lowerMessage.includes(keyword));
+        // Check if message mentions cart-related words
+        const hasCartKeyword = cartKeywords.some(keyword => lowerMessage.includes(keyword));
+        
+        // Also trigger on success messages that mention numbers (likely quantities)
+        const hasNumber = /\d+/.test(message);
+        const mentionsCart = lowerMessage.includes('carrito') || lowerMessage.includes('cart');
+        
+        return hasCartKeyword || (hasNumber && mentionsCart);
     }
 
     async clearChat() {
@@ -259,9 +276,37 @@ class Chatbot {
     }
 
     async loadConversationHistory() {
-        // Note: In a production environment, you'd fetch this from backend
-        // For now, just show welcome message - messages are fetched on sendMessage
-        this.addMessage('bot', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+        if (!this.conversationId) return;
+        
+        try {
+            const response = await fetch(`/api/chat/history/${this.conversationId}`, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data.success && data.messages && data.messages.length > 0) {
+                    // Clear existing messages
+                    this.messagesContainer.innerHTML = '';
+                    
+                    // Load all messages from history
+                    data.messages.forEach(msg => {
+                        this.addMessage(msg.role === 'user' ? 'user' : 'bot', msg.content);
+                    });
+                } else {
+                    // No messages yet, show welcome
+                    this.addMessage('bot', '¡Hola! Soy tu asistente de compras con IA. ¿En qué puedo ayudarte hoy?');
+                }
+            } else {
+                // Error loading, show welcome
+                this.addMessage('bot', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+            }
+        } catch (error) {
+            console.error('Error loading conversation history:', error);
+            this.addMessage('bot', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+        }
     }
 
     addMessage(role, content) {
