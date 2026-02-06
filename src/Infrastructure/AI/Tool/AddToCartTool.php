@@ -4,38 +4,39 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\AI\Tool;
 
-use App\Application\UseCase\AI\AddToCart;
+use App\Application\UseCase\AI\AddToCartByName;
+use App\Domain\Entity\User;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * AddToCartTool - AI Tool for adding products to cart
+ * AddToCartTool - AI Tool for adding products to cart by name
  * 
- * This tool enables the AI agent to add products to the user's shopping cart.
- * It delegates to the AddToCart use case.
+ * This tool enables the AI agent to add products to the user's shopping cart by product name.
+ * Refactored to use name-based interactions and Security context instead of IDs.
  * 
  * Architecture: Infrastructure layer (AI adapter)
  * DDD Role: Technical adapter - NO business logic
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('AddToCart', 'Add a product to the shopping cart with specified quantity. Requires userId, productId, and quantity (default: 1).')]
+#[AsTool('AddToCart', 'Agregar un producto al carrito de compras con la cantidad especificada. Requiere nombre del producto y cantidad (por defecto: 1). NO usa IDs internos.')]
 final class AddToCartTool
 {
     public function __construct(
-        private readonly AddToCart $addToCart
+        private readonly AddToCartByName $addToCartByName,
+        private readonly Security $security
     ) {
     }
     
     /**
      * Execute the tool with parameters from AI agent
      *
-     * @param string $userId The UUID of the user
-     * @param string $productId The UUID of the product to add
+     * @param string $productName The name of the product to add
      * @param int $quantity The quantity to add (default: 1)
      * @return array{
      *     success: bool,
      *     data: array{
-     *         cartId: string|null,
      *         totalItems: int,
      *         totalAmount: float,
      *         currency: string
@@ -43,23 +44,25 @@ final class AddToCartTool
      *     message: string
      * }
      */
-    public function __invoke(string $userId, string $productId, int $quantity = 1): array
+    public function __invoke(string $productName, int $quantity = 1): array
     {
         try {
-            // Validate inputs
-            if (empty(trim($userId))) {
+            // Get authenticated user from Security context
+            $user = $this->security->getUser();
+            if (!$user instanceof User) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'User ID is required.',
+                    'message' => 'Usuario no autenticado.',
                 ];
             }
             
-            if (empty(trim($productId))) {
+            // Validate inputs
+            if (empty(trim($productName))) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'Product ID is required.',
+                    'message' => 'El nombre del producto es requerido.',
                 ];
             }
             
@@ -67,12 +70,12 @@ final class AddToCartTool
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'Quantity must be greater than zero.',
+                    'message' => 'La cantidad debe ser mayor que cero.',
                 ];
             }
             
             // Delegate to Application layer use case
-            $result = $this->addToCart->execute(trim($userId), trim($productId), $quantity);
+            $result = $this->addToCartByName->execute($user, trim($productName), $quantity);
             
             if (!$result['success']) {
                 return [
@@ -82,11 +85,10 @@ final class AddToCartTool
                 ];
             }
             
-            // Format response for AI agent
+            // Format response for AI agent (without internal cart ID)
             return [
                 'success' => true,
                 'data' => [
-                    'cartId' => $result['cartId'],
                     'totalItems' => $result['totalItems'],
                     'totalAmount' => $result['totalAmount'],
                     'currency' => $result['currency'],
@@ -97,7 +99,7 @@ final class AddToCartTool
             return [
                 'success' => false,
                 'data' => null,
-                'message' => 'Failed to add product to cart: ' . $e->getMessage(),
+                'message' => 'No se pudo agregar el producto al carrito: ' . $e->getMessage(),
             ];
         }
     }

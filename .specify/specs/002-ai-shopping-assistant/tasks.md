@@ -364,6 +364,13 @@ graph TD
     Integration --> Frontend[Phase 12: Frontend]
     Frontend --> Security[Phase 13: Security]
     Security --> Docs[Phase 14: Documentation]
+    Docs --> Enhancement[Phase 15: Conversational Enhancement]
+    US1 --> Enhancement
+    US2 --> Enhancement
+    US3 --> Enhancement
+    US4 --> Enhancement
+    US5 --> Enhancement
+    Agent --> Enhancement
 ```
 
 ---
@@ -397,6 +404,16 @@ graph TD
 ### Phase 14 - Documentation
 - **Fully Parallel**: T228-T234 (independent documentation files)
 
+### Phase 15 - Conversational Enhancement (Spanish + Name-Based)
+- **Sequential Agent Updates**: T235 → T236 → T237 → T238 → T239 → T240 (system prompt configuration)
+- **Fully Parallel Tool Refactoring**: T241-T247 (independent tool modifications)
+- **Fully Parallel Use Cases**: T248-T263 (all use cases in different files)
+- **Fully Parallel New Tools**: T264-T287 (all tool implementations independent)
+- **Sequential Registration**: T288 → T289 → T290 → T291 → T292 (service configuration)
+- **Fully Parallel Flow Tests**: T293-T301 (all E2E tests independent)
+- **Fully Parallel Validation Tests**: T302-T310 (all validation tests independent)
+- **Fully Parallel Documentation**: T311-T315 (all documentation files independent)
+
 ---
 
 ## Implementation Strategy
@@ -416,11 +433,19 @@ Priority: Complete User Stories 1-3 for immediate value
 - **Week 11**: Frontend + Security (T209-T227)
 - **Week 12**: Documentation + Launch (T228-T234)
 
+### Enhanced Conversational Scope (Phases 1-15)
+- **Weeks 13-14**: Phase 15 Agent Enhancement (T235-T247)
+- **Weeks 15-16**: Phase 15 New Use Cases (T248-T263)
+- **Weeks 17-18**: Phase 15 New Tools (T264-T287)
+- **Week 19**: Phase 15 Configuration & Registration (T288-T292)
+- **Week 20**: Phase 15 Testing (T293-T310)
+- **Week 21**: Phase 15 Documentation & Launch (T311-T315)
+
 ---
 
 ## Success Criteria
 
-- ✅ All 134 tasks completed
+- ✅ All 215 tasks completed
 - ✅ All 7 user stories independently testable
 - ✅ Test coverage >80% for Application and Infrastructure/AI layers
 - ✅ Zero business logic in Infrastructure/AI/Tool classes
@@ -429,6 +454,12 @@ Priority: Complete User Stories 1-3 for immediate value
 - ✅ Response time <3s for tool-heavy conversations
 - ✅ No security vulnerabilities in penetration testing
 - ✅ Documentation complete for adding new tools
+- ✅ **Phase 15**: All agent responses exclusively in Spanish
+- ✅ **Phase 15**: Zero internal IDs (UUIDs, database keys) exposed to users
+- ✅ **Phase 15**: All tools accept and return human-readable product names
+- ✅ **Phase 15**: Agent handles complete shopping lifecycle (browse → checkout → status)
+- ✅ **Phase 15**: Explicit confirmation required for all sensitive operations
+- ✅ **Phase 15**: Agent maintains friendly, professional, empathetic tone
 
 ---
 
@@ -449,7 +480,169 @@ Priority: Complete User Stories 1-3 for immediate value
 - **Phase 13 (Security)**: 11 tasks (T217-T227)
 - **Phase 14 (Documentation)**: 7 tasks (T228-T234)
 
-**TOTAL: 134 tasks**
+**TOTAL: 215 tasks** (updated to include Phase 15)
+
+---
+
+## Phase 15: Conversational Commerce Assistant Enhancement (Spanish + Human-Readable Interactions)
+
+**Purpose**: Evolve the chatbot into a fully conversational Spanish-speaking commerce assistant that operates using human-readable product names and guides users through the complete shopping lifecycle
+
+**Goal**: Enable natural, human-friendly interactions in Spanish without exposing any internal identifiers
+
+**Independent Test**: User completes full shopping flow (browse → select → add to cart → checkout → check order status) entirely in Spanish using only product names
+
+### Agent Behavior Updates
+
+- [X] T235 Update system prompt to require Spanish-only responses in config/packages/ai.yaml
+- [X] T236 Add virtual assistant persona in system prompt (friendly, professional, empathetic tone) in config/packages/ai.yaml
+- [X] T237 Add instruction to NEVER expose internal IDs (UUIDs, database keys) in system prompt
+- [X] T238 Add instruction to use product names only in all interactions in system prompt
+- [X] T239 Add instruction to confirm user intent before sensitive actions (checkout, order creation) in system prompt
+- [X] T240 Add full lifecycle conversation flow capabilities to system prompt in config/packages/ai.yaml
+
+**Checkpoint**: Agent behavior configured for natural Spanish conversations
+
+### Existing Tools Refactoring (Name-Based Interactions)
+
+- [X] T241 [P] Refactor GetProductsNameTool to include descriptions, prices, and availability in src/Infrastructure/AI/Tool/GetProductsNameTool.php
+- [X] T242 [P] Refactor GetProductsNameByMaxPriceTool to accept product names and return enriched data in src/Infrastructure/AI/Tool/GetProductsNameByMaxPriceTool.php
+- [X] T243 [P] Update all existing tool descriptions to Spanish in tool annotations
+- [X] T244 [P] Add internal name-to-ID resolution logic in each tool that currently uses IDs
+- [X] T245 Update GetPriceByProductIdTool to accept product name instead of ID in src/Infrastructure/AI/Tool/GetPriceByProductIdTool.php
+- [X] T246 Update GetProductImagesByProductIdTool to accept product name instead of ID in src/Infrastructure/AI/Tool/GetProductImagesByProductIdTool.php
+- [X] T247 Update AddToCartTool to accept product name instead of ID in src/Infrastructure/AI/Tool/AddToCartTool.php
+
+**Checkpoint**: All existing tools refactored for name-based interactions
+
+### New Use Cases - Product Management
+
+- [X] T248 [P] Create ListProductsUseCase with filters (category, availability) in src/Application/UseCase/AI/ListProducts.php
+- [X] T249 [P] Create GetProductDetailsByNameUseCase in src/Application/UseCase/AI/GetProductDetailsByName.php
+- [ ] T250 [P] Create unit test for ListProducts use case in tests/Application/UseCase/AI/ListProductsTest.php
+- [ ] T251 [P] Create unit test for GetProductDetailsByName use case in tests/Application/UseCase/AI/GetProductDetailsByNameTest.php
+
+### New Use Cases - Cart Management
+
+- [X] T252 [P] Create RemoveProductFromCartUseCase with name-based removal in src/Application/UseCase/AI/RemoveProductFromCart.php
+- [X] T253 [P] Create GetCartSummaryUseCase with detailed line items in src/Application/UseCase/AI/GetCartSummary.php
+- [ ] T254 [P] Create unit test for RemoveProductFromCart use case in tests/Application/UseCase/AI/RemoveProductFromCartTest.php
+- [ ] T255 [P] Create unit test for GetCartSummary use case in tests/Application/UseCase/AI/GetCartSummaryTest.php
+
+### New Use Cases - Checkout & Orders
+
+- [X] T256 [P] Create CollectCheckoutInformationUseCase for conversational data collection in src/Application/UseCase/AI/CollectCheckoutInformation.php
+- [X] T257 [P] Create CreateOrderUseCase with confirmation validation in src/Application/UseCase/AI/CreateOrder.php
+- [X] T258 [P] Create ListPreviousOrdersUseCase for authenticated user in src/Application/UseCase/AI/ListPreviousOrders.php
+- [X] T259 [P] Create GetOrderStatusUseCase with human-friendly reference in src/Application/UseCase/AI/GetOrderStatus.php
+- [ ] T260 [P] Create unit test for CollectCheckoutInformation use case in tests/Application/UseCase/AI/CollectCheckoutInformationTest.php
+- [ ] T261 [P] Create unit test for CreateOrder use case in tests/Application/UseCase/AI/CreateOrderTest.php
+- [ ] T262 [P] Create unit test for ListPreviousOrders use case in tests/Application/UseCase/AI/ListPreviousOrdersTest.php
+- [ ] T263 [P] Create unit test for GetOrderStatus use case in tests/Application/UseCase/AI/GetOrderStatusTest.php
+
+### New AI Tools - Product Management
+
+- [X] T264 [P] Create ListProductsTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/ListProductsTool.php
+- [X] T265 [P] Implement ListProductsTool parameter schema (optional: category, availability) in ListProductsTool
+- [X] T266 [P] Create GetProductDetailsTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/GetProductDetailsTool.php
+- [X] T267 [P] Implement GetProductDetailsTool parameter schema (productName: string) in GetProductDetailsTool
+- [ ] T268 [P] Create integration test for ListProductsTool in tests/Infrastructure/AI/Tool/ListProductsToolTest.php
+- [ ] T269 [P] Create integration test for GetProductDetailsTool in tests/Infrastructure/AI/Tool/GetProductDetailsToolTest.php
+
+### New AI Tools - Cart Management
+
+- [X] T270 [P] Create RemoveProductFromCartTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/RemoveProductFromCartTool.php
+- [X] T271 [P] Implement RemoveProductFromCartTool parameter schema (productName: string) in RemoveProductFromCartTool
+- [X] T272 [P] Create GetCartSummaryTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/GetCartSummaryTool.php
+- [X] T273 [P] Implement GetCartSummaryTool to return product names, quantities, prices, and total in GetCartSummaryTool
+- [ ] T274 [P] Create integration test for RemoveProductFromCartTool in tests/Infrastructure/AI/Tool/RemoveProductFromCartToolTest.php
+- [ ] T275 [P] Create integration test for GetCartSummaryTool in tests/Infrastructure/AI/Tool/GetCartSummaryToolTest.php
+
+### New AI Tools - Checkout & Orders
+
+- [X] T276 [P] Create CollectCheckoutInformationTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/CollectCheckoutInformationTool.php
+- [X] T277 [P] Implement CollectCheckoutInformationTool parameter schema (address, paymentMethod, contactInfo) in CollectCheckoutInformationTool
+- [X] T278 [P] Create CreateOrderTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/CreateOrderTool.php
+- [X] T279 [P] Implement CreateOrderTool with explicit user confirmation requirement in CreateOrderTool
+- [X] T280 [P] Create ListPreviousOrdersTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/ListPreviousOrdersTool.php
+- [X] T281 [P] Implement ListPreviousOrdersTool to return human-friendly order references in ListPreviousOrdersTool
+- [X] T282 [P] Create GetOrderStatusTool with #[AsTool] annotation (Spanish description) in src/Infrastructure/AI/Tool/GetOrderStatusTool.php
+- [X] T283 [P] Implement GetOrderStatusTool parameter schema (orderReference: string, not ID) in GetOrderStatusTool
+- [ ] T284 [P] Create integration test for CollectCheckoutInformationTool in tests/Infrastructure/AI/Tool/CollectCheckoutInformationToolTest.php
+- [ ] T285 [P] Create integration test for CreateOrderTool in tests/Infrastructure/AI/Tool/CreateOrderToolTest.php
+- [ ] T286 [P] Create integration test for ListPreviousOrdersTool in tests/Infrastructure/AI/Tool/ListPreviousOrdersToolTest.php
+- [ ] T287 [P] Create integration test for GetOrderStatusTool in tests/Infrastructure/AI/Tool/GetOrderStatusToolTest.php
+
+### Service Configuration & Registration
+
+- [X] T288 Register all new product management tools as tagged services in config/services.yaml
+- [X] T289 Register all new cart management tools as tagged services in config/services.yaml
+- [X] T290 Register all new checkout/order tools as tagged services in config/services.yaml
+- [X] T291 Add all 9 new tools to agent tool registry in config/packages/ai.yaml
+- [X] T292 Update ShoppingAssistantAgent to include new tools in tool registry in src/Infrastructure/AI/Agent/ShoppingAssistantAgent.php
+
+**Checkpoint**: All new tools registered and available to the agent
+
+### Conversational Flow Testing
+
+- [ ] T293 [P] Create E2E test: Complete product discovery flow in Spanish in tests/E2E/SpanishProductDiscoveryTest.php
+- [ ] T294 [P] Create E2E test: Product selection and comparison in Spanish in tests/E2E/SpanishProductComparisonTest.php
+- [ ] T295 [P] Create E2E test: Add/remove products to/from cart using names only in tests/E2E/NameBasedCartManagementTest.php
+- [ ] T296 [P] Create E2E test: Display cart summary with product names in tests/E2E/CartSummaryDisplayTest.php
+- [ ] T297 [P] Create E2E test: Conversational checkout data collection in Spanish in tests/E2E/SpanishCheckoutFlowTest.php
+- [ ] T298 [P] Create E2E test: Order creation with explicit confirmation in Spanish in tests/E2E/SpanishOrderCreationTest.php
+- [ ] T299 [P] Create E2E test: List previous orders with human-friendly references in tests/E2E/OrderListingTest.php
+- [ ] T300 [P] Create E2E test: Order status inquiry using order reference in tests/E2E/OrderStatusInquiryTest.php
+- [ ] T301 [P] Create E2E test: Full end-to-end shopping lifecycle (browse → checkout → status) in tests/E2E/CompleteShoppingLifecycleTest.php
+
+### ID Exposure Prevention Testing
+
+- [ ] T302 [P] Create test: Verify no UUIDs appear in agent responses in tests/Infrastructure/AI/NoIDExposureTest.php
+- [ ] T303 [P] Create test: Verify all tools accept names not IDs in input validation in tests/Infrastructure/AI/NameBasedInputTest.php
+- [ ] T304 [P] Create test: Verify all tools output names not IDs in response validation in tests/Infrastructure/AI/NameBasedOutputTest.php
+- [ ] T305 [P] Create test: Verify order references are human-friendly (not UUIDs) in tests/Infrastructure/AI/OrderReferenceFormatTest.php
+
+### Agent Behavior Validation Testing
+
+- [ ] T306 [P] Create test: Verify all agent responses are in Spanish in tests/Infrastructure/AI/SpanishResponseTest.php
+- [ ] T307 [P] Create test: Verify agent requests confirmation before checkout in tests/Infrastructure/AI/CheckoutConfirmationTest.php
+- [ ] T308 [P] Create test: Verify agent requests confirmation before order creation in tests/Infrastructure/AI/OrderConfirmationTest.php
+- [ ] T309 [P] Create test: Verify agent tone is friendly, professional, empathetic in tests/Infrastructure/AI/AgentToneTest.php
+- [ ] T310 [P] Create test: Verify agent handles full conversational flow without explicit commands in tests/Infrastructure/AI/ConversationalFlowTest.php
+
+**Checkpoint**: All conversational and validation tests complete
+
+### Documentation & Migration
+
+- [ ] T311 [P] Document name-to-ID resolution strategy in .specify/specs/002-ai-shopping-assistant/NAME_RESOLUTION.md
+- [ ] T312 [P] Update README with Spanish agent capabilities in .specify/specs/002-ai-shopping-assistant/README.md
+- [ ] T313 [P] Create migration guide for existing users (ID-based → name-based) in .specify/specs/002-ai-shopping-assistant/MIGRATION.md
+- [ ] T314 [P] Add examples of conversational flows in Spanish to documentation in .specify/specs/002-ai-shopping-assistant/EXAMPLES.md
+- [ ] T315 [P] Update API.md with new tool endpoints and Spanish descriptions in API.md
+
+**Checkpoint**: Phase 15 complete - Fully conversational Spanish commerce assistant deployed
+
+---
+
+## Updated Task Count Summary
+
+- **Phase 1 (Setup)**: 11 tasks (T101-T111)
+- **Phase 2 (Foundation)**: 9 tasks (T112-T120)
+- **Phase 3 (US1)**: 7 tasks (T121-T127)
+- **Phase 4 (US2)**: 7 tasks (T128-T134)
+- **Phase 5 (US3)**: 12 tasks (T135-T146)
+- **Phase 6 (US4)**: 13 tasks (T147-T159)
+- **Phase 7 (US5)**: 11 tasks (T160-T170)
+- **Phase 8 (US6)**: 6 tasks (T171-T178)
+- **Phase 9 (US7)**: 7 tasks (T179-T187)
+- **Phase 10 (Agent)**: 7 tasks (T188-T194)
+- **Phase 11 (Integration)**: 14 tasks (T195-T208)
+- **Phase 12 (Frontend)**: 8 tasks (T209-T216)
+- **Phase 13 (Security)**: 11 tasks (T217-T227)
+- **Phase 14 (Documentation)**: 7 tasks (T228-T234)
+- **Phase 15 (Conversational Enhancement)**: 81 tasks (T235-T315)
+
+**TOTAL: 215 tasks**
 
 ---
 
@@ -460,4 +653,9 @@ Priority: Complete User Stories 1-3 for immediate value
 3. **Parallel Execution**: Tasks marked [P] can be executed simultaneously
 4. **MVP Focus**: Phases 1-5 (US1-US3) deliver immediate value
 5. **Security First**: All tools validate authentication and authorization
-6. **Documentation**: Each phase includes inline documentation requirements
+6. **Documentation**: Each phase includes inline documentation requirements7. **Phase 15 Priority**: Conversational enhancement builds on MVP (Phases 1-5) and can be executed after foundational phases
+8. **Spanish Language**: All agent interactions in Phase 15 must be exclusively in Spanish
+9. **Name Resolution Strategy**: All tools in Phase 15 must internally resolve product names to IDs while maintaining clean, human-readable interfaces
+10. **No ID Exposure**: System must NEVER expose UUIDs, database IDs, or internal identifiers to end users
+11. **Confirmation Required**: Agent must explicitly request user confirmation before sensitive operations (checkout, order creation)
+12. **Conversational Flow**: Agent must handle full shopping lifecycle naturally without requiring explicit commands

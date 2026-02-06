@@ -4,71 +4,69 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\AI\Tool;
 
-use App\Application\UseCase\AI\GetProductImagesByProductId;
+use App\Application\UseCase\AI\GetProductImagesByProductName;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
- * GetProductImagesByProductIdTool - AI Tool for product image retrieval
+ * GetProductImagesByProductIdTool - AI Tool for product image retrieval by name
  * 
- * This tool enables the AI agent to retrieve product image URLs.
- * It delegates to the GetProductImagesByProductId use case.
+ * This tool enables the AI agent to retrieve product image URLs by name.
+ * Refactored to use name-based interactions instead of internal IDs.
  * 
  * Architecture: Infrastructure layer (AI adapter)
  * DDD Role: Technical adapter - NO business logic
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('GetProductImagesByProductId', 'Retrieve all images for a specific product by its ID. Returns image URLs and metadata.')]
+#[AsTool('GetProductImagesByProductId', 'Obtener todas las imágenes de un producto específico por su nombre. Devuelve URLs de imágenes y metadatos. NO usa IDs internos.')]
 class GetProductImagesByProductIdTool
 {
     public function __construct(
-        private readonly GetProductImagesByProductId $getProductImagesByProductId
+        private readonly GetProductImagesByProductName $getProductImagesByProductName
     ) {
     }
     
     /**
      * Execute the tool with parameters from AI agent
      *
-     * @param string $productId The UUID of the product to retrieve images for
+     * @param string $productName The name of the product to retrieve images for
      * @return array{
      *     success: bool,
      *     data: array{
-     *         productId: string,
-     *         productName: string|null,
+     *         productName: string,
      *         images: array<int, string>,
      *         imageCount: int
      *     }|null,
      *     message: string
      * }
      */
-    public function __invoke(string $productId): array
+    public function __invoke(string $productName): array
     {
         try {
             // Validate input
-            if (empty(trim($productId))) {
+            if (empty(trim($productName))) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'Product ID is required.',
+                    'message' => 'El nombre del producto es requerido.',
                 ];
             }
             
             // Delegate to Application layer use case
-            $result = $this->getProductImagesByProductId->execute(trim($productId));
+            $result = $this->getProductImagesByProductName->execute(trim($productName));
             
             if (!$result['found']) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => "Product with ID '{$productId}' not found.",
+                    'message' => "Producto con nombre '{$productName}' no encontrado.",
                 ];
             }
             
-            // Format response for AI agent
+            // Format response for AI agent (without internal ID)
             return [
                 'success' => true,
                 'data' => [
-                    'productId' => $result['productId'],
                     'productName' => $result['productName'],
                     'images' => $result['images'],
                     'imageCount' => count($result['images']),
@@ -86,7 +84,7 @@ class GetProductImagesByProductIdTool
             return [
                 'success' => false,
                 'data' => null,
-                'message' => 'Failed to retrieve product images. Please try again.',
+                'message' => 'No se pudieron recuperar las imágenes del producto. Por favor, intente nuevamente.',
             ];
         }
     }
@@ -99,10 +97,10 @@ class GetProductImagesByProductIdTool
         $imageCount = count($result['images']);
         
         if ($imageCount === 0) {
-            return "No images available for {$result['productName']}.";
+            return "No hay imágenes disponibles para {$result['productName']}.";
         }
         
         $plural = $imageCount > 1 ? 's' : '';
-        return "Found {$imageCount} image{$plural} for {$result['productName']}.";
+        return "Se encontraron {$imageCount} imagen{$plural} para {$result['productName']}.";
     }
 }
