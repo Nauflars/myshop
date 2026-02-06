@@ -1,4 +1,4 @@
-// Chatbot JavaScript - Updated in spec-003 with conversation persistence
+// Chatbot JavaScript - Updated in spec-004 with draggable floating widget
 
 class Chatbot {
     constructor() {
@@ -9,9 +9,14 @@ class Chatbot {
         this.sendBtn = document.getElementById('chatbot-send');
         this.closeBtn = document.getElementById('chatbot-close');
         this.clearBtn = document.getElementById('chatbot-clear');
+        this.header = this.widget?.querySelector('.chatbot-header');
         
         this.isOpen = false;
         this.conversationId = this.getConversationId();
+        
+        // Dragging state
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
         
         this.init();
     }
@@ -19,7 +24,9 @@ class Chatbot {
     init() {
         if (!this.widget || !this.trigger) return;
 
+        this.restorePosition();
         this.attachEventListeners();
+        this.makeDraggable();
         
         // Load conversation history if exists
         if (this.conversationId) {
@@ -43,6 +50,85 @@ class Chatbot {
                 this.sendMessage();
             }
         });
+    }
+    
+    makeDraggable() {
+        if (!this.header) return;
+        
+        this.header.style.cursor = 'move';
+        
+        this.header.addEventListener('mousedown', (e) => {
+            // Don't drag if clicking on buttons
+            if (e.target.tagName === 'BUTTON') return;
+            
+            this.isDragging = true;
+            const rect = this.widget.getBoundingClientRect();
+            this.dragOffset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+            
+            this.widget.style.transition = 'none';
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isDragging) return;
+            
+            let newX = e.clientX - this.dragOffset.x;
+            let newY = e.clientY - this.dragOffset.y;
+            
+            // Keep within viewport bounds
+            const maxX = window.innerWidth - this.widget.offsetWidth;
+            const maxY = window.innerHeight - this.widget.offsetHeight;
+            
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            
+            this.widget.style.left = `${newX}px`;
+            this.widget.style.top = `${newY}px`;
+            this.widget.style.right = 'auto';
+            this.widget.style.bottom = 'auto';
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (this.isDragging) {
+                this.isDragging = false;
+                this.widget.style.transition = '';
+                this.savePosition();
+            }
+        });
+    }
+    
+    savePosition() {
+        const rect = this.widget.getBoundingClientRect();
+        localStorage.setItem('chatbot_position', JSON.stringify({
+            x: rect.left,
+            y: rect.top
+        }));
+    }
+    
+    restorePosition() {
+        const savedPos = localStorage.getItem('chatbot_position');
+        if (savedPos) {
+            try {
+                const { x, y } = JSON.parse(savedPos);
+                
+                // Ensure position is within current viewport
+                const maxX = window.innerWidth - 400; // approx widget width
+                const maxY = window.innerHeight - 500; // approx widget height
+                
+                const validX = Math.max(0, Math.min(x, maxX));
+                const validY = Math.max(0, Math.min(y, maxY));
+                
+                this.widget.style.left = `${validX}px`;
+                this.widget.style.top = `${validY}px`;
+                this.widget.style.right = 'auto';
+                this.widget.style.bottom = 'auto';
+            } catch (e) {
+                console.error('Error restoring position:', e);
+            }
+        }
     }
 
     toggle() {
@@ -98,6 +184,11 @@ class Chatbot {
                 }
                 
                 this.addMessage('bot', data.response);
+                
+                // Trigger cart badge update if response mentions cart-related actions
+                if (this.isCartAction(data.response)) {
+                    window.dispatchEvent(new Event('cartUpdated'));
+                }
             } else {
                 const error = await response.json();
                 this.addMessage('bot', error.error || 'Lo siento, encontré un error. Por favor intenta de nuevo.');
@@ -107,6 +198,26 @@ class Chatbot {
             console.error('Chat error:', error);
             this.addMessage('bot', 'Lo siento, tengo problemas para conectarme. Por favor intenta más tarde.');
         }
+    }
+    
+    isCartAction(message) {
+        // Check if the bot response indicates a cart action occurred
+        const cartKeywords = [
+            'añadido al carrito',
+            'agregado al carrito',
+            'carrito actualizado',
+            'producto añadido',
+            'producto agregado',
+            'eliminado del carrito',
+            'removido del carrito',
+            'carrito vaciado',
+            'pedido creado',
+            'orden creada',
+            'compra completada'
+        ];
+        
+        const lowerMessage = message.toLowerCase();
+        return cartKeywords.some(keyword => lowerMessage.includes(keyword));
     }
 
     async clearChat() {

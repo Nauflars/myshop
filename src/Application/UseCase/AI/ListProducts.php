@@ -37,7 +37,8 @@ final class ListProducts
             }
 
             $result[] = [
-                'name' => $product->getName(),
+                'name' => $product->getDisplayName('es'), // Use Spanish name if available
+                'nameEn' => $product->getName(), // Keep original English name for reference
                 'description' => $product->getDescription(),
                 'price' => $product->getPrice(),
                 'currency' => 'USD',
