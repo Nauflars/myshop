@@ -98,8 +98,8 @@ class AdminAssistantController extends AbstractController
             // Get conversation history as MessageBag
             $messageBag = $this->conversationManager->conversationToMessageBag($conversation);
 
-            // Get AI response
-            $response = $this->adminAgent->run($messageBag);
+            // Get AI response  
+            $response = $this->adminAgent->call($messageBag);
             $assistantReply = $response->getContent();
 
             // Save assistant response
