@@ -79,6 +79,7 @@ class Chatbot {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify({ 
                     message,
                     conversationId: this.conversationId 
@@ -126,6 +127,7 @@ class Chatbot {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify({ conversationId: this.conversationId }),
             });
 
