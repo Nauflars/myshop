@@ -309,20 +309,169 @@ class Chatbot {
         }
     }
 
-    addMessage(role, content) {
+    addMessage(role, content, structured = null) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${role}-message`;
-        messageDiv.textContent = content;
         
+        // Add avatar for bot messages
+        if (role === 'bot') {
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '🤖';
+            messageDiv.appendChild(avatar);
+        }
+        
+        // Create message content container
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Render structured content if provided, otherwise plain text
+        if (structured) {
+            contentDiv.innerHTML = this.renderStructuredContent(structured);
+        } else {
+            contentDiv.textContent = content;
+        }
+        
+        messageDiv.appendChild(contentDiv);
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
+    }
+    
+    renderStructuredContent(structured) {
+        switch (structured.type) {
+            case 'product_list':
+                return this.renderProductList(structured.data);
+            case 'product_info':
+                return this.renderProductInfo(structured.data);
+            case 'action_confirmation':
+                return this.renderActionConfirmation(structured.data);
+            case 'cart_summary':
+                return this.renderCartSummary(structured.data);
+            default:
+                return structured.data.message || '';
+        }
+    }
+    
+    renderProductList(products) {
+        if (!products || products.length === 0) {
+            return '<p>No se encontraron productos.</p>';
+        }
+        
+        let html = '';
+        products.slice(0, 5).forEach((product, index) => {
+            if (index > 0) html += '<div class="product-divider"></div>';
+            html += `
+                <div class="product-info">
+                    <div class="product-name">${this.escapeHtml(product.name)}</div>
+                    <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
+                    ${product.stock ? `<div class="product-stock">Stock: ${product.stock}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        if (products.length > 5) {
+            html += '<div class="product-divider"></div>';
+            html += `<p style="color: var(--text-light); font-size: 0.9em;">... y ${products.length - 5} productos más</p>`;
+        }
+        
+        return html;
+    }
+    
+    renderProductInfo(product) {
+        return `
+            <div class="product-info">
+                <div class="product-name">${this.escapeHtml(product.name)}</div>
+                <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
+                ${product.description ? `<p style="margin-top: 0.5rem; color: var(--text-light);">${this.escapeHtml(product.description)}</p>` : ''}
+                ${product.stock ? `<div class="product-stock">Stock disponible: ${product.stock} unidades</div>` : ''}
+            </div>
+        `;
+    }
+    
+    renderActionConfirmation(data) {
+        const iconClass = data.success ? 'success' : 'error';
+        const icon = data.success ? '✓' : '✗';
+        
+        let html = `
+            <div class="confirmation-message">
+                <div class="confirmation-icon ${iconClass}">${icon}</div>
+                <div class="confirmation-details">
+                    <div><strong>${this.escapeHtml(data.message)}</strong></div>
+        `;
+        
+        if (data.items && data.items.length > 0) {
+            data.items.forEach(item => {
+                html += `
+                    <div class="confirmation-item">
+                        ${this.escapeHtml(item.name)} × ${item.quantity}
+                        ${item.price ? ` - ${this.formatPrice(item.price, item.currency)}` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        if (data.total !== undefined) {
+            html += `
+                <div class="confirmation-total">
+                    Total del carrito: ${this.formatPrice(data.total, data.currency || 'USD')}
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        return html;
+    }
+    
+    renderCartSummary(data) {
+        if (!data.items || data.items.length === 0) {
+            return '<p>Tu carrito está vacío. <a href="/products" style="color: var(--main-color);">Ver productos</a></p>';
+        }
+        
+        let html = '<div><strong>Tu carrito:</strong></div>';
+        data.items.forEach(item => {
+            html += `
+                <div class="confirmation-item">
+                    ${this.escapeHtml(item.name)} × ${item.quantity} - ${this.formatPrice(item.price, item.currency)}
+                </div>
+            `;
+        });
+        
+        html += `
+            <div class="confirmation-total">
+                Total: ${this.formatPrice(data.total, data.currency || 'USD')}
+            </div>
+        `;
+        
+        return html;
+    }
+    
+    formatPrice(amount, currency = 'USD') {
+        return new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: currency
+        }).format(amount);
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     showTypingIndicator() {
         const indicator = document.createElement('div');
         indicator.className = 'typing-indicator';
         indicator.id = 'typing-indicator';
-        indicator.innerHTML = '<span></span><span></span><span></span>';
+        
+        const dots = document.createElement('div');
+        dots.className = 'typing-indicator-dots';
+        dots.innerHTML = '<span></span><span></span><span></span>';
+        
+        indicator.appendChild(dots);
         this.messagesContainer.appendChild(indicator);
         this.scrollToBottom();
     }
