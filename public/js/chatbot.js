@@ -183,7 +183,8 @@ class Chatbot {
                     this.saveConversationId(this.conversationId);
                 }
                 
-                this.addMessage('bot', data.response);
+                // Parse and structure the response intelligently
+                this.processAndDisplayResponse(data.response);
                 
                 // Trigger cart badge update if response mentions cart-related actions
                 if (this.isCartAction(data.response)) {
@@ -200,6 +201,117 @@ class Chatbot {
         }
     }
     
+    processAndDisplayResponse(text) {
+        // Try to detect and parse structured content from plain text
+        const structured = this.detectStructuredContent(text);
+        
+        if (structured) {
+            this.addMessage('bot', text, structured);
+        } else {
+            this.addMessage('bot', text);
+        }
+    }
+    
+    detectStructuredContent(text) {
+        // Detect product list (numbered with **name** - $price pattern)
+        if (this.isProductList(text)) {
+            return {
+                type: 'product_list',
+                data: this.parseProductList(text)
+            };
+        }
+        
+        // Detect action confirmation (contains ✓ or mentions "añadido/agregado al carrito")
+        if (this.isActionConfirmation(text)) {
+            return {
+                type: 'action_confirmation',
+                data: this.parseActionConfirmation(text)
+            };
+        }
+        
+        return null;
+    }
+    
+    isProductList(text) {
+        // Check if text contains numbered list with product pattern: 1. **name** - $price
+        const productPattern = /\d+\.\s*\*\*[^*]+\*\*\s*-\s*\$[\d,.]+/;
+        return productPattern.test(text);
+    }
+    
+    parseProductList(text) {
+        const products = [];
+        
+        // Extract intro text (everything before first numbered item)
+        const introMatch = text.match(/^([\s\S]*?)(?=\d+\.\s*\*\*)/);
+        const intro = introMatch ? introMatch[1].trim() : '';
+        
+        // Extract outro text (everything after last product)
+        const productSection = text.match(/\d+\.\s*\*\*[\s\S]*/)[0];
+        const outro = text.substring(text.indexOf(productSection) + productSection.length).trim();
+        
+        // Parse each product: 1. **Name** - $Price *Description*
+        const productRegex = /\d+\.\s*\*\*([^*]+)\*\*\s*-\s*\$([\d,.]+)(?:\s*\*([^*]*)\*)?/g;
+        let match;
+        
+        while ((match = productRegex.exec(text)) !== null) {
+            products.push({
+                name: match[1].trim(),
+                price: parseFloat(match[2].replace(',', '')),
+                currency: 'USD',
+                description: match[3] ? match[3].trim() : null
+            });
+        }
+        
+        return {
+            intro,
+            products,
+            outro
+        };
+    }
+    
+    isActionConfirmation(text) {
+        const confirmationKeywords = [
+            'añadido al carrito',
+            'agregado al carrito',
+            'añadí',
+            'agregué',
+            'he añadido',
+            'he agregado',
+            'eliminado del carrito',
+            'removido del carrito'
+        ];
+        
+        const lowerText = text.toLowerCase();
+        return confirmationKeywords.some(keyword => lowerText.includes(keyword));
+    }
+    
+    parseActionConfirmation(text) {
+        const isSuccess = !/error|problema|no se pudo|falló/i.test(text);
+        
+        // Try to extract quantity and product name
+        const quantityMatch = text.match(/(\d+)\s*(?:unidad|unidades)?\s*(?:de)?\s*([^.]+?)(?:\s*al carrito|\s*ha|\s*fueron)/i);
+        
+        let items = [];
+        if (quantityMatch) {
+            items.push({
+                name: quantityMatch[2].trim(),
+                quantity: parseInt(quantityMatch[1])
+            });
+        }
+        
+        // Try to extract total
+        const totalMatch = text.match(/total[^$]*\$([\d,.]+)/i);
+        const total = totalMatch ? parseFloat(totalMatch[1].replace(',', '')) : undefined;
+        
+        return {
+            success: isSuccess,
+            message: text.split('.')[0] + '.',
+            items,
+            total,
+            currency: 'USD'
+        };
+    }
+
     isCartAction(message) {
         // Check if the bot response indicates a cart action occurred
         const cartKeywords = [
@@ -309,20 +421,196 @@ class Chatbot {
         }
     }
 
-    addMessage(role, content) {
+    addMessage(role, content, structured = null) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${role}-message`;
-        messageDiv.textContent = content;
         
+        // Add avatar for bot messages
+        if (role === 'bot') {
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '🤖';
+            messageDiv.appendChild(avatar);
+        }
+        
+        // Create message content container
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        // Render structured content if provided, otherwise plain text
+        if (structured) {
+            contentDiv.innerHTML = this.renderStructuredContent(structured);
+        } else {
+            contentDiv.textContent = content;
+        }
+        
+        messageDiv.appendChild(contentDiv);
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
+    }
+    
+    renderStructuredContent(structured) {
+        switch (structured.type) {
+            case 'product_list':
+                return this.renderProductList(structured.data);
+            case 'product_info':
+                return this.renderProductInfo(structured.data);
+            case 'action_confirmation':
+                return this.renderActionConfirmation(structured.data);
+            case 'cart_summary':
+                return this.renderCartSummary(structured.data);
+            default:
+                return structured.data.message || '';
+        }
+    }
+    
+    renderProductList(data) {
+        // Handle both formats: array of products or {intro, products, outro}
+        let intro = '';
+        let products = [];
+        let outro = '';
+        
+        if (Array.isArray(data)) {
+            products = data;
+        } else if (data.products) {
+            intro = data.intro || '';
+            products = data.products;
+            outro = data.outro || '';
+        }
+        
+        if (!products || products.length === 0) {
+            return '<p>No se encontraron productos.</p>';
+        }
+        
+        let html = '';
+        
+        // Add intro text if present
+        if (intro) {
+            html += `<p style="margin-bottom: 1rem;">${this.escapeHtml(intro)}</p>`;
+        }
+        
+        // Render products
+        const maxDisplay = 10;
+        products.slice(0, maxDisplay).forEach((product, index) => {
+            if (index > 0) html += '<div class="product-divider"></div>';
+            html += `
+                <div class="product-info">
+                    <div class="product-name">${index + 1}. ${this.escapeHtml(product.name)}</div>
+                    <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
+                    ${product.description ? `<div class="product-stock">${this.escapeHtml(product.description)}</div>` : ''}
+                    ${product.stock ? `<div class="product-stock">Stock: ${product.stock}</div>` : ''}
+                </div>
+            `;
+        });
+        
+        if (products.length > maxDisplay) {
+            html += '<div class="product-divider"></div>';
+            html += `<p style="color: var(--text-light); font-size: 0.9em;">... y ${products.length - maxDisplay} productos más</p>`;
+        }
+        
+        // Add outro text if present
+        if (outro) {
+            html += `<p style="margin-top: 1rem; color: var(--text-light); font-size: 0.95em;">${this.escapeHtml(outro)}</p>`;
+        }
+        
+        return html;
+    }
+    
+    renderProductInfo(product) {
+        return `
+            <div class="product-info">
+                <div class="product-name">${this.escapeHtml(product.name)}</div>
+                <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
+                ${product.description ? `<p style="margin-top: 0.5rem; color: var(--text-light);">${this.escapeHtml(product.description)}</p>` : ''}
+                ${product.stock ? `<div class="product-stock">Stock disponible: ${product.stock} unidades</div>` : ''}
+            </div>
+        `;
+    }
+    
+    renderActionConfirmation(data) {
+        const iconClass = data.success ? 'success' : 'error';
+        const icon = data.success ? '✓' : '✗';
+        
+        let html = `
+            <div class="confirmation-message">
+                <div class="confirmation-icon ${iconClass}">${icon}</div>
+                <div class="confirmation-details">
+                    <div><strong>${this.escapeHtml(data.message)}</strong></div>
+        `;
+        
+        if (data.items && data.items.length > 0) {
+            data.items.forEach(item => {
+                html += `
+                    <div class="confirmation-item">
+                        ${this.escapeHtml(item.name)} × ${item.quantity}
+                        ${item.price ? ` - ${this.formatPrice(item.price, item.currency)}` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        if (data.total !== undefined) {
+            html += `
+                <div class="confirmation-total">
+                    Total del carrito: ${this.formatPrice(data.total, data.currency || 'USD')}
+                </div>
+            `;
+        }
+        
+        html += `
+                </div>
+            </div>
+        `;
+        
+        return html;
+    }
+    
+    renderCartSummary(data) {
+        if (!data.items || data.items.length === 0) {
+            return '<p>Tu carrito está vacío. <a href="/products" style="color: var(--main-color);">Ver productos</a></p>';
+        }
+        
+        let html = '<div><strong>Tu carrito:</strong></div>';
+        data.items.forEach(item => {
+            html += `
+                <div class="confirmation-item">
+                    ${this.escapeHtml(item.name)} × ${item.quantity} - ${this.formatPrice(item.price, item.currency)}
+                </div>
+            `;
+        });
+        
+        html += `
+            <div class="confirmation-total">
+                Total: ${this.formatPrice(data.total, data.currency || 'USD')}
+            </div>
+        `;
+        
+        return html;
+    }
+    
+    formatPrice(amount, currency = 'USD') {
+        return new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: currency
+        }).format(amount);
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     showTypingIndicator() {
         const indicator = document.createElement('div');
         indicator.className = 'typing-indicator';
         indicator.id = 'typing-indicator';
-        indicator.innerHTML = '<span></span><span></span><span></span>';
+        
+        const dots = document.createElement('div');
+        dots.className = 'typing-indicator-dots';
+        dots.innerHTML = '<span></span><span></span><span></span>';
+        
+        indicator.appendChild(dots);
         this.messagesContainer.appendChild(indicator);
         this.scrollToBottom();
     }
