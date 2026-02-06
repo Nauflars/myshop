@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\ProcessCheckout;
+use App\Domain\Entity\User;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * ProcessCheckoutTool - AI Tool for processing orders
@@ -18,18 +20,18 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('ProcessCheckout', 'Complete the order, update stock, and clear cart. Requires userId. Returns order number and confirmation.')]
+#[AsTool('ProcessCheckout', 'Complete the order, update stock, and clear cart for the authenticated user. Returns order number and confirmation.')]
 class ProcessCheckoutTool
 {
     public function __construct(
-        private readonly ProcessCheckout $processCheckout
+        private readonly ProcessCheckout $processCheckout,
+        private readonly Security $security
     ) {
     }
     
     /**
      * Execute the tool with parameters from AI agent
      *
-     * @param string $userId The UUID of the user placing the order
      * @return array{
      *     success: bool,
      *     data: array{
@@ -42,20 +44,22 @@ class ProcessCheckoutTool
      *     message: string
      * }
      */
-    public function __invoke(string $userId): array
+    public function __invoke(): array
     {
         try {
-            // Validate input
-            if (empty(trim($userId))) {
+            // Get current authenticated user
+            $user = $this->security->getUser();
+            
+            if (!$user instanceof User) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'User ID is required.',
+                    'message' => 'User must be authenticated to checkout.',
                 ];
             }
             
             // Delegate to Application layer use case
-            $result = $this->processCheckout->execute(trim($userId));
+            $result = $this->processCheckout->execute($user->getId());
             
             if (!$result['success']) {
                 return [

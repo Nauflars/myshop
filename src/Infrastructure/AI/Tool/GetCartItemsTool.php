@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\GetCartItems;
+use App\Domain\Entity\User;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * GetCartItemsTool - AI Tool for viewing shopping cart
+ * 
+ * DISABLED: Use GetCartSummaryTool instead for better Spanish descriptions.
  * 
  * This tool enables the AI agent to retrieve the user's current shopping cart contents.
  * It delegates to the GetCartItems use case.
@@ -18,18 +22,18 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('GetCartItems', 'View current cart contents with product names, quantities, prices, and total amount. Requires userId.')]
+// #[AsTool('GetCartItems', 'View current cart contents with product names, quantities, prices, and total amount for the authenticated user.')]
 class GetCartItemsTool
 {
     public function __construct(
-        private readonly GetCartItems $getCartItems
+        private readonly GetCartItems $getCartItems,
+        private readonly Security $security
     ) {
     }
     
     /**
      * Execute the tool with parameters from AI agent
      *
-     * @param string $userId The UUID of the user whose cart to retrieve
      * @return array{
      *     success: bool,
      *     data: array{
@@ -49,20 +53,22 @@ class GetCartItemsTool
      *     message: string
      * }
      */
-    public function __invoke(string $userId): array
+    public function __invoke(): array
     {
         try {
-            // Validate input
-            if (empty(trim($userId))) {
+            // Get current authenticated user
+            $user = $this->security->getUser();
+            
+            if (!$user instanceof User) {
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'User ID is required.',
+                    'message' => 'User must be authenticated to view cart.',
                 ];
             }
             
             // Delegate to Application layer use case
-            $result = $this->getCartItems->execute(trim($userId));
+            $result = $this->getCartItems->execute($user->getId());
             
             if (!$result['found']) {
                 return [
