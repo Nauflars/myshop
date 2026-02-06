@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Service\UnansweredQuestionCapture;
+use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
 use App\Infrastructure\AI\Service\ConversationManager;
 use App\Infrastructure\AI\Service\RoleAwareAssistant;
@@ -28,6 +30,7 @@ class ChatbotController extends AbstractController
         private readonly ConversationManager $conversationManager,
         private readonly RoleAwareAssistant $roleAwareAssistant,
         private readonly Security $security,
+        private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
         #[Autowire(service: 'ai.agent.openAiAgent')]
         private readonly AgentInterface $agent
     ) {
@@ -97,7 +100,17 @@ class ChatbotController extends AbstractController
                 error_log('Symfony AI Agent Error: ' . $e->getMessage());
                 error_log('Stack trace: ' . $e->getTraceAsString());
                 
-                $assistantResponse = "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
+                // Capture as unanswered question for spec-006 (FR-001 to FR-008)
+                $captureResult = $this->unansweredQuestionCapture->capture(
+                    questionText: $userMessage,
+                    user: $user,
+                    userRole: $user->getRoles()[0] ?? 'ROLE_CUSTOMER',
+                    reasonCategory: UnansweredQuestion::REASON_TOOL_ERROR,
+                    conversationId: $conversationId
+                );
+                
+                // Use polite fallback message from capture service
+                $assistantResponse = $captureResult['fallbackMessage'] ?? "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
             }
             
             // Save assistant response to database
