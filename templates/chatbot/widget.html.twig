@@ -1,28 +1,24 @@
-{# Chatbot Widget - Embedded in base.html.twig #}
+{# Chatbot Widget - Updated in spec-003 with clear chat button #}
 <div id="chatbot-widget" class="chatbot-widget">
     <div class="chatbot-header">
         <h6 class="mb-0">
-            <i class="bi bi-robot"></i> Shopping Assistant
+            <i class="bi bi-robot"></i> Asistente de Compras
         </h6>
-        <button type="button" class="btn-close btn-close-white" id="chatbot-close"></button>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-light" id="chatbot-clear" title="Limpiar conversación">
+                <i class="bi bi-trash"></i>
+            </button>
+            <button type="button" class="btn-close btn-close-white" id="chatbot-close"></button>
+        </div>
     </div>
     <div class="chatbot-messages" id="chatbot-messages">
-        <div class="chatbot-message bot">
-            <div class="message-content">
-                Hello! I'm your shopping assistant. How can I help you today?
-                <div class="quick-replies mt-2">
-                    <button class="btn btn-sm btn-outline-primary quick-reply">Search products</button>
-                    <button class="btn btn-sm btn-outline-primary quick-reply">Check my cart</button>
-                    <button class="btn btn-sm btn-outline-primary quick-reply">Track order</button>
-                </div>
-            </div>
-        </div>
+        {# Messages will be loaded by JavaScript #}
     </div>
     <div class="chatbot-input">
         <input type="text" 
                class="form-control" 
                id="chatbot-input" 
-               placeholder="Type your message...">
+               placeholder="Escribe tu mensaje...">
         <button type="button" class="btn btn-primary" id="chatbot-send">
             <i class="bi bi-send-fill"></i>
         </button>

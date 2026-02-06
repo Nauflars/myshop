@@ -23,6 +23,9 @@ services:
     App\Domain\Repository\OrderRepositoryInterface:
         class: App\Infrastructure\Repository\DoctrineOrderRepository
 
+    App\Domain\Repository\ConversationRepositoryInterface:
+        class: App\Infrastructure\Repository\DoctrineConversationRepository
+
     # Controllers
     App\Infrastructure\Controller\:
         resource: '../src/Infrastructure/Controller/'
@@ -44,9 +47,9 @@ services:
         tags: ['ai.tool']
         public: true
 
-    # AI Agents
-    App\Infrastructure\AI\Agent\:
-        resource: '../src/Infrastructure/AI/Agent/'
+    # AI Agents (spec-003 will add Conversation persistence)
+    # App\Infrastructure\AI\Agent\:
+    #     resource: '../src/Infrastructure/AI/Agent/'
 
     # Chatbot Services (commented out - stub implementation only)
     # App\Infrastructure\Chatbot\:
