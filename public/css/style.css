@@ -1038,6 +1038,8 @@ input[type="number"]::-webkit-outer-spin-button {
     overflow-y: auto;
     padding: 1rem;
     max-height: 400px;
+    display: flex;
+    flex-direction: column;
 }
 
 .chatbot-input {
@@ -1239,24 +1241,190 @@ input[type="number"]::-webkit-outer-spin-button {
     background-color: var(--background-color);
 }
 
+/* Chat Messages - Enhanced styling for better distinction */
 .chat-message {
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    max-width: 80%;
-    word-wrap: break-word;
+    display: flex;
+    margin-bottom: 1rem;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .user-message {
-    align-self: flex-end;
-    background: var(--main-color);
-    color: var(--white);
+    justify-content: flex-end;
 }
 
 .bot-message {
-    align-self: flex-start;
-    background: var(--white);
+    justify-content: flex-start;
+}
+
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+    margin-right: 0.5rem;
+    background: linear-gradient(135deg, var(--main-color), var(--main-color-light));
+    color: var(--white);
+}
+
+.message-content {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    max-width: 75%;
+    word-wrap: break-word;
+    line-height: 1.5;
+}
+
+.user-message .message-content {
+    background: var(--main-color);
+    color: var(--white);
+    border-radius: 12px 12px 4px 12px;
+}
+
+.bot-message .message-content {
+    background: var(--background-color);
     color: var(--text-color);
     border: 1px solid var(--table-border-right);
+    border-radius: 12px 12px 12px 4px;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    animation: messageSlideIn 0.3s ease-out;
+}
+
+.typing-indicator::before {
+    content: '🤖';
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+.typing-indicator-dots {
+    display: flex;
+    gap: 4px;
+    padding: 0.75rem 1rem;
+    background: var(--background-color);
+    border: 1px solid var(--table-border-right);
+    border-radius: 12px 12px 12px 4px;
+}
+
+.typing-indicator-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--grey-color);
+    animation: typingDot 1.4s infinite;
+}
+
+.typing-indicator-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Product Card Styling */
+.product-info {
+    margin: 0.5rem 0;
+}
+
+.product-info strong {
+    color: var(--main-color);
+    font-weight: 600;
+}
+
+.product-name {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+}
+
+.product-price {
+    color: var(--success-color);
+    font-weight: 700;
+    font-size: 1.1em;
+}
+
+.product-stock {
+    font-size: 0.9em;
+    color: var(--text-light);
+}
+
+.product-divider {
+    border-top: 1px solid var(--table-border-right);
+    margin: 0.75rem 0;
+}
+
+/* Action Confirmation Styling */
+.confirmation-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.confirmation-icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.confirmation-icon.success {
+    color: var(--success-color);
+}
+
+.confirmation-icon.error {
+    color: var(--red-color);
+}
+
+.confirmation-details {
+    flex: 1;
+}
+
+.confirmation-item {
+    margin-bottom: 0.25rem;
+}
+
+.confirmation-total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--table-border-right);
+    font-weight: 600;
+    color: var(--main-color);
 }
 
 .chatbot-input {
