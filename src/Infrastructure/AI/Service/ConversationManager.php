@@ -4,118 +4,81 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\AI\Service;
 
-use Symfony\Component\HttpFoundation\RequestStack;
+use App\Application\UseCase\AI\Conversation\ClearConversation;
+use App\Application\UseCase\AI\Conversation\LoadConversation;
+use App\Application\UseCase\AI\Conversation\SaveConversation;
+use App\Domain\Entity\User;
 
 /**
- * ConversationManager - Manages conversation history using Symfony session
+ * ConversationManager Service
  * 
- * This service stores and retrieves conversation context for multi-turn AI interactions.
- * Implements conversation memory to enable contextual follow-up questions.
+ * Infrastructure service for managing conversation persistence in the chatbot.
+ * Orchestrates conversation use cases and provides a clean API for controllers.
  * 
- * Architecture: Infrastructure layer service (session management)
- * DDD Role: Technical adapter for conversation persistence
+ * Updated in spec-003 to use database persistence instead of sessions.
  */
-class ConversationManager
+final class ConversationManager
 {
-    private const SESSION_KEY = 'ai_conversation_history';
-    private const MAX_MESSAGES = 20; // Keep last 20 messages for context
-    
     public function __construct(
-        private readonly RequestStack $requestStack
+        private readonly SaveConversation $saveConversation,
+        private readonly LoadConversation $loadConversation,
+        private readonly ClearConversation $clearConversation
     ) {
     }
-    
+
     /**
-     * Add a message to the conversation history
-     *
-     * @param string $role Either 'user' or 'assistant'
-     * @param string $content The message content
-     * @param array<string, mixed> $metadata Optional metadata (tool usage, tokens, etc.)
+     * Save a user message to the conversation
      */
-    public function addMessage(string $role, string $content, array $metadata = []): void
+    public function saveUserMessage(User $user, ?string $conversationId, string $content): array
     {
-        $session = $this->requestStack->getSession();
-        $history = $session->get(self::SESSION_KEY, []);
+        return $this->saveConversation->execute($user, $conversationId, 'user', $content);
+    }
+
+    /**
+     * Save an assistant response to the conversation
+     */
+    public function saveAssistantMessage(
+        User $user,
+        string $conversationId,
+        string $content,
+        ?array $toolCalls = null
+    ): array {
+        return $this->saveConversation->execute($user, $conversationId, 'assistant', $content, $toolCalls);
+    }
+
+    /**
+     * Load conversation history for AI context
+     */
+    public function loadConversation(User $user, string $conversationId): array
+    {
+        return $this->loadConversation->execute($user, $conversationId);
+    }
+
+    /**
+     * Clear/delete a conversation
+     */
+    public function clearConversation(User $user, string $conversationId): array
+    {
+        return $this->clearConversation->execute($user, $conversationId);
+    }
+
+    /**
+     * Format messages for AI agent context
+     * 
+     * @param array $messages Array of message objects from LoadConversation
+     * @return array Array in format expected by Symfony AI
+     */
+    public function formatMessagesForAI(array $messages): array
+    {
+        $formatted = [];
         
-        $message = [
-            'role' => $role,
-            'content' => $content,
-            'timestamp' => time(),
-            'metadata' => $metadata,
-        ];
-        
-        $history[] = $message;
-        
-        // Limit history size to prevent session bloat
-        if (count($history) > self::MAX_MESSAGES) {
-            $history = array_slice($history, -self::MAX_MESSAGES);
+        foreach ($messages as $msg) {
+            $formatted[] = [
+                'role' => $msg['role'],
+                'content' => $msg['content'],
+            ];
         }
         
-        $session->set(self::SESSION_KEY, $history);
-    }
-    
-    /**
-     * Get the complete conversation history
-     *
-     * @return array<int, array{role: string, content: string, timestamp: int, metadata: array}>
-     */
-    public function getHistory(): array
-    {
-        $session = $this->requestStack->getSession();
-        return $session->get(self::SESSION_KEY, []);
-    }
-    
-    /**
-     * Get conversation history formatted for AI agent
-     * Returns only role and content (excludes metadata)
-     *
-     * @return array<int, array{role: string, content: string}>
-     */
-    public function getFormattedHistory(): array
-    {
-        $history = $this->getHistory();
-        
-        return array_map(function ($message) {
-            return [
-                'role' => $message['role'],
-                'content' => $message['content'],
-            ];
-        }, $history);
-    }
-    
-    /**
-     * Clear the conversation history
-     * Called on logout or when user explicitly resets conversation
-     */
-    public function clearHistory(): void
-    {
-        $session = $this->requestStack->getSession();
-        $session->remove(self::SESSION_KEY);
-    }
-    
-    /**
-     * Get conversation ID for debugging and monitoring
-     * Uses session ID as conversation identifier
-     */
-    public function getConversationId(): string
-    {
-        $session = $this->requestStack->getSession();
-        return $session->getId();
-    }
-    
-    /**
-     * Get the number of messages in current conversation
-     */
-    public function getMessageCount(): int
-    {
-        return count($this->getHistory());
-    }
-    
-    /**
-     * Check if conversation has context (history exists)
-     */
-    public function hasContext(): bool
-    {
-        return $this->getMessageCount() > 0;
+        return $formatted;
     }
 }
