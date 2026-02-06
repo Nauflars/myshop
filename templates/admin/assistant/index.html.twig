@@ -1,0 +1,386 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ pageTitle }} - MyShop Admin{% endblock %}
+
+{% block body_content %}
+<div class="admin-assistant-container">
+    <div class="assistant-header">
+        <h2>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.5rem;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Asistente Virtual para Administradores
+        </h2>
+        <div class="assistant-actions">
+            <button id="clearContextBtn" class="btn-secondary" title="Limpiar contexto conversacional">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+                Limpiar Contexto
+            </button>
+            <button id="newConversationBtn" class="btn-secondary" title="Iniciar nueva conversación">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nueva Conversación
+            </button>
+        </div>
+    </div>
+
+    <div class="assistant-info">
+        <div class="info-badge">
+            <strong>Rol:</strong> Asistente Operativo Interno
+        </div>
+        <div class="info-badge">
+            <strong>Idioma:</strong> Español Exclusivamente
+        </div>
+        <div class="info-badge">
+            <strong>Mensajes:</strong> <span id="messageCount">{{ messageCount }}</span>
+        </div>
+    </div>
+
+    <div class="assistant-capabilities">
+        <details>
+            <summary><strong>📋 Capacidades y Comandos</strong></summary>
+            <div class="capabilities-grid">
+                <div class="capability-section">
+                    <h4>🛍️ Gestión de Productos</h4>
+                    <ul>
+                        <li><code>Crea un producto llamado [nombre]</code></li>
+                        <li><code>Actualiza el precio de [producto] a [precio]</code></li>
+                        <li><code>Elimina el producto [nombre]</code></li>
+                        <li><code>Cambia el stock de [producto] a [cantidad]</code></li>
+                    </ul>
+                </div>
+                <div class="capability-section">
+                    <h4>📊 Análisis de Ventas</h4>
+                    <ul>
+                        <li><code>¿Cómo van las ventas?</code></li>
+                        <li><code>¿Cuál es el producto más vendido?</code></li>
+                        <li><code>¿Cuánto ha vendido [producto]?</code></li>
+                        <li><code>¿Quiénes son los mejores clientes?</code></li>
+                    </ul>
+                </div>
+            </div>
+            <p class="capability-note">
+                <strong>Nota:</strong> Todas las acciones destructivas (eliminar, actualizar) requieren confirmación explícita.
+                El asistente te pedirá confirmar con "sí", "confirmar", "adelante", etc.
+            </p>
+        </details>
+    </div>
+
+    <div id="chatMessages" class="chat-messages">
+        {% if conversation.messages|length == 0 %}
+        <div class="welcome-message">
+            <h3>👋 ¡Bienvenido!</h3>
+            <p>Soy tu asistente virtual para tareas administrativas. Puedo ayudarte con:</p>
+            <ul>
+                <li>Crear, actualizar y eliminar productos</li>
+                <li>Consultar estadísticas de ventas</li>
+                <li>Analizar el rendimiento de productos</li>
+                <li>Identificar mejores clientes</li>
+            </ul>
+            <p><strong>¿En qué puedo ayudarte hoy?</strong></p>
+        </div>
+        {% else %}
+        {% for message in conversation.messages %}
+        <div class="message message-{{ message.sender }}">
+            <div class="message-header">
+                <strong>{{ message.sender == 'admin' ? 'Tú' : 'Asistente' }}</strong>
+                <span class="message-time">{{ message.sentAt|date('H:i') }}</span>
+            </div>
+            <div class="message-content">{{ message.messageText|nl2br }}</div>
+            {% if message.hasToolInvocations %}
+            <div class="message-tools">
+                <small>🛠️ Herramientas utilizadas</small>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="chat-input-container">
+        <form id="chatForm">
+            <textarea 
+                id="chatInput" 
+                placeholder="Escribe tu mensaje aquí... (ej: Crea un producto llamado...)" 
+                rows="3"
+                required
+            ></textarea>
+            <div class="input-actions">
+                <button type="submit" id="sendBtn" class="btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Enviar
+                </button>
+            </div>
+        </form>
+        <div id="statusMessage" class="status-message"></div>
+    </div>
+</div>
+
+<style>
+.admin-assistant-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+}
+
+.assistant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.assistant-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.assistant-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.assistant-info {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.info-badge {
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    border: 1px solid #e9ecef;
+}
+
+.assistant-capabilities {
+    padding: 1rem 1.5rem;
+    background: #fff3cd;
+    border-bottom: 1px solid #ffc107;
+}
+
+.assistant-capabilities summary {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.5rem 0;
+}
+
+.capabilities-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.capability-section h4 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+}
+
+.capability-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.capability-section li {
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.capability-section code {
+    background: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
+    font-size: 0.8125rem;
+}
+
+.capability-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-left: 3px solid #ffc107;
+    font-size: 0.875rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: #f8f9fa;
+}
+
+.welcome-message {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+    text-align: center;
+}
+
+.welcome-message h3 {
+    margin-top: 0;
+    color: #667eea;
+}
+
+.message {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.message-admin {
+    background: #e3f2fd;
+    margin-left: auto;
+    border: 1px solid #90caf9;
+}
+
+.message-assistant {
+    background: white;
+    margin-right: auto;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.message-time {
+    color: #6c757d;
+    font-size: 0.75rem;
+}
+
+.message-content {
+    line-height: 1.5;
+}
+
+.message-tools {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #dee2e6;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.chat-input-container {
+    padding: 1.5rem;
+    background: white;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+}
+
+#chatForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#chatInput {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+}
+
+#chatInput:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.status-message {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.status-message.show {
+    display: block;
+}
+
+.status-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.status-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+</style>
+
+<script src="{{ asset('js/admin-assistant.js') }}"></script>
+{% endblock %}
