@@ -183,7 +183,8 @@ class Chatbot {
                     this.saveConversationId(this.conversationId);
                 }
                 
-                this.addMessage('bot', data.response);
+                // Parse and structure the response intelligently
+                this.processAndDisplayResponse(data.response);
                 
                 // Trigger cart badge update if response mentions cart-related actions
                 if (this.isCartAction(data.response)) {
@@ -200,6 +201,117 @@ class Chatbot {
         }
     }
     
+    processAndDisplayResponse(text) {
+        // Try to detect and parse structured content from plain text
+        const structured = this.detectStructuredContent(text);
+        
+        if (structured) {
+            this.addMessage('bot', text, structured);
+        } else {
+            this.addMessage('bot', text);
+        }
+    }
+    
+    detectStructuredContent(text) {
+        // Detect product list (numbered with **name** - $price pattern)
+        if (this.isProductList(text)) {
+            return {
+                type: 'product_list',
+                data: this.parseProductList(text)
+            };
+        }
+        
+        // Detect action confirmation (contains ✓ or mentions "añadido/agregado al carrito")
+        if (this.isActionConfirmation(text)) {
+            return {
+                type: 'action_confirmation',
+                data: this.parseActionConfirmation(text)
+            };
+        }
+        
+        return null;
+    }
+    
+    isProductList(text) {
+        // Check if text contains numbered list with product pattern: 1. **name** - $price
+        const productPattern = /\d+\.\s*\*\*[^*]+\*\*\s*-\s*\$[\d,.]+/;
+        return productPattern.test(text);
+    }
+    
+    parseProductList(text) {
+        const products = [];
+        
+        // Extract intro text (everything before first numbered item)
+        const introMatch = text.match(/^([\s\S]*?)(?=\d+\.\s*\*\*)/);
+        const intro = introMatch ? introMatch[1].trim() : '';
+        
+        // Extract outro text (everything after last product)
+        const productSection = text.match(/\d+\.\s*\*\*[\s\S]*/)[0];
+        const outro = text.substring(text.indexOf(productSection) + productSection.length).trim();
+        
+        // Parse each product: 1. **Name** - $Price *Description*
+        const productRegex = /\d+\.\s*\*\*([^*]+)\*\*\s*-\s*\$([\d,.]+)(?:\s*\*([^*]*)\*)?/g;
+        let match;
+        
+        while ((match = productRegex.exec(text)) !== null) {
+            products.push({
+                name: match[1].trim(),
+                price: parseFloat(match[2].replace(',', '')),
+                currency: 'USD',
+                description: match[3] ? match[3].trim() : null
+            });
+        }
+        
+        return {
+            intro,
+            products,
+            outro
+        };
+    }
+    
+    isActionConfirmation(text) {
+        const confirmationKeywords = [
+            'añadido al carrito',
+            'agregado al carrito',
+            'añadí',
+            'agregué',
+            'he añadido',
+            'he agregado',
+            'eliminado del carrito',
+            'removido del carrito'
+        ];
+        
+        const lowerText = text.toLowerCase();
+        return confirmationKeywords.some(keyword => lowerText.includes(keyword));
+    }
+    
+    parseActionConfirmation(text) {
+        const isSuccess = !/error|problema|no se pudo|falló/i.test(text);
+        
+        // Try to extract quantity and product name
+        const quantityMatch = text.match(/(\d+)\s*(?:unidad|unidades)?\s*(?:de)?\s*([^.]+?)(?:\s*al carrito|\s*ha|\s*fueron)/i);
+        
+        let items = [];
+        if (quantityMatch) {
+            items.push({
+                name: quantityMatch[2].trim(),
+                quantity: parseInt(quantityMatch[1])
+            });
+        }
+        
+        // Try to extract total
+        const totalMatch = text.match(/total[^$]*\$([\d,.]+)/i);
+        const total = totalMatch ? parseFloat(totalMatch[1].replace(',', '')) : undefined;
+        
+        return {
+            success: isSuccess,
+            message: text.split('.')[0] + '.',
+            items,
+            total,
+            currency: 'USD'
+        };
+    }
+
     isCartAction(message) {
         // Check if the bot response indicates a cart action occurred
         const cartKeywords = [
@@ -352,26 +464,53 @@ class Chatbot {
         }
     }
     
-    renderProductList(products) {
+    renderProductList(data) {
+        // Handle both formats: array of products or {intro, products, outro}
+        let intro = '';
+        let products = [];
+        let outro = '';
+        
+        if (Array.isArray(data)) {
+            products = data;
+        } else if (data.products) {
+            intro = data.intro || '';
+            products = data.products;
+            outro = data.outro || '';
+        }
+        
         if (!products || products.length === 0) {
             return '<p>No se encontraron productos.</p>';
         }
         
         let html = '';
-        products.slice(0, 5).forEach((product, index) => {
+        
+        // Add intro text if present
+        if (intro) {
+            html += `<p style="margin-bottom: 1rem;">${this.escapeHtml(intro)}</p>`;
+        }
+        
+        // Render products
+        const maxDisplay = 10;
+        products.slice(0, maxDisplay).forEach((product, index) => {
             if (index > 0) html += '<div class="product-divider"></div>';
             html += `
                 <div class="product-info">
-                    <div class="product-name">${this.escapeHtml(product.name)}</div>
+                    <div class="product-name">${index + 1}. ${this.escapeHtml(product.name)}</div>
                     <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
+                    ${product.description ? `<div class="product-stock">${this.escapeHtml(product.description)}</div>` : ''}
                     ${product.stock ? `<div class="product-stock">Stock: ${product.stock}</div>` : ''}
                 </div>
             `;
         });
         
-        if (products.length > 5) {
+        if (products.length > maxDisplay) {
             html += '<div class="product-divider"></div>';
-            html += `<p style="color: var(--text-light); font-size: 0.9em;">... y ${products.length - 5} productos más</p>`;
+            html += `<p style="color: var(--text-light); font-size: 0.9em;">... y ${products.length - maxDisplay} productos más</p>`;
+        }
+        
+        // Add outro text if present
+        if (outro) {
+            html += `<p style="margin-top: 1rem; color: var(--text-light); font-size: 0.95em;">${this.escapeHtml(outro)}</p>`;
         }
         
         return html;
