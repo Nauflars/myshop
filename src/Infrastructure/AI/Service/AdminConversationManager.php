@@ -101,8 +101,11 @@ class AdminConversationManager
         $messages = [];
 
         foreach ($conversation->getMessages() as $message) {
-            $role = $message->isFromAdmin() ? 'user' : 'assistant';
-            $messages[] = new Message($role, $message->getMessageText());
+            if ($message->isFromAdmin()) {
+                $messages[] = Message::ofUser($message->getMessageText());
+            } else {
+                $messages[] = Message::ofAssistant($message->getMessageText());
+            }
         }
 
         return new MessageBag(...$messages);
