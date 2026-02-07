@@ -105,8 +105,3 @@ services:
 
     App\Application\Service\UnansweredQuestionCapture:
         public: true
-
-when@test:
-    services:
-        _defaults:
-            public: true
