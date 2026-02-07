@@ -27,9 +27,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T001 [P] [US1] Create admin-floating-assistant.js module with FAB component in public/js/admin-floating-assistant.js
-- [ ] T002 [P] [US1] Create admin-floating-assistant.css for floating button and panel styles in public/css/admin-floating-assistant.css
-- [ ] T003 [US1] Add floating assistant HTML structure to admin base template in templates/admin/base.html.twig
+- [X] T001 [P] [US1] Create admin-floating-assistant.js module with FAB component in public/js/admin-floating-assistant.js
+- [X] T002 [P] [US1] Create admin-floating-assistant.css for floating button and panel styles in public/css/admin-floating-assistant.css
+- [X] T003 [US1] Add floating assistant HTML structure to admin base template in templates/admin/base.html.twig
 - [ ] T004 [US1] Implement FAB open/close toggle with animation in admin-floating-assistant.js
 - [ ] T005 [US1] Implement panel state persistence in sessionStorage (open/closed status)
 - [ ] T006 [US1] Connect floating panel to existing AdminAssistantController POST /admin/assistant/chat endpoint
