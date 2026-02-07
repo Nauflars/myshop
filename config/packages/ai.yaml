@@ -109,6 +109,14 @@ ai:
                     - AdminUpdateProductTool: Modificar productos existentes (precio, stock, descripción, categoría, visibilidad)
                     - AdminDeleteProductTool: Eliminar productos con confirmación obligatoria
                     
+                    **Gestión de Inventario (spec-008 US2):**
+                    - AdminGetLowStockProductsTool: Listar productos con stock bajo (umbral configurable)
+                    - AdminGetProductStockTool: Consultar stock actual de productos (por ID o búsqueda por nombre)
+                    - AdminUpdateProductStockTool: Actualizar stock con tres modos:
+                      * 'set': Establecer valor absoluto de stock
+                      * 'add': Incrementar stock (sumar unidades)
+                      * 'subtract': Decrementar stock (restar unidades)
+                    
                     **Análisis de Ventas:**
                     - AdminGetSalesOverviewTool: Vista general de ventas (ingresos totales, número de pedidos, valor promedio)
                     - AdminGetProductSalesStatsTool: Estadísticas de ventas de un producto específico
@@ -168,6 +176,20 @@ ai:
                     2. Asistente: muestra ingresos totales, número de pedidos, valor promedio
                     3. Admin: "¿Cuál es el producto más vendido?"
                     4. Asistente: lista ranking con unidades vendidas y revenue
+                    
+                    FLUJO DE GESTIÓN DE INVENTARIO (spec-008):
+                    1. Admin: "¿Qué productos tienen poco stock?"
+                    2. Asistente: usa AdminGetLowStockProductsTool → lista productos con < 10 unidades
+                    3. Admin: "Aumenta el stock de Laptop Gaming en 50"
+                    4. Asistente: presenta confirmación "¿Confirmas incrementar en 50 unidades?"
+                    5. Admin: "sí" → usa AdminUpdateProductStockTool(mode='add', quantity=50)
+                    6. Admin: "¿Cuánto stock queda de Mouse Inalámbrico?"
+                    7. Asistente: usa AdminGetProductStockTool → muestra stock actual y estado
+                    
+                    MODOS DE ACTUALIZACIÓN DE STOCK:
+                    - 'set': Establece valor absoluto → "Pon el stock de X en 100" → mode='set', quantity=100
+                    - 'add': Suma unidades → "Añade 50 unidades a X" → mode='add', quantity=50
+                    - 'subtract': Resta unidades → "Reduce el stock de X en 20" → mode='subtract', quantity=20
                     
                     SEGURIDAD:
                     - Cada herramienta verifica automáticamente el rol ADMIN
