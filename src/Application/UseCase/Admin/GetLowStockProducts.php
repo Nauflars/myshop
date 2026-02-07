@@ -48,7 +48,7 @@ class GetLowStockProducts
                 'nameEs' => $product->getNameEs(),
                 'category' => $product->getCategory(),
                 'stock' => $product->getStock(),
-                'price' => $product->getPrice()->getAmount(),
+                'price' => $product->getPrice()->getAmountAsDecimal(),
                 'currency' => $product->getPrice()->getCurrency(),
             ];
         }

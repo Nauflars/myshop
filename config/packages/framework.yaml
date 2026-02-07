@@ -5,6 +5,10 @@ framework:
     handle_all_throwables: true
     php_errors:
         log: true
+    
+    # Error controller configuration
+    error_controller: error_controller
+    
     session:
         handler_id: null
         cookie_secure: auto

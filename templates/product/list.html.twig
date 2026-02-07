@@ -12,9 +12,16 @@
             <form id="search-form" class="row g-3">
                 <div class="col-md-4">
                     <label for="search-query" class="form-label">Search</label>
-                    <input type="text" class="form-control" id="search-query" name="q" placeholder="Search products...">
+                    <input type="text" class="form-control" id="search-query" name="q" placeholder="e.g., laptop for gaming, comfortable shoes...">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label for="search-mode" class="form-label">Search Mode</label>
+                    <select class="form-select" id="search-mode" name="mode">
+                        <option value="semantic" selected>🧠 Smart Search</option>
+                        <option value="keyword">🔤 Exact Words</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label for="category" class="form-label">Category</label>
                     <select class="form-select" id="category" name="category">
                         <option value="">All Categories</option>
@@ -25,17 +32,22 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="min-price" class="form-label">Min Price</label>
-                    <input type="number" class="form-control" id="min-price" name="minPrice" placeholder="0">
+                    <label for="limit" class="form-label">Results</label>
+                    <select class="form-select" id="limit" name="limit">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
-                <div class="col-md-2">
-                    <label for="max-price" class="form-label">Max Price</label>
-                    <input type="number" class="form-control" id="max-price" name="maxPrice" placeholder="1000">
-                </div>
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
                 </div>
             </form>
+            <small class="text-muted mt-2 d-block">
+                <strong>Smart Search:</strong> Understands meaning (e.g., "laptop for gaming" finds gaming computers)
+                <br>
+                <strong>Exact Words:</strong> Searches for exact keywords
+            </small>
         </div>
     </div>
 
@@ -63,27 +75,58 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadProducts() {
         const formData = new FormData(searchForm);
         const params = new URLSearchParams(formData);
+        const query = params.get('q');
+        const mode = params.get('mode') || 'semantic';
         
         productsContainer.innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
         
-        fetch(`/api/products?${params.toString()}`)
+        // Use semantic search endpoint if query is provided, otherwise list all products
+        const endpoint = query && query.trim() 
+            ? `/api/products/search?${params.toString()}` 
+            : `/api/products?category=${params.get('category') || ''}&limit=${params.get('limit') || 20}`;
+        
+        fetch(endpoint)
             .then(response => response.json())
-            .then(products => {
+            .then(data => {
+                // Handle both search results (SearchResult object) and direct product list
+                const products = data.products || data;
+                const searchInfo = data.metadata || null;
+                
                 if (products.length === 0) {
-                    productsContainer.innerHTML = '<div class="col-12"><p class="text-center text-muted">No products found.</p></div>';
+                    productsContainer.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <h5>No products found</h5>
+                                <p class="mb-0">Try adjusting your search criteria or using <strong>Smart Search</strong> mode</p>
+                            </div>
+                        </div>`;
                     return;
                 }
                 
-                productsContainer.innerHTML = products.map(product => `
+                // Show search metadata if available
+                let searchMetaHtml = '';
+                if (searchInfo) {
+                    const modeLabel = searchInfo.mode === 'semantic' ? '🧠 Smart Search' : '🔤 Exact Words';
+                    searchMetaHtml = `
+                        <div class="col-12 mb-3">
+                            <div class="alert alert-success">
+                                ${modeLabel}: Found <strong>${searchInfo.total_results}</strong> products in ${searchInfo.execution_time_ms}ms
+                                ${searchInfo.cache_hit ? ' <span class="badge bg-info">Cached</span>' : ''}
+                            </div>
+                        </div>`;
+                }
+                
+                productsContainer.innerHTML = searchMetaHtml + products.map(product => `
                     <div class="col-md-4 mb-4">
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">${escapeHtml(product.name)}</h5>
                                 <p class="card-text text-muted">${escapeHtml(product.category)}</p>
-                                <p class="card-text">${escapeHtml(product.description)}</p>
+                                <p class="card-text small">${escapeHtml(product.description.substring(0, 100))}${product.description.length > 100 ? '...' : ''}</p>
                                 <p class="card-text">
                                     <strong>Price:</strong> ${product.price.currency} ${(product.price.amount / 100).toFixed(2)}<br>
-                                    <strong>Stock:</strong> ${product.stock}${product.stock < 10 ? ' <span class="badge bg-warning">Low Stock</span>' : ''}
+                                    <strong>Stock:</strong> ${product.stock}${product.stock < 10 && product.stock > 0 ? ' <span class="badge bg-warning">Low Stock</span>' : ''}
+                                    ${product.similarity_score ? `<br><strong>Match:</strong> <span class="badge bg-success">${(product.similarity_score * 100).toFixed(0)}%</span>` : ''}
                                 </p>
                             </div>
                             <div class="card-footer">
@@ -107,7 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error loading products:', error);
-                productsContainer.innerHTML = '<div class="col-12"><p class="text-center text-danger">Error loading products. Please try again.</p></div>';
+                productsContainer.innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center">
+                            <h5>Error loading products</h5>
+                            <p class="mb-0">Please try again. If using Smart Search and no results appear, try <strong>Exact Words</strong> mode.</p>
+                        </div>
+                    </div>`;
             });
     }
     
@@ -122,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadProducts();
     });
     
-    // Load products on page load
+    // Load products on page load (without search query, just list all)
     loadProducts();
 });
 </script>

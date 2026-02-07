@@ -1,0 +1,5 @@
+# MongoDB Configuration for Semantic Search (spec-010)
+
+parameters:
+    env(MONGODB_URL): 'mongodb://root:rootpassword@mongodb:27017'
+    env(MONGODB_DATABASE): 'myshop'

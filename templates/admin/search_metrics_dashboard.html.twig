@@ -1,0 +1,282 @@
+{# T089: Admin Dashboard Widget for Search Metrics #}
+{# Add to templates/admin/dashboard.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Dashboard - Performance Metrics{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>Search Performance Metrics</h1>
+    <p class="text-muted">Real-time semantic search performance monitoring</p>
+    
+    {# Metrics Summary Cards #}
+    <div class="row mt-4">
+        {# Search Volume #}
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Searches</h5>
+                    <h2 class="card-text">{{ metrics.search.total|number_format }}</h2>
+                    <small class="text-muted">
+                        <i class="bi bi-search"></i> Semantic: {{ metrics.search.semantic|number_format }}
+                        <br>
+                        <i class="bi bi-keyboard"></i> Keyword: {{ metrics.search.keyword|number_format }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        {# Response Time #}
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Response Time</h5>
+                    <h2 class="card-text">{{ metrics.performance.semantic.p50|number_format(0) }}ms</h2>
+                    <small class="text-muted">
+                        p50 (median)
+                        <br>
+                        p95: {{ metrics.performance.semantic.p95|number_format(0) }}ms
+                        <br>
+                        p99: {{ metrics.performance.semantic.p99|number_format(0) }}ms
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        {# Cache Performance #}
+        <div class="col-md-3">
+            <div class="card {% if metrics.cache.hit_rate >= 80 %}border-success{% else %}border-warning{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Cache Hit Rate</h5>
+                    <h2 class="card-text {% if metrics.cache.hit_rate >= 80 %}text-success{% else %}text-warning{% endif %}">
+                        {{ metrics.cache.hit_rate|number_format(1) }}%
+                    </h2>
+                    <small class="text-muted">
+                        Hits: {{ metrics.cache.hits|number_format }}
+                        <br>
+                        Misses : {{ metrics.cache.misses|number_format }}
+                        <br>
+                        {% if metrics.cache.hit_rate >= 80 %}
+                            <span class="text-success"><i class="bi bi-check-circle"></i> Target met (80%)</span>
+                        {% else %}
+                            <span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Below target (80%)</span>
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        {# OpenAI Cost #}
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">OpenAI API Cost</h5>
+                    <h2 class="card-text">${{ metrics.openai.estimated_cost_usd|number_format(2) }}</h2>
+                    <small class="text-muted">
+                        Calls: {{ metrics.openai.calls|number_format }}
+                        <br>
+                        Tokens: ~{{ (metrics.openai.estimated_tokens / 1000)|number_format(0) }}K
+                        <br>
+                        Savings: ~${{ ((metrics.cache.hits * 0.00002)|number_format(2)) }} (cache)
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# Performance Chart #}
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Response Time Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="responseTimeChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Search Mode Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="searchModeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# MongoDB Performance #}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">MongoDB Performance</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Total Queries:</td>
+                            <td class="text-end"><strong>{{ metrics.mongodb.queries|number_format }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Average Query Time:</td>
+                            <td class="text-end"><strong>{{ metrics.performance.mongodb.p50|number_format(0) }}ms</strong></td>
+                        </tr>
+                        <tr>
+                            <td>p95 Query Time:</td>
+                            <td class="text-end"><strong>{{ metrics.performance.mongodb.p95|number_format(0) }}ms</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Empty Search Rate</h5>
+                </div>
+                <div class="card-body">
+                    {% set total_semantic = metrics.search.semantic > 0 ? metrics.search.semantic : 1 %}
+                    {% set empty_rate_semantic = (metrics.search.empty_results_semantic / total_semantic * 100) %}
+                    
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Semantic Searches:</td>
+                            <td class="text-end">
+                                <strong>{{ metrics.search.empty_results_semantic|number_format }}</strong> / {{ metrics.search.semantic|number_format }}
+                                <span class="badge bg-secondary">{{ empty_rate_semantic|number_format(1) }}%</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Keyword Searches:</td>
+                            <td class="text-end">
+                                <strong>{{ metrics.search.empty_results_keyword|number_format }}</strong> / {{ metrics.search.keyword|number_format }}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    {% if empty_rate_semantic > 20 %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> High empty result rate may indicate catalog gaps
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# Health Status #}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Health</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ path('health_check_detailed') }}" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-heart-pulse"></i> View Detailed Health Check
+                    </a>
+                    <span class="text-muted ms-2">Check MongoDB, Redis, and OpenAI connectivity</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+// Response Time Chart
+const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+new Chart(responseTimeCtx, {
+    type: 'bar',
+    data: {
+        labels: ['p50', 'p95', 'p99'],
+        datasets: [
+            {
+                label: 'Semantic Search (ms)',
+                data: [
+                    {{ metrics.performance.semantic.p50 }},
+                    {{ metrics.performance.semantic.p95 }},
+                    {{ metrics.performance.semantic.p99 }}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Keyword Search (ms)',
+                data: [
+                    {{ metrics.performance.keyword.p50 }},
+                    {{ metrics.performance.keyword.p95 }},
+                    {{ metrics.performance.keyword.p99 }}
+                ],
+                backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Response Time (ms)'
+                }
+            }
+        },
+        plugins: {
+            title: {
+                display: true,
+                text: 'Response Time Percentiles'
+            }
+        }
+    }
+});
+
+// Search Mode Pie Chart
+const searchModeCtx = document.getElementById('searchModeChart').getContext('2d');
+new Chart(searchModeCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Semantic', 'Keyword'],
+        datasets: [{
+            data: [
+                {{ metrics.search.semantic }},
+                {{ metrics.search.keyword }}
+            ],
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.5)',
+                'rgba(255, 159, 64, 0.5)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Auto-refresh every 30 seconds
+setTimeout(() => {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

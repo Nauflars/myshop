@@ -2,10 +2,13 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Service\ErrorMessageTranslator;
+use App\Application\Service\SearchFacade;
 use App\Application\UseCase\SearchProduct;
 use App\Domain\Entity\Product;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
+use App\Domain\ValueObject\SearchQuery;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +21,9 @@ class ProductController extends AbstractController
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly SearchProduct $searchProduct
+        private readonly SearchProduct $searchProduct,
+        private readonly SearchFacade $searchFacade,
+        private readonly ErrorMessageTranslator $errorTranslator
     ) {
     }
 
@@ -38,6 +43,63 @@ class ProductController extends AbstractController
         );
 
         return $this->json(array_map([$this, 'serializeProduct'], $products));
+    }
+
+    /**
+     * Semantic/Keyword search endpoint
+     * 
+     * Implements spec-010 T044-T047: Search with mode parameter and fallback handling
+     * 
+     * @example GET /api/products/search?q=laptop for gaming&mode=semantic&limit=10
+     * @example GET /api/products/search?q=phone&mode=keyword& category=Electronics
+     */
+    #[Route('/search', name: 'api_product_search', methods: ['GET'])]
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->query->get('q', '');
+        $mode = $request->query->get('mode', 'semantic');
+        $limit = (int) $request->query->get('limit', 10);
+        $offset = (int) $request->query->get('offset', 0);
+        $minSimilarity = (float) $request->query->get('min_similarity', 0.3);
+        $category = $request->query->get('category');
+        
+        // DEBUG: Force explicit response for testing
+        $debug = $request->query->get('debug', false);
+
+        if (empty($query)) {
+            return $this->json([
+                'error' => 'Query parameter "q" is required',
+                'example' => '/api/products/search?q=laptop&mode=semantic',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $searchQuery = new SearchQuery(
+                query: $query,
+                limit: $limit,
+                offset: $offset,
+                minSimilarity: $minSimilarity,
+                category: $category
+            );
+
+            $result = $this->searchFacade->search($searchQuery, $mode);
+
+            return $this->json($result->toArray());
+
+        } catch (\InvalidArgumentException $e) {
+            // T094: User-friendly validation errors (expose message as it's user-facing)
+            $errorData = $this->errorTranslator->translateWithStatus($e, 'search');
+            return $this->json([
+                'error' => $errorData['message'],
+            ], $errorData['status_code']);
+
+        } catch (\Exception $e) {
+            // T094: User-friendly error messages (hide technical details)
+            $errorData = $this->errorTranslator->translateWithStatus($e, 'search');
+            return $this->json([
+                'error' => $errorData['message'],
+            ], $errorData['status_code']);
+        }
     }
 
     #[Route('/{id}', name: 'api_product_show', methods: ['GET'])]

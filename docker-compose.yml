@@ -14,15 +14,20 @@ services:
     environment:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-rootpassword}@mysql:3306/${MYSQL_DATABASE:-myshop}
       REDIS_URL: redis://redis:6379
+      MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-root}:${MONGO_ROOT_PASSWORD:-rootpassword}@mongodb:27017
+      MONGODB_DATABASE: ${MONGO_DATABASE:-myshop}
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-8ce516593a3682d05d249ef72edac2e5}
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
       CUSTOMER_CONTEXT_TTL: ${CUSTOMER_CONTEXT_TTL:-1800}
       ADMIN_CONTEXT_TTL: ${ADMIN_CONTEXT_TTL:-3600}
+      EMBEDDING_CACHE_TTL: ${EMBEDDING_CACHE_TTL:-3600}
     depends_on:
       - mysql
       - redis
+      - mongodb
     networks:
       - myshop_network
 
@@ -73,6 +78,27 @@ services:
       timeout: 3s
       retries: 5
 
+  mongodb:
+    image: mongo:7.0
+    container_name: myshop_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-rootpassword}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-myshop}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - myshop_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: --wiredTigerCacheSizeGB 0.5
+
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
@@ -93,6 +119,10 @@ services:
 ###< doctrine/doctrine-bundle ###
 
 volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
   mysql_data:
     driver: local
   redis_data:
@@ -100,11 +130,11 @@ volumes:
   symfony_cache:
     driver: local
   symfony_log:
-
+    driver: local
 ###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
     driver: local
+###< doctrine/doctrine-bundle ###
 
 networks:
   myshop_network:
