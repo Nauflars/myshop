@@ -16,31 +16,42 @@ final class GetCartSummary
      */
     public function execute(Cart $cart): array
     {
+        if ($cart->isEmpty()) {
+            return [
+                'items' => [],
+                'itemCount' => 0,
+                'total' => 0.0,
+                'currency' => 'USD',
+                'isEmpty' => true,
+            ];
+        }
+
         $items = [];
-        $total = 0.0;
+        
+        // Use Cart's calculateTotal() method which handles currency correctly
+        $totalMoney = $cart->calculateTotal();
 
         foreach ($cart->getItems() as $cartItem) {
             $product = $cartItem->getProduct();
             $quantity = $cartItem->getQuantity();
-            $subtotal = $product->getPrice() * $quantity;
+            $priceSnapshot = $cartItem->getPriceSnapshot();
+            $subtotal = $priceSnapshot->multiply($quantity);
 
             $items[] = [
                 'productName' => $product->getName(),
                 'quantity' => $quantity,
-                'unitPrice' => $product->getPrice(),
-                'subtotal' => $subtotal,
-                'currency' => 'USD',
+                'unitPrice' => $priceSnapshot->getAmountAsDecimal(),
+                'subtotal' => $subtotal->getAmountAsDecimal(),
+                'currency' => $priceSnapshot->getCurrency(),
             ];
-
-            $total += $subtotal;
         }
 
         return [
             'items' => $items,
             'itemCount' => count($items),
-            'total' => $total,
-            'currency' => 'USD',
-            'isEmpty' => count($items) === 0,
+            'total' => $totalMoney->getAmountAsDecimal(),
+            'currency' => $totalMoney->getCurrency(),
+            'isEmpty' => false,
         ];
     }
 }
