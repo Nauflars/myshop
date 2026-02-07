@@ -1,7 +1,13 @@
+parameters:
+    # Stock management configuration (spec-008 US2)
+    app.stock.low_threshold: 10  # Products with stock below this are considered low stock
+
 services:
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            $defaultLowStockThreshold: '%app.stock.low_threshold%'
 
     App\:
         resource: '../src/'

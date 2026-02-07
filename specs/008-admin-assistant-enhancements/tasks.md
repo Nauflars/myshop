@@ -50,17 +50,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Create GetLowStockProducts UseCase in src/Application/UseCase/Admin/GetLowStockProducts.php
-- [ ] T012 [P] [US2] Create UpdateProductStock UseCase with validation in src/Application/UseCase/Admin/UpdateProductStock.php
-- [ ] T013 [P] [US2] Create GetProductStock UseCase in src/Application/UseCase/Admin/GetProductStock.php
-- [ ] T014 [P] [US2] Create AdminGetLowStockProductsTool with #[AsTool] in src/Infrastructure/AI/Tool/Admin/AdminGetLowStockProductsTool.php
-- [ ] T015 [P] [US2] Create AdminUpdateProductStockTool with confirmation flow in src/Infrastructure/AI/Tool/Admin/AdminUpdateProductStockTool.php
-- [ ] T016 [P] [US2] Create AdminGetProductStockTool in src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
-- [ ] T017 [US2] Update config/packages/ai.yaml adminAssistant prompt with inventory tool descriptions and examples
-- [ ] T018 [US2] Add stock_threshold configuration parameter (default: 10) to config/services.yaml
-- [ ] T019 [US2] Implement stock delta logic (increase/decrease vs absolute value) in UpdateProductStock UseCase
-- [ ] T020 [US2] Add audit logging: logStockUpdate() in AdminAssistantLogger.php
-- [ ] T021 [US2] Test: verify stock cannot go negative, reasonable limits enforced
+- [X] T011 [P] [US2] Create GetLowStockProducts UseCase in src/Application/UseCase/Admin/GetLowStockProducts.php
+- [X] T012 [P] [US2] Create UpdateProductStock UseCase with validation in src/Application/UseCase/Admin/UpdateProductStock.php
+- [X] T013 [P] [US2] Create GetProductStock UseCase in src/Application/UseCase/Admin/GetProductStock.php
+- [X] T014 [P] [US2] Create AdminGetLowStockProductsTool with #[AsTool] in src/Infrastructure/AI/Tool/Admin/AdminGetLowStockProductsTool.php
+- [X] T015 [P] [US2] Create AdminUpdateProductStockTool with confirmation flow in src/Infrastructure/AI/Tool/Admin/AdminUpdateProductStockTool.php
+- [X] T016 [P] [US2] Create AdminGetProductStockTool in src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
+- [X] T017 [US2] Update config/packages/ai.yaml adminAssistant prompt with inventory tool descriptions and examples
+- [X] T018 [US2] Add stock_threshold configuration parameter (default: 10) to config/services.yaml
+- [X] T019 [US2] Implement stock delta logic (increase/decrease vs absolute value) in UpdateProductStock UseCase
+- [X] T020 [US2] Add audit logging: logStockUpdate() in AdminAssistantLogger.php
+- [X] T021 [US2] Test: verify stock cannot go negative, reasonable limits enforced
 
 **Checkpoint**: Inventory management functional - admin can check and update stock via conversation with validation and audit trail
 
