@@ -11,5 +11,6 @@ framework:
 # Redis service for context storage
 services:
     Predis\Client:
+        public: true
         arguments:
             - '%env(REDIS_URL)%'

@@ -68,6 +68,7 @@ services:
     # Context Storage Infrastructure (spec-009)
     App\Domain\Repository\ContextStorageInterface:
         class: App\Infrastructure\Repository\RedisContextStorage
+        public: true
         arguments:
             $redis: '@Predis\Client'
 
