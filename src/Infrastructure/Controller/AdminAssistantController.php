@@ -9,7 +9,6 @@ use App\Infrastructure\AI\Service\AdminConversationManager;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +28,6 @@ class AdminAssistantController extends AbstractController
     public function __construct(
         private readonly AdminConversationManager $conversationManager,
         private readonly Security $security,
-        #[Autowire(service: 'ai.agent.adminAssistant')]
         private readonly AgentInterface $adminAgent
     ) {
     }
@@ -112,11 +110,16 @@ class AdminAssistantController extends AbstractController
                 'message_count' => $conversation->getMessageCount(),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('AdminAssistantController Error: ' . $e->getMessage());
+            error_log('File: ' . $e->getFile() . ':' . $e->getLine());
+            error_log('Trace: ' . $e->getTraceAsString());
+            
             return $this->json([
                 'success' => false,
                 'error' => 'Error al procesar el mensaje',
                 'details' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

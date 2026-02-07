@@ -41,6 +41,15 @@ services:
         resource: '../src/Infrastructure/Controller/'
         tags: ['controller.service_arguments']
 
+    # Bind specific AI agents to controllers to prevent inlining
+    App\Infrastructure\Controller\ChatbotController:
+        arguments:
+            $agent: '@ai.agent.openAiAgent'
+
+    App\Infrastructure\Controller\AdminAssistantController:
+        arguments:
+            $adminAgent: '@ai.agent.adminAssistant'
+
     # Use Cases
     App\Application\UseCase\:
         resource: '../src/Application/UseCase/'

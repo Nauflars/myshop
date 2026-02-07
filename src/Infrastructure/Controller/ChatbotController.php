@@ -13,7 +13,6 @@ use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,7 +33,6 @@ class ChatbotController extends AbstractController
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
         private readonly CustomerContextManager $contextManager,
-        #[Autowire(service: 'ai.agent.openAiAgent')]
         private readonly AgentInterface $agent
     ) {
     }
@@ -168,10 +166,15 @@ class ChatbotController extends AbstractController
                 'role' => $this->roleAwareAssistant->getRoleDisplayName(),
             ]);
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log('ChatbotController Error: ' . $e->getMessage());
+            error_log('File: ' . $e->getFile() . ':' . $e->getLine());
+            error_log('Trace: ' . $e->getTraceAsString());
+            
             return $this->json([
                 'error' => 'An error occurred while processing your request',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
