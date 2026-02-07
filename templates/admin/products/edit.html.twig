@@ -13,10 +13,10 @@
     </div>
     
     <div class="form-group">
-        <label for="price">Precio (EUR) *</label>
+        <label for="price">Precio (USD) *</label>
         <input type="number" name="price" id="price" step="0.01" min="0.01" required value="{{ (product.price.amountInCents / 100)|number_format(2, '.', '') }}">
         <small style="display: block; margin-top: 0.5rem; color: #7f8c8d;">
-            Precio actual: {{ (product.price.amountInCents / 100)|number_format(2, ',', '.') }} €
+            Precio actual: ${{ (product.price.amountInCents / 100)|number_format(2, '.', ',') }}
         </small>
     </div>
     

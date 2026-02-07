@@ -117,7 +117,7 @@ class AdminProductController extends AbstractController
                 $product = new Product(
                     name: $name,
                     description: $description,
-                    price: new Money((int)((float)$price * 100), 'EUR'),
+                    price: new Money((int)((float)$price * 100), 'USD'),
                     stock: (int) $stock,
                     category: $category
                 );
@@ -145,7 +145,7 @@ class AdminProductController extends AbstractController
      * Implements FR-021: Edit product details
      */
     #[Route('/{id}/edit', name: 'admin_products_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, int $id): Response
+    public function edit(Request $request, string $id): Response
     {
         $product = $this->productRepository->find($id);
 
@@ -185,7 +185,7 @@ class AdminProductController extends AbstractController
 
             if (empty($errors)) {
                 $product->setName($name);
-                $product->setPrice(new Money((int)((float)$price * 100), 'EUR'));
+                $product->setPrice(new Money((int)((float)$price * 100), 'USD'));
                 $product->setStock((int) $stock);
                 $product->setDescription($description);
                 $product->setCategory($category);
@@ -213,7 +213,7 @@ class AdminProductController extends AbstractController
      * Implements FR-022: Delete product with confirmation dialog
      */
     #[Route('/{id}/delete', name: 'admin_products_delete', methods: ['POST'])]
-    public function delete(Request $request, int $id): Response
+    public function delete(Request $request, string $id): Response
     {
         $product = $this->productRepository->find($id);
 

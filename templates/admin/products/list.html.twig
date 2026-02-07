@@ -50,7 +50,7 @@
                     <strong>{{ product.name }}</strong>
                 </td>
                 <td>
-                    {{ (product.price.amountInCents / 100)|number_format(2, ',', '.') }} €
+                    ${{ (product.price.amountInCents / 100)|number_format(2, '.', ',') }}
                 </td>
                 <td>
                     {% if product.stock == 0 %}
