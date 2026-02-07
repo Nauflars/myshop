@@ -45,7 +45,7 @@ class ChatbotController extends AbstractController
             $user = $this->security->getUser();
             if (!$user instanceof User) {
                 return $this->json([
-                    'error' => 'Usuario no autenticado',
+                    'error' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
             }
 
@@ -74,7 +74,7 @@ class ChatbotController extends AbstractController
             $saveUserResult = $this->conversationManager->saveUserMessage($user, $conversationId, $userMessage);
             if (!$saveUserResult['success']) {
                 return $this->json([
-                    'error' => 'Error al guardar el mensaje',
+                    'error' => 'Error saving message',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
             
@@ -190,7 +190,7 @@ class ChatbotController extends AbstractController
             if (!$user instanceof User) {
                 return $this->json([
                     'success' => false,
-                    'error' => 'Usuario no autenticado',
+                    'error' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
             }
             
@@ -227,7 +227,7 @@ class ChatbotController extends AbstractController
             $user = $this->security->getUser();
             if (!$user instanceof User) {
                 return $this->json([
-                    'error' => 'Usuario no autenticado',
+                    'error' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
             }
             
@@ -245,7 +245,7 @@ class ChatbotController extends AbstractController
             if ($result['success']) {
                 return $this->json([
                     'success' => true,
-                    'message' => 'Conversación eliminada correctamente.',
+                    'message' => 'Conversation deleted successfully.',
                 ]);
             }
             
@@ -256,7 +256,7 @@ class ChatbotController extends AbstractController
         } catch (\Exception $e) {
             error_log('Clear Chat Error: ' . $e->getMessage());
             return $this->json([
-                'error' => 'Error al limpiar la conversación',
+                'error' => 'Error clearing conversation',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -272,7 +272,7 @@ class ChatbotController extends AbstractController
             $user = $this->security->getUser();
             if (!$user instanceof User) {
                 return $this->json([
-                    'error' => 'Usuario no autenticado',
+                    'error' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
             }
             
@@ -289,7 +289,7 @@ class ChatbotController extends AbstractController
         } catch (\Exception $e) {
             error_log('Reset Context Error: ' . $e->getMessage());
             return $this->json([
-                'error' => 'Error al resetear el contexto',
+                'error' => 'Error resetting context',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

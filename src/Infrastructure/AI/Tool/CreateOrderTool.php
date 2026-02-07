@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'CreateOrderTool',
-    'Crear un pedido a partir del carrito actual. REQUIERE confirmación explícita del usuario. Usa esta herramienta solo después de que el usuario confirme.'
+    'Create an order from the current cart. REQUIRES explicit user confirmation. Use this tool only after the user confirms.'
 )]
 final class CreateOrderTool
 {
@@ -34,7 +34,7 @@ final class CreateOrderTool
             if ($user === null) {
                 return [
                     'success' => false,
-                    'message' => 'Debes iniciar sesión para crear un pedido.',
+                    'message' => 'You must log in to create an order.',
                 ];
             }
 
@@ -43,7 +43,7 @@ final class CreateOrderTool
             if ($cart === null || $cart->getItems()->count() === 0) {
                 return [
                     'success' => false,
-                    'message' => 'Tu carrito está vacío. Agrega productos antes de crear un pedido.',
+                    'message' => 'Your cart is empty. Add products before creating an order.',
                 ];
             }
 
@@ -53,7 +53,7 @@ final class CreateOrderTool
                 return [
                     'success' => false,
                     'requiresConfirmation' => true,
-                    'message' => '¿Confirmas que deseas crear el pedido con los productos en tu carrito? Responde "sí" o "confirmo" para proceder.',
+                    'message' => 'Do you confirm that you want to create the order with the products in your cart? Respond "yes" or "I confirm" to proceed.',
                 ];
             }
 

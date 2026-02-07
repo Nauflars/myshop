@@ -17,7 +17,7 @@ use Symfony\Bundle\SecurityBundle\Security;
  */
 #[AsTool(
     'ClearConversation',
-    'Limpiar el historial de conversación actual del usuario. Usa esta herramienta cuando el usuario pida explícitamente borrar o limpiar el chat.'
+    'Clear the current user\'s conversation history. Use this tool when the user explicitly asks to delete or clear the chat.'
 )]
 final class ClearConversationTool
 {
@@ -39,7 +39,7 @@ final class ClearConversationTool
             if (!$user instanceof User) {
                 return [
                     'success' => false,
-                    'message' => 'Debes iniciar sesión para limpiar conversaciones.',
+                    'message' => 'You must log in to clear conversations.',
                 ];
             }
 
@@ -48,7 +48,7 @@ final class ClearConversationTool
             if ($result['success']) {
                 return [
                     'success' => true,
-                    'message' => 'He limpiado nuestro historial de conversación. ¿En qué puedo ayudarte ahora?',
+                    'message' => 'I\'ve cleared our conversation history. How can I help you now?',
                 ];
             }
 
@@ -56,7 +56,7 @@ final class ClearConversationTool
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'No pude limpiar la conversación. Por favor intenta de nuevo.',
+                'message' => 'Could not clear the conversation. Please try again.',
             ];
         }
     }

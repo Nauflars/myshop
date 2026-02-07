@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'AdminUpdateProductStockTool',
-    'Actualizar el stock de un producto. Modos: "set" (valor absoluto), "add" (incrementar), "subtract" (decrementar). Requiere confirmación del administrador antes de ejecutar. SOLO para usuarios ADMIN.'
+    'Update product stock. Modes: "set" (absolute value), "add" (increment), "subtract" (decrement). Requires administrator confirmation before execution. ONLY for ADMIN users.'
 )]
 final class AdminUpdateProductStockTool
 {

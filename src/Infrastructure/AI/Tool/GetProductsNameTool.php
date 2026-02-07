@@ -7,7 +7,7 @@ namespace App\Infrastructure\AI\Tool;
 use App\Application\UseCase\AI\GetProductsName;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
-#[AsTool('GetProductsNameTool', 'Buscar y explorar productos por nombre o categoría. Devuelve una lista de productos con sus nombres, descripciones, precios y disponibilidad. NO devuelve IDs internos.')]
+#[AsTool('GetProductsNameTool', 'Search and explore products by name or category. Returns a list of products with their names, descriptions, prices, and availability. Does NOT return internal IDs.')]
 final class GetProductsNameTool
 {
     public function __construct(

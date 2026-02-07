@@ -9,7 +9,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
     'ListProductsTool',
-    'Listar productos disponibles con nombre, descripción, precio y disponibilidad. Usa esta herramienta cuando el usuario quiera ver o buscar productos.'
+    'List available products with name, description, price, and availability. Use this tool when the user wants to view or search for products.'
 )]
 final class ListProductsTool
 {

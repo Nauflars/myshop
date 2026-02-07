@@ -17,7 +17,7 @@ use Symfony\Bundle\SecurityBundle\Security;
  */
 #[AsTool(
     'GetUserInfo',
-    'Obtener información del usuario actual (nombre, email, rol, conversaciones). Usa esta herramienta cuando necesites saber quién es el usuario o si es administrador.'
+    'Get current user information (name, email, role, conversations). Use this tool when you need to know who the user is or if they are an administrator.'
 )]
 final class GetUserInfoTool
 {
@@ -66,7 +66,7 @@ final class GetUserInfoTool
             return [
                 'success' => false,
                 'user' => null,
-                'message' => 'No pude obtener la información del usuario.',
+                'message' => 'Could not retrieve user information.',
             ];
         }
     }

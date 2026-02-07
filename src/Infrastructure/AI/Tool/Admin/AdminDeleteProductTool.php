@@ -12,7 +12,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'AdminDeleteProductTool',
-    'Eliminar un producto del catálogo. Verifica que el producto no tenga pedidos asociados antes de eliminar. El asistente debe pedir confirmación antes de eliminar. Si hay múltiples productos con el mismo nombre, mostrar lista numerada para desambiguar. SOLO para usuarios ADMIN.'
+    'Delete a product from the catalog. Verifies product has no associated orders before deletion. Assistant must request confirmation before deleting. If multiple products match the name, show numbered list for disambiguation. ONLY for ADMIN users.'
 )]
 final class AdminDeleteProductTool
 {
@@ -52,7 +52,7 @@ final class AdminDeleteProductTool
                 return [
                     'success' => false,
                     'error' => "No se encontró el producto '{$productName}'",
-                    'message' => "No existe ningún producto con el nombre '{$productName}'.",
+                    'message' => "No product exists with the name '{$productName}'.",
                 ];
             }
 
@@ -74,7 +74,7 @@ final class AdminDeleteProductTool
                 return [
                     'success' => false,
                     'requires_disambiguation' => true,
-                    'message' => "Encontré " . count($products) . " productos con ese nombre:\n\n" .
+                    'message' => "I found " . count($products) . " products with that name:\n\n" .
                         implode("\n", $productList) .
                         "\n\n¿Cuál de estos productos deseas eliminar? Responde con el número.",
                     'product_count' => count($products),
@@ -172,7 +172,7 @@ final class AdminDeleteProductTool
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => "Error de validación: {$e->getMessage()}",
+                'message' => "Validation error: {$e->getMessage()}",
             ];
         } catch (\Exception $e) {
             // Log unexpected error
@@ -186,7 +186,7 @@ final class AdminDeleteProductTool
             return [
                 'success' => false,
                 'error' => 'Error inesperado al eliminar el producto',
-                'message' => 'Ocurrió un error al eliminar el producto. Por favor intenta de nuevo.',
+                'message' => 'An error occurred while deleting the product. Please try again.',
             ];
         }
     }

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 #[AsTool(
     'AdminCreateProductTool',
-    'Crear un nuevo producto en el catálogo. Requiere: nombre, descripción, precio, stock y categoría. El asistente debe pedir confirmación antes de crear el producto. SOLO para usuarios ADMIN.'
+    'Create a new product in the catalog. Requires: name, description, price, stock, and category. Assistant must request confirmation before creating the product. ONLY for ADMIN users.'
 )]
 final class AdminCreateProductTool
 {
@@ -95,7 +95,7 @@ final class AdminCreateProductTool
                 return [
                     'success' => false,
                     'missing_fields' => $missingFields,
-                    'message' => 'Faltan campos obligatorios: ' . implode(', ', $fieldNames) . '. Por favor proporciónalos.',
+                    'message' => 'Missing required fields: ' . implode(', ', $fieldNames) . '. Please provide them.',
                 ];
             }
 
@@ -130,7 +130,7 @@ final class AdminCreateProductTool
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => "Error de validación: {$e->getMessage()}",
+                'message' => "Validation error: {$e->getMessage()}",
             ];
         } catch (\Exception $e) {
             // Log unexpected error
@@ -144,7 +144,7 @@ final class AdminCreateProductTool
             return [
                 'success' => false,
                 'error' => 'Error inesperado al crear el producto',
-                'message' => 'Ocurrió un error al crear el producto. Por favor intenta de nuevo.',
+                'message' => 'An error occurred while creating the product. Please try again.',
             ];
         }
     }

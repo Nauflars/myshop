@@ -10,7 +10,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'ListPreviousOrdersTool',
-    'Listar pedidos anteriores del usuario con referencias legibles. Usa esta herramienta cuando el usuario quiera ver su historial de pedidos.'
+    'List user\'s previous orders with readable references. Use this tool when the user wants to see their order history.'
 )]
 final class ListPreviousOrdersTool
 {
@@ -32,7 +32,7 @@ final class ListPreviousOrdersTool
                 return [
                     'success' => false,
                     'orders' => [],
-                    'message' => 'Debes iniciar sesión para ver tus pedidos.',
+                    'message' => 'You must log in to view your orders.',
                 ];
             }
 
@@ -43,7 +43,7 @@ final class ListPreviousOrdersTool
                     'success' => true,
                     'orders' => [],
                     'count' => 0,
-                    'message' => 'No tienes pedidos anteriores. ¿Te gustaría realizar tu primera compra?',
+                    'message' => 'You have no previous orders. Would you like to make your first purchase?',
                 ];
             }
 

@@ -9,7 +9,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
     'GetProductDetailsTool',
-    'Obtener detalles completos de un producto usando su nombre. Usa esta herramienta cuando el usuario solicite información específica sobre un producto.'
+    'Get complete product details using its name. Use this tool when the user requests specific information about a product.'
 )]
 final class GetProductDetailsTool
 {
@@ -30,7 +30,7 @@ final class GetProductDetailsTool
                 return [
                     'success' => false,
                     'product' => null,
-                    'message' => "No se encontró el producto '{$productName}'. Verifica el nombre y intenta de nuevo.",
+                    'message' => "Product '{$productName}' not found. Please verify the name and try again.",
                 ];
             }
 

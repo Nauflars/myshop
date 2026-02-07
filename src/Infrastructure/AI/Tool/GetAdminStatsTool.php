@@ -17,7 +17,7 @@ use Symfony\Bundle\SecurityBundle\Security;
  */
 #[AsTool(
     'GetAdminStats',
-    'Obtener estadísticas del negocio (ventas, productos destacados, usuarios activos, órdenes pendientes). SOLO disponible para administradores. Usa esta herramienta cuando un admin pida estadísticas o métricas.'
+    'Get business statistics (sales, featured products, active users, pending orders). ONLY available to administrators. Use this tool when an admin requests statistics or metrics.'
 )]
 final class GetAdminStatsTool
 {
@@ -39,7 +39,7 @@ final class GetAdminStatsTool
                 return [
                     'success' => false,
                     'stats' => null,
-                    'message' => 'Debes iniciar sesión para ver estadísticas.',
+                    'message' => 'You must log in to view statistics.',
                 ];
             }
 
@@ -47,7 +47,7 @@ final class GetAdminStatsTool
                 return [
                     'success' => false,
                     'stats' => null,
-                    'message' => 'Solo los administradores pueden acceder a esta información.',
+                    'message' => 'Only administrators can access this information.',
                 ];
             }
 
@@ -64,7 +64,7 @@ final class GetAdminStatsTool
                     "📦 Valor promedio de orden: $%.2f\n" .
                     "👥 Usuarios activos (30 días): %d\n" .
                     "⏳ Órdenes pendientes: %d\n\n" .
-                    "**Productos Más Populares:**\n%s",
+                    "**Top-Selling Products:**\n%s",
                     $stats['monthlySales'],
                     $stats['totalRevenue'],
                     $stats['averageOrderValue'],
@@ -85,7 +85,7 @@ final class GetAdminStatsTool
             return [
                 'success' => false,
                 'stats' => null,
-                'message' => 'No pude obtener las estadísticas. Por favor intenta de nuevo.',
+                'message' => 'Could not retrieve statistics. Please try again.',
             ];
         }
     }
@@ -103,6 +103,6 @@ final class GetAdminStatsTool
             );
         }
         
-        return implode("\n", $formatted) ?: 'No hay datos de productos';
+        return implode("\n", $formatted) ?: 'No product data available';
     }
 }

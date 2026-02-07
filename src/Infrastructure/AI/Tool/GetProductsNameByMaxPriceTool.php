@@ -8,7 +8,7 @@ use App\Application\UseCase\AI\GetProductsNameByMaxPrice;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 
-#[AsTool('GetProductsNameByMaxPrice', 'Buscar productos dentro de un presupuesto. Devuelve productos con precios menores o iguales al precio máximo especificado. NO devuelve IDs internos.')]
+#[AsTool('GetProductsNameByMaxPrice', 'Search products within a budget. Returns products with prices less than or equal to the specified maximum price. Does NOT return internal IDs.')]
 final class GetProductsNameByMaxPriceTool
 {
     public function __construct(
@@ -25,7 +25,7 @@ final class GetProductsNameByMaxPriceTool
                     'success' => false,
                     'data' => [],
                     'count' => 0,
-                    'message' => 'El precio máximo debe ser mayor que cero.',
+                    'message' => 'Maximum price must be greater than zero.',
                 ];
             }
             

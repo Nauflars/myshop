@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'GetCartSummaryTool',
-    'Obtener resumen completo del carrito con nombres de productos, cantidades, precios y total. Usa esta herramienta cuando el usuario quiera ver su carrito.'
+    'Get complete cart summary with product names, quantities, prices, and total. Use this tool when the user wants to view their cart.'
 )]
 final class GetCartSummaryTool
 {
@@ -30,7 +30,7 @@ final class GetCartSummaryTool
             if ($user === null) {
                 return [
                     'success' => false,
-                    'message' => 'Debes iniciar sesión para ver tu carrito.',
+                    'message' => 'You must log in to view your cart.',
                     'cart' => null,
                 ];
             }
@@ -48,7 +48,7 @@ final class GetCartSummaryTool
                 return [
                     'success' => true,
                     'cart' => $summary,
-                    'message' => 'Tu carrito está vacío. ¿Te gustaría agregar algunos productos?',
+                    'message' => 'Your cart is empty. Would you like to add some products?',
                 ];
             }
 
@@ -65,7 +65,7 @@ final class GetCartSummaryTool
             return [
                 'success' => false,
                 'cart' => null,
-                'message' => 'No se pudo obtener el resumen del carrito. Por favor intenta de nuevo.',
+                'message' => 'Could not retrieve cart summary. Please try again.',
             ];
         }
     }

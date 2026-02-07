@@ -12,7 +12,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'AdminUpdateProductTool',
-    'Actualizar un producto existente. Campos actualizables: price, stock, description, category, name, nameEs. El asistente debe pedir confirmación antes de actualizar. Si hay múltiples productos con el mismo nombre, mostrar lista numerada para desambiguar. SOLO para usuarios ADMIN.'
+    'Update an existing product. Updatable fields: price, stock, description, category, name, nameEs. Assistant must request confirmation before updating. If multiple products match the name, show numbered list for disambiguation. ONLY for ADMIN users.'
 )]
 final class AdminUpdateProductTool
 {
@@ -56,7 +56,7 @@ final class AdminUpdateProductTool
                 return [
                     'success' => false,
                     'error' => "No se encontró el producto '{$productName}'",
-                    'message' => "No existe ningún producto con el nombre '{$productName}'. ¿Quieres crear uno nuevo?",
+                    'message' => "No product exists with the name '{$productName}'. Do you want to create a new one?",
                 ];
             }
 
@@ -78,7 +78,7 @@ final class AdminUpdateProductTool
                 return [
                     'success' => false,
                     'requires_disambiguation' => true,
-                    'message' => "Encontré " . count($products) . " productos con ese nombre:\n\n" .
+                    'message' => "I found " . count($products) . " products with that name:\n\n" .
                         implode("\n", $productList) .
                         "\n\n¿Cuál de estos productos deseas actualizar? Responde con el número.",
                     'product_count' => count($products),
@@ -110,7 +110,7 @@ final class AdminUpdateProductTool
                 return [
                     'success' => false,
                     'requires_confirmation' => true,
-                    'message' => "Resumen de la actualización:\n" .
+                    'message' => "Update summary:\n" .
                         "• Producto: {$product->getName()}\n" .
                         "• Campo: {$fieldNameEs}\n" .
                         "• Valor actual: {$currentValues['current_value']}\n" .
@@ -159,7 +159,7 @@ final class AdminUpdateProductTool
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
-                'message' => "Error de validación: {$e->getMessage()}",
+                'message' => "Validation error: {$e->getMessage()}",
             ];
         } catch (\Exception $e) {
             // Log unexpected error
@@ -173,7 +173,7 @@ final class AdminUpdateProductTool
             return [
                 'success' => false,
                 'error' => 'Error inesperado al actualizar el producto',
-                'message' => 'Ocurrió un error al actualizar el producto. Por favor intenta de nuevo.',
+                'message' => 'An error occurred while updating the product. Please try again.',
             ];
         }
     }

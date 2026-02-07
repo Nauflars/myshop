@@ -10,7 +10,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'GetOrderStatusTool',
-    'Consultar el estado de un pedido usando su referencia legible (ej: ORD-20260206-001). Usa esta herramienta cuando el usuario pregunte por el estado de un pedido.'
+    'Check order status using its readable reference (e.g., ORD-20260206-001). Use this tool when the user asks about an order\'s status.'
 )]
 final class GetOrderStatusTool
 {
@@ -32,7 +32,7 @@ final class GetOrderStatusTool
                 return [
                     'success' => false,
                     'order' => null,
-                    'message' => 'Debes iniciar sesión para consultar el estado de tus pedidos.',
+                    'message' => 'You must log in to check the status of your orders.',
                 ];
             }
 
@@ -42,7 +42,7 @@ final class GetOrderStatusTool
                 return [
                     'success' => false,
                     'order' => null,
-                    'message' => "No se encontró el pedido '{$orderReference}'. Verifica la referencia y intenta de nuevo.",
+                    'message' => "Order '{$orderReference}' not found. Please verify the reference and try again.",
                 ];
             }
 

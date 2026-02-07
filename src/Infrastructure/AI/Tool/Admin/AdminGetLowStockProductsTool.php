@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'AdminGetLowStockProductsTool',
-    'Obtener lista de productos con stock bajo. Permite especificar un umbral personalizado (por defecto: 10 unidades). Útil para identificar productos que necesitan reabastecimiento. SOLO para usuarios ADMIN.'
+    'Get list of low-stock products. Allows specifying a custom threshold (default: 10 units). Useful for identifying products that need restocking. ONLY for ADMIN users.'
 )]
 final class AdminGetLowStockProductsTool
 {

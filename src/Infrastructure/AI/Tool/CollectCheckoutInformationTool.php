@@ -9,7 +9,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
     'CollectCheckoutInformationTool',
-    'Recopilar y validar información de checkout (dirección de envío, método de pago, contacto). Usa esta herramienta para preparar los datos antes de crear un pedido.'
+    'Collect and validate checkout information (shipping address, payment method, contact). Use this tool to prepare data before creating an order.'
 )]
 final class CollectCheckoutInformationTool
 {
@@ -43,7 +43,7 @@ final class CollectCheckoutInformationTool
                     'success' => false,
                     'valid' => false,
                     'errors' => $result['errors'],
-                    'message' => 'Hay errores en la información proporcionada: ' . implode(' ', $result['errors']),
+                    'message' => 'There are errors in the provided information: ' . implode(' ', $result['errors']),
                 ];
             }
 
@@ -51,13 +51,13 @@ final class CollectCheckoutInformationTool
                 'success' => true,
                 'valid' => true,
                 'checkoutInfo' => $result['data'],
-                'message' => 'Información de checkout validada correctamente. Confirma para crear el pedido.',
+                'message' => 'Checkout information validated successfully. Confirm to create the order.',
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'valid' => false,
-                'message' => 'No se pudo validar la información. Por favor intenta de nuevo.',
+                'message' => 'Could not validate information. Please try again.',
             ];
         }
     }

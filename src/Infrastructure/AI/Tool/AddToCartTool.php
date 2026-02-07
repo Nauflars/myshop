@@ -20,7 +20,7 @@ use Symfony\Bundle\SecurityBundle\Security;
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('AddToCart', 'Agregar un producto al carrito de compras con la cantidad especificada. Requiere nombre del producto y cantidad (por defecto: 1). NO usa IDs internos.')]
+#[AsTool('AddToCart', 'Add a product to the shopping cart with the specified quantity. Requires product name and quantity (default: 1). Does NOT use internal IDs.')]
 final class AddToCartTool
 {
     public function __construct(
@@ -53,7 +53,7 @@ final class AddToCartTool
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'Usuario no autenticado.',
+                    'message' => 'User not authenticated.',
                 ];
             }
             
@@ -62,7 +62,7 @@ final class AddToCartTool
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'El nombre del producto es requerido.',
+                    'message' => 'Product name is required.',
                 ];
             }
             

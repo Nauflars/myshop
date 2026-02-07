@@ -18,7 +18,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('GetPriceByProductId', 'Obtener precio detallado, moneda y estado de stock para un producto específico por su nombre. NO usa IDs internos.')]
+#[AsTool('GetPriceByProductId', 'Get detailed price, currency, and stock status for a specific product by its name. Does NOT use internal IDs.')]
 class GetPriceByProductIdTool
 {
     public function __construct(

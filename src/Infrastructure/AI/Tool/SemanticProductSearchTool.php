@@ -22,7 +22,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  */
 #[AsTool(
     'SemanticProductSearchTool',
-    'Buscar productos usando lenguaje natural y búsqueda semántica con IA. Usa esta herramienta cuando el cliente busque productos con descripciones naturales como "algo para gaming", "equipo para streaming", "laptop potente". También funciona con búsqueda tradicional por palabras clave. Retorna productos relevantes con scores de similitud.'
+    'Search products using natural language and AI-powered semantic search. Use this tool when the customer searches for products with natural descriptions like "something for gaming", "streaming gear", "powerful laptop". Also works with traditional keyword search. Returns relevant products with similarity scores.'
 )]
 final class SemanticProductSearchTool
 {
@@ -106,7 +106,7 @@ final class SemanticProductSearchTool
                 'success' => false,
                 'products' => [],
                 'count' => 0,
-                'message' => 'Los parámetros de búsqueda no son válidos. Por favor, intenta con una consulta diferente.',
+                'message' => 'Search parameters are invalid. Please try with a different query.',
                 'error' => $e->getMessage(),
             ];
 
@@ -122,7 +122,7 @@ final class SemanticProductSearchTool
                 'success' => false,
                 'products' => [],
                 'count' => 0,
-                'message' => 'No se pudo realizar la búsqueda en este momento. Por favor intenta de nuevo.',
+                'message' => 'Could not perform search at this time. Please try again.',
                 'error' => 'Search service temporarily unavailable',
             ];
         }

@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'RemoveProductFromCartTool',
-    'Eliminar un producto del carrito usando su nombre. Usa esta herramienta cuando el usuario quiera quitar productos de su carrito.'
+    'Remove a product from the cart using its name. Use this tool when the user wants to remove products from their cart.'
 )]
 final class RemoveProductFromCartTool
 {
@@ -33,7 +33,7 @@ final class RemoveProductFromCartTool
             if ($user === null) {
                 return [
                     'success' => false,
-                    'message' => 'Debes iniciar sesión para gestionar tu carrito.',
+                    'message' => 'You must log in to manage your cart.',
                 ];
             }
 

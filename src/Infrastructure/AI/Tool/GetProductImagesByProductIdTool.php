@@ -18,7 +18,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  * 
  * @author AI Shopping Assistant Team
  */
-#[AsTool('GetProductImagesByProductId', 'Obtener todas las imágenes de un producto específico por su nombre. Devuelve URLs de imágenes y metadatos. NO usa IDs internos.')]
+#[AsTool('GetProductImagesByProductId', 'Get all images of a specific product by its name. Returns image URLs and metadata. Does NOT use internal IDs.')]
 class GetProductImagesByProductIdTool
 {
     public function __construct(
@@ -84,7 +84,7 @@ class GetProductImagesByProductIdTool
             return [
                 'success' => false,
                 'data' => null,
-                'message' => 'No se pudieron recuperar las imágenes del producto. Por favor, intente nuevamente.',
+                'message' => 'Could not retrieve product images. Please try again.',
             ];
         }
     }

@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 #[AsTool(
     'AdminGetProductStockTool',
-    'Consultar el stock actual de uno o más productos. Acepta UUID de producto o término de búsqueda por nombre. Muestra stock, estado (disponible/bajo/agotado) y umbral. SOLO para usuarios ADMIN.'
+    'Check the current stock of one or more products. Accepts product UUID or search term by name. Shows stock, status (available/low/out), and threshold. ONLY for ADMIN users.'
 )]
 final class AdminGetProductStockTool
 {
