@@ -73,10 +73,12 @@ services:
 
     # Context Management Services (spec-009)
     App\Application\Service\CustomerContextManager:
+        public: true
         arguments:
             $ttl: '%app.context.customer_ttl%'
 
     App\Application\Service\AdminContextManager:
+        public: true
         arguments:
             $ttl: '%app.context.admin_ttl%'
 
