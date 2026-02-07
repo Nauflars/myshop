@@ -97,6 +97,8 @@
     align-items: center;
     justify-content: space-between;
     border-radius: 16px 16px 0 0;
+    cursor: move;
+    user-select: none;
 }
 
 .admin-floating-header-title {
