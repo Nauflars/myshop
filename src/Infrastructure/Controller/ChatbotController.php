@@ -124,16 +124,20 @@ class ChatbotController extends AbstractController
                 error_log('Stack trace: ' . $e->getTraceAsString());
                 
                 // Capture as unanswered question for spec-006 (FR-001 to FR-008)
-                $captureResult = $this->unansweredQuestionCapture->capture(
-                    questionText: $userMessage,
-                    user: $user,
-                    userRole: $user->getRoles()[0] ?? 'ROLE_CUSTOMER',
-                    reasonCategory: UnansweredQuestion::REASON_TOOL_ERROR,
-                    conversationId: $conversationId
-                );
+                try {
+                    $this->unansweredQuestionCapture->capture(
+                        questionText: $userMessage,
+                        user: $user,
+                        userRole: $user->getRoles()[0] ?? 'ROLE_CUSTOMER',
+                        reasonCategory: UnansweredQuestion::REASON_TOOL_ERROR,
+                        conversationId: $conversationId
+                    );
+                } catch (\Exception $captureException) {
+                    error_log('Failed to capture unanswered question: ' . $captureException->getMessage());
+                }
                 
-                // Use polite fallback message from capture service
-                $assistantResponse = $captureResult['fallbackMessage'] ?? "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
+                // Use polite fallback message
+                $assistantResponse = "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
             }
             
             // Save assistant response to database

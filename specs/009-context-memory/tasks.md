@@ -77,9 +77,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] Create AdminConversationContext value object in src/Domain/ValueObject/AdminConversationContext.php
-- [ ] T022 [P] Define admin context attributes: adminId, flow, activeEntities, timePeriod, pendingActions, lastTool
-- [ ] T023 [P] Create AdminContextManager service in src/Application/Service/AdminContextManager.php
+- [X] T021 [P] Create AdminConversationContext value object in src/Domain/ValueObject/AdminConversationContext.php
+- [X] T022 [P] Define admin context attributes: adminId, flow, activeEntities, timePeriod, pendingActions, lastTool
+- [X] T023 [P] Create AdminContextManager service in src/Application/Service/AdminContextManager.php
 - [ ] T024 Update AdminAssistantController to load context before AI interaction in src/Infrastructure/Controller/AdminAssistantController.php
 - [ ] T025 Implement context injection into admin AI system prompt in AdminContextManager::enrichPrompt()
 - [ ] T026 Update AdminAssistantController to save context after successful message
