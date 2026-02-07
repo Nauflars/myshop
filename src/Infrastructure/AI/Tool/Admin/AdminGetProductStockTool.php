@@ -57,6 +57,8 @@ final class AdminGetProductStockTool
                     'in_stock' => 'DISPONIBLE',
                 };
 
+                $productName = $result['product']['nameEs'] ?? $result['product']['name'];
+
                 return [
                     'success' => true,
                     'product' => $result['product'],
@@ -65,7 +67,7 @@ final class AdminGetProductStockTool
                     'status_text' => $statusText,
                     'is_low_stock' => $result['is_low_stock'],
                     'threshold' => $result['threshold'],
-                    'message' => "Stock de '{$result['product']['nameEs'] ?? $result['product']['name']}': {$result['stock']} unidades ({$statusText})",
+                    'message' => "Stock de '$productName': {$result['stock']} unidades ($statusText)",
                 ];
             }
 
