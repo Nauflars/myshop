@@ -45,7 +45,7 @@ class GetProductStock
                 'name' => $product->getName(),
                 'nameEs' => $product->getNameEs(),
                 'category' => $product->getCategory(),
-                'price' => $product->getPrice()->getAmount(),
+                'price' => $product->getPrice()->getAmountAsDecimal(),
                 'currency' => $product->getPrice()->getCurrency(),
             ],
             'stock' => $stock,

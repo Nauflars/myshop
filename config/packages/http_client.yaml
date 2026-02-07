@@ -1,0 +1,12 @@
+framework:
+    http_client:
+        scoped_clients:
+            # HTTP client for Symfony AI Platform - without tracing to avoid conflicts
+            # This solves the "TraceableResponse is already consumed" error
+            ai.http_client:
+                base_uri: 'https://api.openai.com'
+                headers:
+                    'Content-Type': 'application/json'
+                # Disable retry decorator to avoid conflicts
+                retry_failed:
+                    enabled: false

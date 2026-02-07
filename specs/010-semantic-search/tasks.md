@@ -27,17 +27,17 @@
 
 ### Implementation for Infrastructure
 
-- [ ] T001 [P] Add MongoDB service to docker-compose.yml (image: mongo:7.0, port 27017, persistent volume)
-- [ ] T002 [P] Add mongodb/mongodb package to composer.json (^1.17)
-- [ ] T003 [P] Configure MongoDB connection in config/packages/mongodb.yaml (connection string, database name)
-- [ ] T004 [P] Create ProductEmbedding entity in src/Domain/Entity/ProductEmbedding.php (product_id, embedding array, metadata)
-- [ ] T005 [P] Create EmbeddingServiceInterface in src/Domain/Repository/EmbeddingServiceInterface.php
-- [ ] T006 [P] Create OpenAIEmbeddingService implementation in src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
-- [ ] T007 [P] Create MongoDBEmbeddingRepository in src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
-- [ ] T008 Add OpenAI API configuration to .env (OPENAI_API_KEY, OPENAI_EMBEDDING_MODEL=text-embedding-3-small)
-- [ ] T009 Create MongoDB vector index via console command in src/Command/CreateVectorIndexCommand.php
-- [ ] T010 Create Symfony console command to test embedding generation in src/Command/TestEmbeddingCommand.php
-- [ ] T011 Write unit tests for OpenAIEmbeddingService in tests/Unit/Infrastructure/AI/Service/
+- [X] T001 [P] Add MongoDB service to docker-compose.yml (image: mongo:7.0, port 27017, persistent volume)
+- [X] T002 [P] Add mongodb/mongodb package to composer.json (^1.17)
+- [X] T003 [P] Configure MongoDB connection in config/packages/mongodb.yaml (connection string, database name)
+- [X] T004 [P] Create ProductEmbedding entity in src/Domain/Entity/ProductEmbedding.php (product_id, embedding array, metadata)
+- [X] T005 [P] Create EmbeddingServiceInterface in src/Domain/Repository/EmbeddingServiceInterface.php
+- [X] T006 [P] Create OpenAIEmbeddingService implementation in src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+- [X] T007 [P] Create MongoDBEmbeddingRepository in src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+- [X] T008 Add OpenAI API configuration to .env (OPENAI_API_KEY, OPENAI_EMBEDDING_MODEL=text-embedding-3-small)
+- [X] T009 Create MongoDB vector index via console command in src/Command/CreateVectorIndexCommand.php
+- [X] T010 Create Symfony console command to test embedding generation in src/Command/TestEmbeddingCommand.php
+- [X] T011 Write unit tests for OpenAIEmbeddingService in tests/Unit/Infrastructure/AI/Service/
 
 **Checkpoint**: MongoDB running, OpenAI API connected, embeddings can be generated and stored
 
@@ -53,24 +53,24 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] Create ProductEmbeddingSyncService in src/Application/Service/ProductEmbeddingSyncService.php
-- [ ] T013 [P] Define SyncProductEmbedding use case in src/Application/UseCase/SyncProductEmbedding.php
-- [ ] T014 Create Doctrine event listener PostPersist for Product in src/Infrastructure/Persistence/Listener/ProductEmbeddingListener.php
-- [ ] T015 Create Doctrine event listener PostUpdate for Product in ProductEmbeddingListener.php
-- [ ] T016 Create Doctrine event listener PostRemove for Product in ProductEmbeddingListener.php
-- [ ] T017 [P] Implement embedding generation logic in ProductEmbeddingSyncService::generateEmbedding()
-- [ ] T018 [P] Implement MongoDB create operation in ProductEmbeddingSyncService::createEmbedding()
-- [ ] T019 [P] Implement MongoDB update operation in ProductEmbeddingSyncService::updateEmbedding()
-- [ ] T020 [P] Implement MongoDB delete operation in ProductEmbeddingSyncService::deleteEmbedding()
-- [ ] T021 Add error handling and retry logic for OpenAI API failures in ProductEmbeddingSyncService
-- [ ] T022 Add error handling for MongoDB write failures (log error, continue with MySQL operation)
-- [ ] T023 Create Symfony Messenger message for async embedding sync in src/Application/Message/SyncEmbeddingMessage.php
-- [ ] T024 Create Messenger handler for async sync in src/Application/MessageHandler/SyncEmbeddingHandler.php
-- [ ] T025 Add logging for all sync operations (success, failure, retry) using Symfony Logger
-- [ ] T026 Create console command for manual re-sync in src/Command/SyncAllEmbeddingsCommand.php
-- [ ] T027 Create console command for batch initial sync in src/Command/BatchSyncEmbeddingsCommand.php
-- [ ] T028 Write integration tests for product sync lifecycle in tests/Integration/ProductEmbedding/
-- [ ] T029 Write tests for sync failure scenarios (OpenAI down, MongoDB down, network timeout)
+- [X] T012 [P] Create ProductEmbeddingSyncService in src/Application/Service/ProductEmbeddingSyncService.php
+- [X] T013 [P] Define SyncProductEmbedding use case in src/Application/UseCase/SyncProductEmbedding.php
+- [X] T014 Create Doctrine event listener PostPersist for Product in src/Infrastructure/Persistence/Listener/ProductEmbeddingListener.php
+- [X] T015 Create Doctrine event listener PostUpdate for Product in ProductEmbeddingListener.php
+- [X] T016 Create Doctrine event listener PostRemove for Product in ProductEmbeddingListener.php
+- [X] T017 [P] Implement embedding generation logic in ProductEmbeddingSyncService::generateEmbedding()
+- [X] T018 [P] Implement MongoDB create operation in ProductEmbeddingSyncService::createEmbedding()
+- [X] T019 [P] Implement MongoDB update operation in ProductEmbeddingSyncService::updateEmbedding()
+- [X] T020 [P] Implement MongoDB delete operation in ProductEmbeddingSyncService::deleteEmbedding()
+- [X] T021 Add error handling and retry logic for OpenAI API failures in ProductEmbeddingSyncService
+- [X] T022 Add error handling for MongoDB write failures (log error, continue with MySQL operation)
+- [X] T023 Create Symfony Messenger message for async embedding sync in src/Application/Message/SyncEmbeddingMessage.php
+- [X] T024 Create Messenger handler for async sync in src/Application/MessageHandler/SyncEmbeddingHandler.php
+- [X] T025 Add logging for all sync operations (success, failure, retry) using Symfony Logger
+- [X] T026 Create console command for manual re-sync in src/Command/SyncAllEmbeddingsCommand.php
+- [X] T027 Create console command for batch initial sync in src/Command/BatchSyncEmbeddingsCommand.php
+- [X] T028 Write integration tests for product sync lifecycle in tests/Integration/ProductEmbedding/
+- [X] T029 Write tests for sync failure scenarios (OpenAI down, MongoDB down, network timeout)
 
 **Checkpoint**: Products auto-sync to MongoDB embeddings, manual re-sync command works, failures handled gracefully
 
@@ -86,27 +86,27 @@
 
 ### Implementation for User Story 1
 
-- [ ] T030 [P] Create SearchQuery value object in src/Domain/ValueObject/SearchQuery.php
-- [ ] T031 [P] Create SearchResult value object in src/Domain/ValueObject/SearchResult.php (products, scores, mode)
-- [ ] T032 [P] Create SemanticSearchService in src/Application/Service/SemanticSearchService.php
-- [ ] T033 Implement query embedding generation in SemanticSearchService::generateQueryEmbedding()
-- [ ] T034 Implement MongoDB vector similarity search in MongoDBEmbeddingRepository::searchBySimilarity()
-- [ ] T035 Implement cosine similarity calculation for ranking in MongoDBEmbeddingRepository
-- [ ] T036 Implement result enrichment with MySQL data in SemanticSearchService::enrichResults()
-- [ ] T037 Add pagination support (limit, offset) in MongoDB search query
-- [ ] T038 Add minimum similarity threshold filtering (e.g., score > 0.6) in SemanticSearchService
-- [ ] T039 Add result deduplication logic (same product from multiple embeddings)
-- [ ] T040 Create KeywordSearchService for traditional MySQL search in src/Application/Service/KeywordSearchService.php
-- [ ] T041 Implement MySQL LIKE queries in KeywordSearchService::searchByKeyword()
-- [ ] T042 Create SearchFacade to route between semantic/keyword modes in src/Application/Service/SearchFacade.php
-- [ ] T043 Add search mode validation (keyword, semantic) in SearchFacade
-- [ ] T044 Update ProductController with semantic search endpoint in src/Infrastructure/Controller/ProductController.php
-- [ ] T045 Add search mode parameter (?mode=semantic or ?mode=keyword) to search endpoint
-- [ ] T046 Add error handling for embedding generation failures (fallback to keyword search)
-- [ ] T047 Add error handling for MongoDB unavailability (fallback to keyword search with warning)
-- [ ] T048 Write integration tests for semantic search end-to-end in tests/Integration/Search/
-- [ ] T049 Write integration tests for keyword search in tests/Integration/Search/
-- [ ] T050 Write tests for search mode switching in tests/Integration/Search/
+- [X] T030 [P] Create SearchQuery value object in src/Domain/ValueObject/SearchQuery.php
+- [X] T031 [P] Create SearchResult value object in src/Domain/ValueObject/SearchResult.php (products, scores, mode)
+- [X] T032 [P] Create SemanticSearchService in src/Application/Service/SemanticSearchService.php
+- [X] T033 Implement query embedding generation in SemanticSearchService::generateQueryEmbedding()
+- [X] T034 Implement MongoDB vector similarity search in MongoDBEmbeddingRepository::searchBySimilarity()
+- [X] T035 Implement cosine similarity calculation for ranking in MongoDBEmbeddingRepository
+- [X] T036 Implement result enrichment with MySQL data in SemanticSearchService::enrichResults()
+- [X] T037 Add pagination support (limit, offset) in MongoDB search query
+- [X] T038 Add minimum similarity threshold filtering (e.g., score > 0.6) in SemanticSearchService
+- [X] T039 Add result deduplication logic (same product from multiple embeddings)
+- [X] T040 Create KeywordSearchService for traditional MySQL search in src/Application/Service/KeywordSearchService.php
+- [X] T041 Implement MySQL LIKE queries in KeywordSearchService::searchByKeyword()
+- [X] T042 Create SearchFacade to route between semantic/keyword modes in src/Application/Service/SearchFacade.php
+- [X] T043 Add search mode validation (keyword, semantic) in SearchFacade
+- [X] T044 Update ProductController with semantic search endpoint in src/Infrastructure/Controller/ProductController.php
+- [X] T045 Add search mode parameter (?mode=semantic or ?mode=keyword) to search endpoint
+- [X] T046 Add error handling for embedding generation failures (fallback to keyword search)
+- [X] T047 Add error handling for MongoDB unavailability (fallback to keyword search with warning)
+- [X] T048 Write integration tests for semantic search end-to-end in tests/Integration/Search/
+- [X] T049 Write integration tests for keyword search in tests/Integration/Search/
+- [X] T050 Write tests for search mode switching in tests/Integration/Search/
 
 **Checkpoint**: Semantic search works end-to-end, keyword search works, mode switching functional, fallbacks handle errors
 
@@ -122,18 +122,18 @@
 
 ### Implementation for User Story 5
 
-- [ ] T051 [P] Create EmbeddingCacheService in src/Application/Service/EmbeddingCacheService.php
-- [ ] T052 [P] Define cache key format: `search:embedding:{md5(query)}` in EmbeddingCacheService
-- [ ] T053 Implement cache check before OpenAI API call in SemanticSearchService::generateQueryEmbedding()
-- [ ] T054 Implement cache write after successful embedding generation in EmbeddingCacheService::set()
-- [ ] T055 Add configurable TTL for embedding cache in .env (EMBEDDING_CACHE_TTL=3600)
-- [ ] T056 Add cache serialization (JSON encode embedding array) in EmbeddingCacheService
-- [ ] T057 Add cache deserialization (JSON decode to array) in EmbeddingCacheService
-- [ ] T058 Add Redis connection error handling (bypass cache, continue with OpenAI) in EmbeddingCacheService
-- [ ] T059 Add cache invalidation logic (optional: clear cache on command) in src/Command/ClearEmbeddingCacheCommand.php
-- [ ] T060 Add cache hit/miss metrics logging for monitoring in EmbeddingCacheService
-- [ ] T061 Write unit tests for EmbeddingCacheService in tests/Unit/Application/Service/
-- [ ] T062 Write integration tests for cache behavior in tests/Integration/Search/
+- [X] T051 [P] Create EmbeddingCacheService in src/Application/Service/EmbeddingCacheService.php
+- [X] T052 [P] Define cache key format: `search:embedding:{md5(query)}` in EmbeddingCacheService
+- [X] T053 Implement cache check before OpenAI API call in SemanticSearchService::generateQueryEmbedding()
+- [X] T054 Implement cache write after successful embedding generation in EmbeddingCacheService::set()
+- [X] T055 Add configurable TTL for embedding cache in .env (EMBEDDING_CACHE_TTL=3600)
+- [X] T056 Add cache serialization (JSON encode embedding array) in EmbeddingCacheService
+- [X] T057 Add cache deserialization (JSON decode to array) in EmbeddingCacheService
+- [X] T058 Add Redis connection error handling (bypass cache, continue with OpenAI) in EmbeddingCacheService
+- [X] T059 Add cache invalidation logic (optional: clear cache on command) in src/Command/ClearEmbeddingCacheCommand.php
+- [X] T060 Add cache hit/miss metrics logging for monitoring in EmbeddingCacheService
+- [X] T061 Write unit tests for EmbeddingCacheService in tests/Unit/Application/Service/
+- [X] T062 Write integration tests for cache behavior in tests/Integration/Search/
 
 **Checkpoint**: Query embeddings cached in Redis, cache hits reduce API calls, Redis failures handled gracefully
 
@@ -149,17 +149,17 @@
 
 ### Implementation for User Story 3
 
-- [ ] T063 [P] Create SemanticProductSearchTool in src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
-- [ ] T064 Implement tool description and parameters for Symfony AI Agent in SemanticProductSearchTool
-- [ ] T065 Implement tool execute() method that calls SemanticSearchService in SemanticProductSearchTool
-- [ ] T066 Add context enrichment: pass customer context to semantic search in SemanticProductSearchTool
-- [ ] T067 Format search results for VA consumption (structured product list) in SemanticProductSearchTool
-- [ ] T068 Add empty results handling (return friendly message to VA) in SemanticProductSearchTool
-- [ ] T069 Update VA agent configuration to include SemanticProductSearchTool in config/packages/ai.yaml
-- [ ] T070 Add tool call logging for debugging in SemanticProductSearchTool
-- [ ] T071 Update CustomerContextManager to track semantic search usage in context updates
-- [ ] T072 Write integration tests for VA calling semantic search tool in tests/Integration/AI/
-- [ ] T073 Write tests for context-enriched semantic search in tests/Integration/AI/
+- [X] T063 [P] Create SemanticProductSearchTool in src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+- [X] T064 Implement tool description and parameters for Symfony AI Agent in SemanticProductSearchTool
+- [X] T065 Implement tool execute() method that calls SemanticSearchService in SemanticProductSearchTool
+- [X] T066 Add context enrichment: pass customer context to semantic search in SemanticProductSearchTool
+- [X] T067 Format search results for VA consumption (structured product list) in SemanticProductSearchTool
+- [X] T068 Add empty results handling (return friendly message to VA) in SemanticProductSearchTool
+- [X] T069 Update VA agent configuration to include SemanticProductSearchTool in config/packages/ai.yaml
+- [X] T070 Add tool call logging for debugging in SemanticProductSearchTool
+- [X] T071 Update CustomerContextManager to track semantic search usage in context updates
+- [X] T072 Write integration tests for VA calling semantic search tool in tests/Integration/AI/
+- [X] T073 Write tests for context-enriched semantic search in tests/Integration/AI/
 
 **Checkpoint**: VA successfully uses semantic search tool, context enrichment works, results formatted correctly
 
@@ -175,23 +175,23 @@
 
 ### Implementation for Performance
 
-- [ ] T074 [P] Add Symfony Stopwatch profiling to semantic search in SemanticSearchService
-- [ ] T075 [P] Create SearchMetricsCollector service in src/Application/Service/SearchMetricsCollector.php
-- [ ] T076 Add response time tracking (p50, p95, p99) in SearchMetricsCollector
-- [ ] T077 Add OpenAI API call counter and cost estimation in SearchMetricsCollector
-- [ ] T078 Add MongoDB query performance tracking in MongoDBEmbeddingRepository
-- [ ] T079 Optimize MongoDB query with projection (only return needed fields) in MongoDBEmbeddingRepository
-- [ ] T080 Add query result limit (max 50 products) to prevent large result sets in SemanticSearchService
-- [ ] T081 Implement connection pooling for MongoDB in config/packages/mongodb.yaml
-- [ ] T082 Add OpenAI API rate limit monitoring and alerting in OpenAIEmbeddingService
-- [ ] T083 Add batch embedding generation for initial catalog sync in BatchSyncEmbeddingsCommand
-- [ ] T084 Optimize description text before embedding (remove HTML, truncate to token limit) in ProductEmbeddingSyncService
-- [ ] T085 Add database indexes on Product.updated_at for sync queries in migration
-- [ ] T086 Implement circuit breaker pattern for OpenAI API failures in OpenAIEmbeddingService
-- [ ] T087 Add health check endpoint for MongoDB and OpenAI connectivity in src/Infrastructure/Controller/HealthController.php
-- [ ] T088 Write performance tests (load testing) in tests/Performance/
-- [ ] T089 Create admin dashboard widget showing search metrics in templates/admin/dashboard.html.twig
-- [ ] T090 Document performance benchmarks and tuning recommendations in specs/010-semantic-search/PERFORMANCE.md
+- [X] T074 [P] Add Symfony Stopwatch profiling to semantic search in SemanticSearchService
+- [X] T075 [P] Create SearchMetricsCollector service in src/Application/Service/SearchMetricsCollector.php
+- [X] T076 Add response time tracking (p50, p95, p99) in SearchMetricsCollector
+- [X] T077 Add OpenAI API call counter and cost estimation in SearchMetricsCollector
+- [X] T078 Add MongoDB query performance tracking in MongoDBEmbeddingRepository
+- [X] T079 Optimize MongoDB query with projection (only return needed fields) in MongoDBEmbeddingRepository
+- [X] T080 Add query result limit (max 50 products) to prevent large result sets in SemanticSearchService
+- [X] T081 Implement connection pooling for MongoDB in config/packages/mongodb.yaml
+- [X] T082 Add OpenAI API rate limit monitoring and alerting in OpenAIEmbeddingService
+- [X] T083 Add batch embedding generation for initial catalog sync in BatchSyncEmbeddingsCommand
+- [X] T084 Optimize description text before embedding (remove HTML, truncate to token limit) in ProductEmbeddingSyncService
+- [X] T085 Add database indexes on Product.updated_at for sync queries in migration
+- [X] T086 Implement circuit breaker pattern for OpenAI API failures in OpenAIEmbeddingService
+- [X] T087 Add health check endpoint for MongoDB and OpenAI connectivity in src/Infrastructure/Controller/HealthController.php
+- [X] T088 Write performance tests (load testing) in tests/Performance/
+- [X] T089 Create admin dashboard widget showing search metrics in templates/admin/dashboard.html.twig
+- [X] T090 Document performance benchmarks and tuning recommendations in specs/010-semantic-search/PERFORMANCE.md
 
 **Checkpoint**: Search performance meets SLA (<5s p95), monitoring dashboards functional, production-ready
 
@@ -207,20 +207,20 @@
 
 ### Implementation for Reliability
 
-- [ ] T091 [P] Implement retry logic with exponential backoff for OpenAI API in OpenAIEmbeddingService
-- [ ] T092 [P] Implement circuit breaker for MongoDB failures in MongoDBEmbeddingRepository
-- [ ] T093 Add fallback to keyword search when semantic search fails in SearchFacade
-- [ ] T094 Add user-friendly error messages (no technical details) in ProductController
-- [ ] T095 Implement dead letter queue for failed embedding sync jobs in config/packages/messenger.yaml
-- [ ] T096 Add alerting for high failure rates (>10% failures in 5 minutes) using logging
-- [ ] T097 Create admin command to retry failed jobs in src/Command/RetryFailedEmbeddingsCommand.php
-- [ ] T098 Add detailed error logging (product_id, query, API response, stack trace)
-- [ ] T099 Implement request timeout for OpenAI API calls (5 seconds) in OpenAIEmbeddingService
-- [ ] T100 Implement request timeout for MongoDB queries (3 seconds) in MongoDBEmbeddingRepository
-- [ ] T101 Add validation for embedding dimensions (must be 1536) in OpenAIEmbeddingService
-- [ ] T102 Add validation for product description length (max 8191 tokens) before embedding
-- [ ] T103 Write tests for all failure scenarios in tests/Integration/ErrorHandling/
-- [ ] T104 Document error handling strategy in specs/010-semantic-search/ERROR_HANDLING.md
+- [X] T091 [P] Implement retry logic with exponential backoff for OpenAI API in OpenAIEmbeddingService
+- [X] T092 [P] Implement circuit breaker for MongoDB failures in MongoDBEmbeddingRepository
+- [X] T093 Add fallback to keyword search when semantic search fails in SearchFacade
+- [X] T094 Add user-friendly error messages (no technical details) in ProductController
+- [X] T095 Implement dead letter queue for failed embedding sync jobs in config/packages/messenger.yaml
+- [X] T096 Add alerting for high failure rates (>10% failures in 5 minutes) using logging
+- [X] T097 Create admin command to retry failed jobs in src/Command/RetryFailedEmbeddingsCommand.php
+- [X] T098 Add detailed error logging (product_id, query, API response, stack trace)
+- [X] T099 Implement request timeout for OpenAI API calls (5 seconds) in OpenAIEmbeddingService
+- [X] T100 Implement request timeout for MongoDB queries (3 seconds) in MongoDBEmbeddingRepository
+- [X] T101 Add validation for embedding dimensions (must be 1536) in OpenAIEmbeddingService
+- [X] T102 Add validation for product description length (max 8191 tokens) before embedding
+- [X] T103 Write tests for all failure scenarios in tests/Integration/ErrorHandling/
+- [X] T104 Document error handling strategy in specs/010-semantic-search/ERROR_HANDLING.md
 
 **Checkpoint**: System degrades gracefully, errors logged properly, retry mechanisms work, production-hardened
 

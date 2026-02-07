@@ -105,3 +105,131 @@ services:
 
     App\Application\Service\UnansweredQuestionCapture:
         public: true
+
+    # MongoDB Client (spec-010)
+    # T081: Connection pooling configured via URI parameters
+    # URI format: mongodb://host:port/database?maxPoolSize=50&minPoolSize=10&maxIdleTimeMS=60000
+    MongoDB\Client:
+        public: true
+        arguments:
+            $uri: '%env(MONGODB_URL)%'
+            $uriOptions: []
+            $driverOptions: []
+
+    # OpenAI Embedding Service (spec-010)
+    # Uses Symfony AI Platform (MANDATORY per spec-010 section 4.1)
+    App\Infrastructure\AI\Service\OpenAIEmbeddingService:
+        public: true
+        arguments:
+            $platform: '@ai.platform.openai'
+            $logger: '@logger'
+            $model: '%env(OPENAI_EMBEDDING_MODEL)%'
+
+    # MongoDB Embedding Repository (spec-010)
+    App\Infrastructure\Repository\MongoDBEmbeddingRepository:
+        public: true
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+            $databaseName: '%env(MONGO_DATABASE)%'
+
+    # Embedding Service Interface binding (spec-010)
+    App\Domain\Repository\EmbeddingServiceInterface: '@App\Infrastructure\AI\Service\OpenAIEmbeddingService'
+
+    # Vector Index Commands (spec-010)
+    App\Command\CreateVectorIndexCommand:
+        public: true
+        arguments:
+            $repository: '@App\Infrastructure\Repository\MongoDBEmbeddingRepository'
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+            $databaseName: '%env(MONGO_DATABASE)%'
+        tags: ['console.command']
+
+    App\Command\TestEmbeddingCommand:
+        public: true
+        arguments:
+            $embeddingService: '@App\Domain\Repository\EmbeddingServiceInterface'
+            $repository: '@App\Infrastructure\Repository\MongoDBEmbeddingRepository'
+        tags: ['console.command']
+
+    # Product Embedding Sync Services (spec-010 Phase 1)
+    App\Application\Service\ProductEmbeddingSyncService:
+        public: true
+
+    App\Application\UseCase\SyncProductEmbedding:
+        public: true
+
+    App\Infrastructure\Persistence\Listener\ProductEmbeddingListener:
+        public: true
+        tags:
+            - { name: 'doctrine.event_listener', event: 'postPersist' }
+            - { name: 'doctrine.event_listener', event: 'postUpdate' }
+            - { name: 'doctrine.event_listener', event: 'postRemove' }
+
+    # Sync Commands (spec-010 Phase 1)
+    App\Command\SyncAllEmbeddingsCommand:
+        public: true
+        tags: ['console.command']
+
+    App\Command\BatchSyncEmbeddingsCommand:
+        public: true
+        tags: ['console.command']
+
+    # Embedding Cache Service (spec-010 Phase 3)
+    App\Application\Service\EmbeddingCacheService:
+        public: true
+        arguments:
+            $cache: '@cache.app'
+            $logger: '@logger'
+            $embeddingCacheTtl: '%env(EMBEDDING_CACHE_TTL)%'
+
+    # Semantic Search Services (spec-010 Phase 2)
+    App\Application\Service\SemanticSearchService:
+        public: true
+
+    App\Application\Service\KeywordSearchService:
+        public: true
+
+    App\Application\Service\SearchFacade:
+        public: true
+
+    # Error Message Translator (spec-010 Phase 6 T094)
+    App\Application\Service\ErrorMessageTranslator:
+        public: true
+        arguments:
+            $logger: '@logger'
+
+    # Failed Job Registry (spec-010 Phase 6 T095)
+    App\Application\Service\FailedJobRegistry:
+        public: true
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $logger: '@logger'
+
+    # Failure Rate Monitor (spec-010 Phase 6 T096)
+    App\Application\Service\FailureRateMonitor:
+        public: true
+        arguments:
+            $cache: '@cache.app'
+            $logger: '@logger'
+
+    # Cache Management Commands (spec-010 Phase 3)
+    App\Command\ClearEmbeddingCacheCommand:
+        public: true
+        tags: ['console.command']
+
+    # Performance Monitoring Services (spec-010 Phase 5)
+    App\Application\Service\SearchMetricsCollector:
+        public: true
+        arguments:
+            $cache: '@cache.app'
+            $logger: '@logger'
+
+    # Admin Metrics Controller (spec-010 Phase 5 T089)
+    App\Infrastructure\Controller\AdminMetricsController:
+        public: true
+
+    # Symfony Stopwatch for profiling (spec-010 Phase 5 T074)
+    Symfony\Component\Stopwatch\Stopwatch:
+        public: true

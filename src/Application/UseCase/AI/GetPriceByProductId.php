@@ -66,7 +66,7 @@ class GetPriceByProductId
             'found' => true,
             'id' => (string) $product->getId(),
             'name' => $product->getName(),
-            'price' => $price->getAmount(), // Returns as float (e.g., 19.99)
+            'price' => $price->getAmountAsDecimal(), // Returns as float (e.g., 19.99)
             'currency' => $price->getCurrency(),
             'inStock' => $product->isInStock(),
             'stockQuantity' => $product->getStock(),
