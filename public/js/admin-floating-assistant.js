@@ -5,15 +5,14 @@
  * Proporciona:
  * - Botón flotante (FAB) accesible en todas las páginas admin
  * - Panel de chat persistente
- * - Gestión de estado en sessionStorage
+ * - Gestión de estado en localStorage (siguiendo patrón del chatbot cliente)
  * - Comunicación con endpoint AdminAssistantController
  */
 
 class AdminFloatingAssistant {
     constructor() {
         this.isOpen = false;
-        this.conversationId = null;
-        this.messageHistory = [];
+        this.conversationId = this.getConversationId(); // Load from localStorage
         
         this.fab = null;
         this.panel = null;
@@ -48,9 +47,6 @@ class AdminFloatingAssistant {
         // Restaurar posición del FAB
         this.restorePosition();
         
-        // Restaurar estado de sessionStorage
-        this.restoreState();
-        
         // Bind event listeners (FAB click is handled in makeFabDraggable)
         this.closeButton?.addEventListener('click', () => this.closePanel());
         this.clearButton?.addEventListener('click', () => this.handleClearConversation());
@@ -65,9 +61,9 @@ class AdminFloatingAssistant {
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
-        // Cargar historial si existe conversationId
+        // Cargar historial desde servidor si existe conversationId
         if (this.conversationId) {
-            this.loadHistory();
+            this.loadConversationHistory();
         }
     }
     
@@ -84,7 +80,6 @@ class AdminFloatingAssistant {
         this.panel.classList.add('open');
         this.fab.classList.add('hidden');
         this.messageInput?.focus();
-        this.saveState();
         
         // Scroll to bottom
         this.scrollToBottom();
@@ -94,7 +89,6 @@ class AdminFloatingAssistant {
         this.isOpen = false;
         this.panel.classList.remove('open');
         this.fab.classList.remove('hidden');
-        this.saveState();
     }
     
     handleOutsideClick(e) {
@@ -123,7 +117,7 @@ class AdminFloatingAssistant {
         if (!message) return;
         
         // Agregar mensaje del usuario al UI
-        this.addMessage('admin', message);
+        this.addMessage('user', message);
         this.messageInput.value = '';
         
         // Mostrar indicador de escritura
@@ -152,10 +146,10 @@ class AdminFloatingAssistant {
             this.removeTypingIndicator(typingId);
             
             if (data.success) {
-                // Guardar conversation ID
+                // Guardar conversationId en localStorage si es nuevo
                 if (data.conversation_id) {
                     this.conversationId = data.conversation_id;
-                    this.saveState();
+                    this.saveConversationId(this.conversationId);
                 }
                 
                 // Agregar respuesta del asistente
@@ -171,7 +165,7 @@ class AdminFloatingAssistant {
         }
     }
     
-    addMessage(sender, text, skipSave = false) {
+    addMessage(sender, text) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `admin-floating-message admin-floating-message-${sender}`;
         
@@ -189,12 +183,6 @@ class AdminFloatingAssistant {
         
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
-        
-        // Guardar en historial solo si no viene de una restauración
-        if (!skipSave) {
-            this.messageHistory.push({ sender, text, time: now.toISOString() });
-            this.saveState();
-        }
     }
     
     showTypingIndicator() {
@@ -220,81 +208,71 @@ class AdminFloatingAssistant {
         this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
     
-    async loadHistory() {
+    // LocalStorage helpers for conversation persistence (siguiendo patrón del cliente)
+    getConversationId() {
+        return localStorage.getItem('admin_assistant_conversation_id');
+    }
+
+    saveConversationId(id) {
+        localStorage.setItem('admin_assistant_conversation_id', id);
+    }
+
+    clearConversationId() {
+        localStorage.removeItem('admin_assistant_conversation_id');
+    }
+    
+    async loadConversationHistory() {
+        if (!this.conversationId) return;
+        
         try {
-            const response = await fetch(`/admin/assistant/history?conversation_id=${this.conversationId}`);
-            if (!response.ok) return;
+            const response = await fetch('/admin/assistant/history', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             
-            const data = await response.json();
-            
-            if (data.success && data.messages) {
-                // Limpiar mensajes actuales
-                this.messagesContainer.innerHTML = '';
-                this.messageHistory = [];
+            if (response.ok) {
+                const data = await response.json();
                 
-                // Agregar mensajes del historial
-                data.messages.forEach(msg => {
-                    this.addMessage(msg.sender === 'admin' ? 'admin' : 'assistant', msg.message, true);
-                });
+                if (data.success && data.messages && data.messages.length > 0) {
+                    // Limpiar mensajes existentes
+                    this.messagesContainer.innerHTML = '';
+                    
+                    // Cargar todos los mensajes desde el historial
+                    data.messages.forEach(msg => {
+                        const sender = msg.sender === 'user' || msg.sender === 'admin' ? 'user' : 'assistant';
+                        this.addMessage(sender, msg.text);
+                    });
+                } else {
+                    // No hay mensajes, mostrar bienvenida
+                    this.showWelcomeMessage();
+                }
+            } else {
+                // Error al cargar, mostrar mensaje de continuación
+                this.addMessage('assistant', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
             }
         } catch (error) {
-            console.error('Error loading history:', error);
+            console.error('Error loading conversation history:', error);
+            this.addMessage('assistant', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
         }
     }
     
-    saveState() {
-        const state = {
-            isOpen: this.isOpen,
-            conversationId: this.conversationId,
-            messageHistory: this.messageHistory
-        };
-        
-        sessionStorage.setItem('adminFloatingAssistant', JSON.stringify(state));
-    }
-    
-    restoreState() {
-        const savedState = sessionStorage.getItem('adminFloatingAssistant');
-        if (!savedState) return;
-        
-        try {
-            const state = JSON.parse(savedState);
-            
-            this.conversationId = state.conversationId;
-            this.messageHistory = state.messageHistory || [];
-            
-            // Restaurar mensajes en el UI
-            if (this.messageHistory.length > 0) {
-                // Limpiar mensajes existentes primero
-                this.messagesContainer.innerHTML = '';
-                
-                this.messageHistory.forEach(msg => {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = `admin-floating-message admin-floating-message-${msg.sender}`;
-                    
-                    const contentDiv = document.createElement('div');
-                    contentDiv.className = 'admin-floating-message-content';
-                    contentDiv.textContent = msg.text;
-                    
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'admin-floating-message-time';
-                    const time = new Date(msg.time);
-                    timeDiv.textContent = time.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                    
-                    messageDiv.appendChild(contentDiv);
-                    messageDiv.appendChild(timeDiv);
-                    
-                    this.messagesContainer.appendChild(messageDiv);
-                });
-                
-                this.scrollToBottom();
-            }
-            
-            // NO auto-abrir el panel, solo restaurar estado interno
-            // El admin decide cuándo abrir el panel
-            
-        } catch (error) {
-            console.error('Error restoring state:', error);
-        }
+    showWelcomeMessage() {
+        const welcome = document.createElement('div');
+        welcome.className = 'admin-floating-welcome';
+        welcome.innerHTML = `
+            <h4>Asistente Virtual Admin</h4>
+            <p>¿En qué puedo ayudarte hoy?</p>
+            <ul>
+                <li>Gestión de inventario</li>
+                <li>Actualización de precios</li>
+                <li>Análisis de ventas</li>
+                <li>Gestión de pedidos</li>
+                <li>Estadísticas de clientes</li>
+            </ul>
+        `;
+        this.messagesContainer.appendChild(welcome);
     }
     
     handleClearConversation() {
@@ -322,11 +300,16 @@ class AdminFloatingAssistant {
             }
         }
         
+        // Limpiar conversationId de localStorage
+        this.clearConversationId();
         this.conversationId = null;
-        this.messageHistory = [];
         this.messagesContainer.innerHTML = '';
         
-        // Agregar mensaje de bienvenida
+        // Mostrar mensaje de bienvenida
+        this.showWelcomeMessage();
+    }
+    
+    showWelcomeMessage() {
         const welcome = document.createElement('div');
         welcome.className = 'admin-floating-welcome';
         welcome.innerHTML = `
@@ -341,8 +324,6 @@ class AdminFloatingAssistant {
             </ul>
         `;
         this.messagesContainer.appendChild(welcome);
-        
-        this.saveState();
     }
     
     makeFabDraggable() {
