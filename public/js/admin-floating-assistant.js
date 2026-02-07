@@ -55,6 +55,14 @@ class AdminFloatingAssistant {
         this.clearButton?.addEventListener('click', () => this.handleClearConversation());
         this.messageForm?.addEventListener('submit', (e) => this.handleSubmit(e));
         
+        // Enter key para enviar mensaje
+        this.messageInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.handleSubmit(e);
+            }
+        });
+        
         // Make PANEL draggable (not FAB)
         this.makePanelDraggable();
         
@@ -65,9 +73,12 @@ class AdminFloatingAssistant {
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         
         // Cargar historial desde servidor si existe conversationId
+        console.log('[Admin Assistant] Initializing with conversationId:', this.conversationId);
         if (this.conversationId) {
+            console.log('[Admin Assistant] Loading conversation history...');
             this.loadConversationHistory();
         } else {
+            console.log('[Admin Assistant] No conversationId found, showing welcome message');
             // No hay conversación previa, mostrar mensaje de bienvenida
             this.showWelcomeMessage();
         }
@@ -154,6 +165,7 @@ class AdminFloatingAssistant {
             if (data.success) {
                 // Guardar conversationId en localStorage si es nuevo
                 if (data.conversation_id) {
+                    console.log('[Admin Assistant] Saving conversationId:', data.conversation_id);
                     this.conversationId = data.conversation_id;
                     this.saveConversationId(this.conversationId);
                 }
@@ -231,6 +243,7 @@ class AdminFloatingAssistant {
         if (!this.conversationId) return;
         
         try {
+            console.log('[Admin Assistant] Fetching history from /admin/assistant/history');
             const response = await fetch('/admin/assistant/history', {
                 method: 'GET',
                 headers: {
@@ -240,8 +253,10 @@ class AdminFloatingAssistant {
             
             if (response.ok) {
                 const data = await response.json();
+                console.log('[Admin Assistant] History response:', data);
                 
                 if (data.success && data.messages && data.messages.length > 0) {
+                    console.log('[Admin Assistant] Loading', data.messages.length, 'messages');
                     // Limpiar mensajes existentes
                     this.messagesContainer.innerHTML = '';
                     
@@ -251,10 +266,12 @@ class AdminFloatingAssistant {
                         this.addMessage(sender, msg.text);
                     });
                 } else {
+                    console.log('[Admin Assistant] No messages in history, showing welcome');
                     // No hay mensajes, mostrar bienvenida
                     this.showWelcomeMessage();
                 }
             } else {
+                console.error('[Admin Assistant] Error loading history, status:', response.status);
                 // Error al cargar, mostrar mensaje de continuación
                 this.addMessage('assistant', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
             }
