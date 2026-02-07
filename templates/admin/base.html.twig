@@ -267,7 +267,6 @@
                 <a href="{{ path('admin_home') }}" class="{{ app.request.get('_route') == 'admin_home' ? 'active' : '' }}">Inicio</a>
                 <a href="{{ path('admin_unanswered_questions_list') }}" class="{{ app.request.get('_route') starts with 'admin_unanswered_questions' ? 'active' : '' }}">Preguntas Sin Respuesta</a>
                 <a href="{{ path('admin_products_list') }}" class="{{ app.request.get('_route') starts with 'admin_products' ? 'active' : '' }}">Productos</a>
-                <a href="{{ path('admin_assistant') }}" class="{{ app.request.get('_route') starts with 'admin_assistant' ? 'active' : '' }}">🤖 Asistente Virtual</a>
                 <a href="{{ path('admin_users_list') }}" class="{{ app.request.get('_route') starts with 'admin_users' ? 'active' : '' }}">Usuarios</a>
             </nav>
         </div>
@@ -317,7 +316,10 @@
                 🤖 Asistente Virtual
                 <span class="admin-floating-header-badge">Admin</span>
             </div>
-            <button id="admin-floating-close" aria-label="Cerrar panel">&times;</button>
+            <div class="admin-floating-header-actions">
+                <button id="admin-floating-clear" class="btn-clear" title="Limpiar conversación" aria-label="Limpiar conversación">🗑️</button>
+                <button id="admin-floating-close" aria-label="Cerrar panel">&times;</button>
+            </div>
         </div>
         
         <div id="admin-floating-messages">
