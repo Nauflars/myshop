@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Service\CustomerContextManager;
 use App\Application\Service\UnansweredQuestionCapture;
 use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
@@ -12,7 +13,6 @@ use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +22,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * ChatbotController - Handles chat interactions with conversation persistence
  * 
  * Updated in spec-003 to persist conversations to database.
+ * Updated in spec-009 to add conversational context and memory management.
  */
 #[Route('/api/chat')]
 class ChatbotController extends AbstractController
@@ -31,7 +32,7 @@ class ChatbotController extends AbstractController
         private readonly RoleAwareAssistant $roleAwareAssistant,
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
-        #[Autowire(service: 'ai.agent.openAiAgent')]
+        private readonly CustomerContextManager $contextManager,
         private readonly AgentInterface $agent
     ) {
     }
@@ -79,6 +80,20 @@ class ChatbotController extends AbstractController
             
             $conversationId = $saveUserResult['conversationId'];
             
+            // Load or create customer context (spec-009)
+            // Wrapped in try-catch to ensure Redis failures don't break chatbot
+            $context = null;
+            try {
+                $userId = (string) $user->getId();
+                $context = $this->contextManager->getOrCreateContext($userId);
+                
+                // Refresh TTL on interaction (spec-009 US3)
+                $this->contextManager->refreshTtl($userId);
+            } catch (\Exception $e) {
+                error_log('Error loading customer context: ' . $e->getMessage());
+                // Continue without context - chatbot will work in stateless mode
+            }
+            
             // Build message bag with conversation history for context
             $messages = [];
             foreach ($conversationHistory as $msg) {
@@ -95,22 +110,35 @@ class ChatbotController extends AbstractController
             try {
                 $messageBag = new MessageBag(...$messages);
                 $result = $this->agent->call($messageBag);
-                $assistantResponse = $result->getContent();
+                
+                // Extract response content - handle both string and array responses
+                $content = $result->getContent();
+                $assistantResponse = is_array($content) ? json_encode($content) : (string) $content;
+                
+                // Update context after successful AI interaction (spec-009)
+                if ($context !== null) {
+                    $context->incrementTurnCount();
+                }
+                // Note: Tool execution context updates will be added in T017
             } catch (\Exception $e) {
                 error_log('Symfony AI Agent Error: ' . $e->getMessage());
                 error_log('Stack trace: ' . $e->getTraceAsString());
                 
                 // Capture as unanswered question for spec-006 (FR-001 to FR-008)
-                $captureResult = $this->unansweredQuestionCapture->capture(
-                    questionText: $userMessage,
-                    user: $user,
-                    userRole: $user->getRoles()[0] ?? 'ROLE_CUSTOMER',
-                    reasonCategory: UnansweredQuestion::REASON_TOOL_ERROR,
-                    conversationId: $conversationId
-                );
+                try {
+                    $this->unansweredQuestionCapture->capture(
+                        questionText: $userMessage,
+                        user: $user,
+                        userRole: $user->getRoles()[0] ?? 'ROLE_CUSTOMER',
+                        reasonCategory: UnansweredQuestion::REASON_TOOL_ERROR,
+                        conversationId: $conversationId
+                    );
+                } catch (\Exception $captureException) {
+                    error_log('Failed to capture unanswered question: ' . $captureException->getMessage());
+                }
                 
-                // Use polite fallback message from capture service
-                $assistantResponse = $captureResult['fallbackMessage'] ?? "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
+                // Use polite fallback message
+                $assistantResponse = "Disculpa, estoy teniendo problemas para procesar tu solicitud. Por favor intenta de nuevo.";
             }
             
             // Save assistant response to database
@@ -125,16 +153,31 @@ class ChatbotController extends AbstractController
                 error_log('Error saving assistant message: ' . $saveAssistantResult['message']);
             }
             
+            // Save updated context to Redis (spec-009)
+            if ($context !== null) {
+                try {
+                    $this->contextManager->saveContext($context);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the request - context is not critical
+                    error_log('Error saving customer context: ' . $e->getMessage());
+                }
+            }
+            
             return $this->json([
                 'response' => $assistantResponse,
                 'conversationId' => $conversationId,
                 'role' => $this->roleAwareAssistant->getRoleDisplayName(),
             ]);
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log('ChatbotController Error: ' . $e->getMessage());
+            error_log('File: ' . $e->getFile() . ':' . $e->getLine());
+            error_log('Trace: ' . $e->getTraceAsString());
+            
             return $this->json([
                 'error' => 'An error occurred while processing your request',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
@@ -214,6 +257,39 @@ class ChatbotController extends AbstractController
             error_log('Clear Chat Error: ' . $e->getMessage());
             return $this->json([
                 'error' => 'Error al limpiar la conversación',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
+     * Reset customer context (spec-009 US4)
+     * Clears context from Redis, allowing fresh start
+     */
+    #[Route('/reset-context', name: 'api_chatbot_reset_context', methods: ['POST'])]
+    public function resetContext(): JsonResponse
+    {
+        try {
+            $user = $this->security->getUser();
+            if (!$user instanceof User) {
+                return $this->json([
+                    'error' => 'Usuario no autenticado',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            
+            $userId = (string) $user->getId();
+            $deleted = $this->contextManager->deleteContext($userId);
+            
+            return $this->json([
+                'success' => true,
+                'message' => $deleted 
+                    ? 'Context reset successful. Starting fresh conversation.'
+                    : 'No context to reset. Ready for new conversation.',
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log('Reset Context Error: ' . $e->getMessage());
+            return $this->json([
+                'error' => 'Error al resetear el contexto',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

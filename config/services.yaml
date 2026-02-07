@@ -1,6 +1,10 @@
 parameters:
     # Stock management configuration (spec-008 US2)
     app.stock.low_threshold: 10  # Products with stock below this are considered low stock
+    
+    # Context storage TTL configuration (spec-009)
+    app.context.customer_ttl: '%env(int:CUSTOMER_CONTEXT_TTL)%'
+    app.context.admin_ttl: '%env(int:ADMIN_CONTEXT_TTL)%'
 
 services:
     _defaults:
@@ -37,6 +41,16 @@ services:
         resource: '../src/Infrastructure/Controller/'
         tags: ['controller.service_arguments']
 
+    # Bind specific AI agents to controllers to prevent inlining
+    App\Infrastructure\Controller\ChatbotController:
+        arguments:
+            $agent: '@ai.agent.openAiAgent'
+
+    App\Infrastructure\Controller\AdminAssistantController:
+        arguments:
+            $adminAgent: '@ai.agent.adminAssistant'
+            $contextManager: '@App\Application\Service\AdminContextManager'
+
     # Use Cases
     App\Application\UseCase\:
         resource: '../src/Application/UseCase/'
@@ -61,7 +75,33 @@ services:
     # App\Infrastructure\Chatbot\:
     #     resource: '../src/Infrastructure/Chatbot/'
 
-when@test:
-    services:
-        _defaults:
-            public: true
+    # Context Storage Infrastructure (spec-009)
+    App\Domain\Repository\ContextStorageInterface:
+        class: App\Infrastructure\Repository\RedisContextStorage
+        public: true
+        arguments:
+            $redis: '@Predis\Client'
+
+    # Context Management Services (spec-009)
+    App\Application\Service\CustomerContextManager:
+        public: true
+        arguments:
+            $ttl: '%app.context.customer_ttl%'
+
+    App\Application\Service\AdminContextManager:
+        public: true
+        arguments:
+            $ttl: '%app.context.admin_ttl%'
+
+    # AI Services - prevent inlining for dependency injection
+    App\Infrastructure\AI\Service\RoleAwareAssistant:
+        public: true
+
+    App\Infrastructure\AI\Service\ConversationManager:
+        public: true
+
+    App\Infrastructure\AI\Service\AdminConversationManager:
+        public: true
+
+    App\Application\Service\UnansweredQuestionCapture:
+        public: true

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Domain\Entity\User;
+use App\Application\Service\AdminContextManager;
 use App\Infrastructure\AI\Service\AdminConversationManager;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,8 +29,8 @@ class AdminAssistantController extends AbstractController
     public function __construct(
         private readonly AdminConversationManager $conversationManager,
         private readonly Security $security,
-        #[Autowire(service: 'ai.agent.adminAssistant')]
-        private readonly AgentInterface $adminAgent
+        private readonly AgentInterface $adminAgent,
+        private readonly AdminContextManager $contextManager
     ) {
     }
 
@@ -92,15 +92,36 @@ class AdminAssistantController extends AbstractController
             // Get or create conversation
             $conversation = $this->conversationManager->getOrCreateConversation($user, $sessionId);
 
+            // Load or create admin context (spec-009 Phase 2)
+            $context = null;
+            try {
+                $adminId = (string) $user->getId();
+                $context = $this->contextManager->getOrCreateContext($adminId);
+                $this->contextManager->refreshTtl($adminId);
+            } catch (\Exception $e) {
+                error_log('Error loading admin context: ' . $e->getMessage());
+            }
+
             // Save admin message
             $this->conversationManager->saveAdminMessage($conversation, $userMessage);
 
             // Get conversation history as MessageBag
             $messageBag = $this->conversationManager->conversationToMessageBag($conversation);
 
-            // Get AI response  
+            // Get AI response with context enrichment
             $response = $this->adminAgent->call($messageBag);
-            $assistantReply = $response->getContent();
+            $content = $response->getContent();
+            $assistantReply = is_array($content) ? json_encode($content) : (string) $content;
+
+            // Update context after AI interaction
+            if ($context !== null) {
+                $context->incrementTurnCount();
+                try {
+                    $this->contextManager->saveContext($context);
+                } catch (\Exception $e) {
+                    error_log('Error saving admin context: ' . $e->getMessage());
+                }
+            }
 
             // Save assistant response
             $this->conversationManager->saveAssistantMessage($conversation, $assistantReply);
@@ -112,11 +133,16 @@ class AdminAssistantController extends AbstractController
                 'message_count' => $conversation->getMessageCount(),
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            error_log('AdminAssistantController Error: ' . $e->getMessage());
+            error_log('File: ' . $e->getFile() . ':' . $e->getLine());
+            error_log('Trace: ' . $e->getTraceAsString());
+            
             return $this->json([
                 'success' => false,
                 'error' => 'Error al procesar el mensaje',
                 'details' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
