@@ -21,6 +21,11 @@ class AdminFloatingAssistant {
         this.messageInput = null;
         this.messagesContainer = null;
         this.closeButton = null;
+        this.clearButton = null;
+        
+        // Dragging state
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
         
         this.init();
     }
@@ -33,19 +38,26 @@ class AdminFloatingAssistant {
         this.messageInput = document.getElementById('admin-floating-input');
         this.messagesContainer = document.getElementById('admin-floating-messages');
         this.closeButton = document.getElementById('admin-floating-close');
+        this.clearButton = document.getElementById('admin-floating-clear');
         
         if (!this.fab || !this.panel) {
             console.error('Admin floating assistant elements not found');
             return;
         }
         
+        // Restaurar posición del FAB
+        this.restorePosition();
+        
         // Restaurar estado de sessionStorage
         this.restoreState();
         
-        // Bind event listeners
-        this.fab.addEventListener('click', () => this.togglePanel());
+        // Bind event listeners (FAB click is handled in makeFabDraggable)
         this.closeButton?.addEventListener('click', () => this.closePanel());
+        this.clearButton?.addEventListener('click', () => this.handleClearConversation());
         this.messageForm?.addEventListener('submit', (e) => this.handleSubmit(e));
+        
+        // Make FAB draggable
+        this.makeFabDraggable();
         
         // Click fuera del panel para cerrar
         document.addEventListener('click', (e) => this.handleOutsideClick(e));
@@ -277,7 +289,31 @@ class AdminFloatingAssistant {
         }
     }
     
-    clearConversation() {
+    handleClearConversation() {
+        if (confirm('¿Estás seguro de que deseas limpiar la conversación? Esta acción no se puede deshacer.')) {
+            this.clearConversation();
+        }
+    }
+    
+    async clearConversation() {
+        // Limpiar en el servidor si existe conversationId
+        if (this.conversationId) {
+            try {
+                await fetch('/admin/assistant/clear-context', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        conversation_id: this.conversationId
+                    })
+                });
+            } catch (error) {
+                console.error('Error clearing conversation on server:', error);
+            }
+        }
+        
         this.conversationId = null;
         this.messageHistory = [];
         this.messagesContainer.innerHTML = '';
@@ -299,6 +335,108 @@ class AdminFloatingAssistant {
         this.messagesContainer.appendChild(welcome);
         
         this.saveState();
+    }
+    
+    makeFabDraggable() {
+        this.fab.style.cursor = 'move';
+        
+        let startX, startY;
+        let hasMoved = false;
+        
+        this.fab.addEventListener('mousedown', (e) => {
+            this.isDragging = true;
+            hasMoved = false;
+            
+            const rect = this.fab.getBoundingClientRect();
+            this.dragOffset = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            this.fab.style.transition = 'none';
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isDragging) return;
+            
+            // Detectar movimiento
+            const deltaX = Math.abs(e.clientX - startX);
+            const deltaY = Math.abs(e.clientY - startY);
+            
+            if (deltaX > 5 || deltaY > 5) {
+                hasMoved = true;
+            }
+            
+            if (!hasMoved) return;
+            
+            let newX = e.clientX - this.dragOffset.x;
+            let newY = e.clientY - this.dragOffset.y;
+            
+            // Keep within viewport bounds
+            const maxX = window.innerWidth - this.fab.offsetWidth;
+            const maxY = window.innerHeight - this.fab.offsetHeight;
+            
+            newX = Math.max(0, Math.min(newX, maxX));
+            newY = Math.max(0, Math.min(newY, maxY));
+            
+            this.fab.style.left = `${newX}px`;
+            this.fab.style.top = `${newY}px`;
+            this.fab.style.right = 'auto';
+            this.fab.style.bottom = 'auto';
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (this.isDragging) {
+                this.isDragging = false;
+                this.fab.style.transition = '';
+                
+                if (hasMoved) {
+                    this.savePosition();
+                } else {
+                    // Was a click, not a drag - toggle panel
+                    this.togglePanel();
+                }
+                
+                hasMoved = false;
+            }
+        });
+    }
+    
+    savePosition() {
+        const position = {
+            left: this.fab.style.left,
+            top: this.fab.style.top,
+            right: this.fab.style.right,
+            bottom: this.fab.style.bottom
+        };
+        
+        localStorage.setItem('adminFabPosition', JSON.stringify(position));
+    }
+    
+    restorePosition() {
+        const savedPosition = localStorage.getItem('adminFabPosition');
+        if (!savedPosition) return;
+        
+        try {
+            const position = JSON.parse(savedPosition);
+            
+            if (position.left !== 'auto' && position.left) {
+                this.fab.style.left = position.left;
+                this.fab.style.right = 'auto';
+            }
+            
+            if (position.top !== 'auto' && position.top) {
+                this.fab.style.top = position.top;
+                this.fab.style.bottom = 'auto';
+            }
+        } catch (error) {
+            console.error('Error restoring FAB position:', error);
+        }
     }
 }
 

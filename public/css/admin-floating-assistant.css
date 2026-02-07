@@ -117,20 +117,38 @@
     text-transform: uppercase;
 }
 
-#admin-floating-close {
+.admin-floating-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#admin-floating-close,
+#admin-floating-clear {
     background: none;
     border: none;
     color: white;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 20px;
     line-height: 1;
-    padding: 4px;
+    padding: 4px 8px;
     opacity: 0.8;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    border-radius: 4px;
 }
 
-#admin-floating-close:hover {
+#admin-floating-close {
+    font-size: 24px;
+}
+
+#admin-floating-close:hover,
+#admin-floating-clear:hover {
     opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#admin-floating-clear:active {
+    transform: scale(0.95);
 }
 
 /* Contenedor de mensajes */
