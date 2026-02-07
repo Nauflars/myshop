@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Domain\Entity\User;
+use App\Application\Service\AdminContextManager;
 use App\Infrastructure\AI\Service\AdminConversationManager;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,7 +29,8 @@ class AdminAssistantController extends AbstractController
     public function __construct(
         private readonly AdminConversationManager $conversationManager,
         private readonly Security $security,
-        private readonly AgentInterface $adminAgent
+        private readonly AgentInterface $adminAgent,
+        private readonly AdminContextManager $contextManager
     ) {
     }
 
@@ -90,15 +92,36 @@ class AdminAssistantController extends AbstractController
             // Get or create conversation
             $conversation = $this->conversationManager->getOrCreateConversation($user, $sessionId);
 
+            // Load or create admin context (spec-009 Phase 2)
+            $context = null;
+            try {
+                $adminId = (string) $user->getId();
+                $context = $this->contextManager->getOrCreateContext($adminId);
+                $this->contextManager->refreshTtl($adminId);
+            } catch (\Exception $e) {
+                error_log('Error loading admin context: ' . $e->getMessage());
+            }
+
             // Save admin message
             $this->conversationManager->saveAdminMessage($conversation, $userMessage);
 
             // Get conversation history as MessageBag
             $messageBag = $this->conversationManager->conversationToMessageBag($conversation);
 
-            // Get AI response  
+            // Get AI response with context enrichment
             $response = $this->adminAgent->call($messageBag);
-            $assistantReply = $response->getContent();
+            $content = $response->getContent();
+            $assistantReply = is_array($content) ? json_encode($content) : (string) $content;
+
+            // Update context after AI interaction
+            if ($context !== null) {
+                $context->incrementTurnCount();
+                try {
+                    $this->contextManager->saveContext($context);
+                } catch (\Exception $e) {
+                    error_log('Error saving admin context: ' . $e->getMessage());
+                }
+            }
 
             // Save assistant response
             $this->conversationManager->saveAssistantMessage($conversation, $assistantReply);

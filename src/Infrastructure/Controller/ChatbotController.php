@@ -110,7 +110,10 @@ class ChatbotController extends AbstractController
             try {
                 $messageBag = new MessageBag(...$messages);
                 $result = $this->agent->call($messageBag);
-                $assistantResponse = $result->getContent();
+                
+                // Extract response content - handle both string and array responses
+                $content = $result->getContent();
+                $assistantResponse = is_array($content) ? json_encode($content) : (string) $content;
                 
                 // Update context after successful AI interaction (spec-009)
                 if ($context !== null) {
