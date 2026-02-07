@@ -30,13 +30,13 @@
 - [X] T001 [P] [US1] Create admin-floating-assistant.js module with FAB component in public/js/admin-floating-assistant.js
 - [X] T002 [P] [US1] Create admin-floating-assistant.css for floating button and panel styles in public/css/admin-floating-assistant.css
 - [X] T003 [US1] Add floating assistant HTML structure to admin base template in templates/admin/base.html.twig
-- [ ] T004 [US1] Implement FAB open/close toggle with animation in admin-floating-assistant.js
-- [ ] T005 [US1] Implement panel state persistence in sessionStorage (open/closed status)
-- [ ] T006 [US1] Connect floating panel to existing AdminAssistantController POST /admin/assistant/chat endpoint
-- [ ] T007 [US1] Style panel to be visually distinct from customer chatbot (different color scheme, admin badge)
-- [ ] T008 [US1] Add role-based rendering: only show FAB if user has ROLE_ADMIN in base.html.twig
-- [ ] T009 [US1] Test navigation: verify panel closes on page change but conversation persists on reopen
-- [ ] T010 [US1] Add accessibility: keyboard navigation (Esc to close, Tab through elements)
+- [X] T004 [US1] Implement FAB open/close toggle with animation in admin-floating-assistant.js
+- [X] T005 [US1] Implement panel state persistence in sessionStorage (open/closed status)
+- [X] T006 [US1] Connect floating panel to existing AdminAssistantController POST /admin/assistant/chat endpoint
+- [X] T007 [US1] Style panel to be visually distinct from customer chatbot (different color scheme, admin badge)
+- [X] T008 [US1] Add role-based rendering: only show FAB if user has ROLE_ADMIN in base.html.twig
+- [X] T009 [US1] Test navigation: verify panel closes on page change but conversation persists on reopen
+- [X] T010 [US1] Add accessibility: keyboard navigation (Esc to close, Tab through elements)
 
 **Checkpoint**: Floating assistant UI complete - admin can access chat from any admin page, state persists, non-admins cannot see it
 

@@ -299,7 +299,8 @@
         </div>
     </main>
 
-    {# Admin Floating Assistant - spec-008 #}
+    {# Admin Floating Assistant - spec-008 - Only for ROLE_ADMIN #}
+    {% if is_granted('ROLE_ADMIN') %}
     <link rel="stylesheet" href="{{ asset('css/admin-floating-assistant.css') }}">
     
     {# Floating Action Button #}
@@ -335,5 +336,6 @@
     </div>
 
     <script src="{{ asset('js/admin-floating-assistant.js') }}"></script>
+    {% endif %}
 </body>
 </html>
