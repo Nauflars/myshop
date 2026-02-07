@@ -51,7 +51,7 @@ class SearchQuery
 
     public function hasCategory(): bool
     {
-        return $this->category !== null;
+        return $this->category !== null && $this->category !== '';
     }
 
     private function validate(): void
