@@ -213,6 +213,48 @@ class AdminAssistantLogger
     }
 
     /**
+     * Log a stock update action (spec-008 US2)
+     */
+    public function logStockUpdate(
+        string $productId,
+        string $productName,
+        int $oldStock,
+        int $newStock,
+        string $mode,
+        int $quantity,
+        ?string $reason = null,
+        ?AdminAssistantConversation $conversation = null
+    ): AdminAssistantAction {
+        // Get current admin user from conversation if available
+        $adminUser = $conversation?->getAdminUser() ?? throw new \LogicException('Admin user required for stock update audit');
+
+        $action = new AdminAssistantAction(
+            $adminUser,
+            AdminAssistantAction::ACTION_UPDATE_STOCK,
+            $conversation
+        );
+
+        $action->addAffectedEntity('product_id', $productId);
+        $action->setActionParameters([
+            'product_name' => $productName,
+            'mode' => $mode,
+            'quantity' => $quantity,
+            'old_stock' => $oldStock,
+            'new_stock' => $newStock,
+            'reason' => $reason,
+        ]);
+        $action->setActionResult([
+            'message' => 'Stock updated successfully',
+            'delta' => $newStock - $oldStock,
+        ]);
+
+        $this->enrichWithRequestData($action);
+        $this->repository->save($action);
+
+        return $action;
+    }
+
+    /**
      * Log a failed action
      */
     public function logFailedAction(
