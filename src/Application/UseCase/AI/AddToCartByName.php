@@ -48,7 +48,7 @@ final class AddToCartByName
         if ($quantity <= 0) {
             return [
                 'success' => false,
-                'message' => 'La cantidad debe ser mayor que cero.',
+                'message' => 'Quantity must be greater than zero.',
                 'totalItems' => 0,
                 'totalAmount' => 0.0,
                 'currency' => 'USD',
@@ -70,7 +70,7 @@ final class AddToCartByName
         if ($product === null) {
             return [
                 'success' => false,
-                'message' => sprintf('Producto "%s" no encontrado.', $productName),
+                'message' => sprintf('Product "%s" not found.', $productName),
                 'totalItems' => 0,
                 'totalAmount' => 0.0,
                 'currency' => 'USD',
@@ -81,7 +81,7 @@ final class AddToCartByName
         if (!$product->isInStock()) {
             return [
                 'success' => false,
-                'message' => sprintf('El producto "%s" está fuera de stock.', $product->getName()),
+                'message' => sprintf('Product "%s" is out of stock.', $product->getName()),
                 'totalItems' => 0,
                 'totalAmount' => 0.0,
                 'currency' => 'USD',
@@ -92,7 +92,7 @@ final class AddToCartByName
             return [
                 'success' => false,
                 'message' => sprintf(
-                    'Stock insuficiente para "%s". Disponible: %d, Solicitado: %d',
+                    'Insufficient stock for "%s". Available: %d, Requested: %d',
                     $product->getName(),
                     $product->getStock(),
                     $quantity
@@ -109,9 +109,36 @@ final class AddToCartByName
             $cart = new Cart($user);
         }
         
-        // Add product to cart
-        $cart->addProduct($product, $quantity);
-        $this->cartRepository->save($cart);
+        // Add product to cart (with currency validation)
+        try {
+            $cart->addProduct($product, $quantity);
+            $this->cartRepository->save($cart);
+        } catch (\InvalidArgumentException $e) {
+            // Handle currency mismatch error
+            if (str_contains($e->getMessage(), 'currency')) {
+                $cartCurrency = 'USD';
+                if (!$cart->isEmpty()) {
+                    $firstItem = $cart->getItems()->first();
+                    $cartCurrency = $firstItem->getPriceSnapshot()->getCurrency();
+                }
+                
+                return [
+                    'success' => false,
+                    'message' => sprintf(
+                        'Cannot add "%s" (%s) to cart. Your cart contains items in %s. Please checkout or clear your cart before adding items in a different currency.',
+                        $product->getName(),
+                        $product->getPrice()->getCurrency(),
+                        $cartCurrency
+                    ),
+                    'totalItems' => 0,
+                    'totalAmount' => 0.0,
+                    'currency' => $cartCurrency,
+                ];
+            }
+            
+            // Re-throw if it's a different validation error
+            throw $e;
+        }
         
         // Calculate totals
         $totalItems = 0;
@@ -130,7 +157,7 @@ final class AddToCartByName
         return [
             'success' => true,
             'message' => sprintf(
-                'Se agregó %d x "%s" al carrito exitosamente.',
+                'Successfully added %d x "%s" to cart.',
                 $quantity,
                 $product->getName()
             ),

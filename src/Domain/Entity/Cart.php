@@ -54,6 +54,23 @@ class Cart
 
     public function addProduct(Product $product, int $quantity = 1): void
     {
+        // Validate currency consistency if cart already has items
+        if (!$this->items->isEmpty()) {
+            $firstItem = $this->items->first();
+            $cartCurrency = $firstItem->getPriceSnapshot()->getCurrency();
+            $productCurrency = $product->getPrice()->getCurrency();
+            
+            if ($cartCurrency !== $productCurrency) {
+                throw new \InvalidArgumentException(
+                    sprintf(
+                        'Cannot add product with currency %s to cart with currency %s',
+                        $productCurrency,
+                        $cartCurrency
+                    )
+                );
+            }
+        }
+        
         // Check if product already exists in cart
         $existingItem = $this->findItemByProduct($product);
         if ($existingItem !== null) {
@@ -106,7 +123,11 @@ class Cart
             return new Money(0, 'USD');
         }
 
-        $total = new Money(0, 'USD');
+        // Use the currency of the first item to ensure consistency
+        $firstItem = $this->items->first();
+        $currency = $firstItem->getPriceSnapshot()->getCurrency();
+        
+        $total = new Money(0, $currency);
         foreach ($this->items as $item) {
             $total = $total->add($item->getSubtotal());
         }

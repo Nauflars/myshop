@@ -70,7 +70,7 @@ final class AddToCartTool
                 return [
                     'success' => false,
                     'data' => null,
-                    'message' => 'La cantidad debe ser mayor que cero.',
+                    'message' => 'Quantity must be greater than zero.',
                 ];
             }
             
