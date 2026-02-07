@@ -64,6 +64,9 @@ class AdminFloatingAssistant {
         // Cargar historial desde servidor si existe conversationId
         if (this.conversationId) {
             this.loadConversationHistory();
+        } else {
+            // No hay conversación previa, mostrar mensaje de bienvenida
+            this.showWelcomeMessage();
         }
     }
     
@@ -327,45 +330,31 @@ class AdminFloatingAssistant {
     }
     
     makeFabDraggable() {
-        this.fab.style.cursor = 'grab';
+        // Click handler para abrir/cerrar panel
+        this.fab.addEventListener('click', (e) => {
+            if (!this.isDragging) {
+                this.togglePanel();
+            }
+        });
         
-        let startX = 0;
-        let startY = 0;
-        let hasMoved = false;
+        // Drag handler - siguiendo patrón del chatbot cliente
+        this.fab.style.cursor = 'move';
         
-        const onMouseDown = (e) => {
-            // Prevenir comportamiento por defecto
-            e.preventDefault();
-            e.stopPropagation();
-            
+        this.fab.addEventListener('mousedown', (e) => {
             this.isDragging = true;
-            hasMoved = false;
-            
             const rect = this.fab.getBoundingClientRect();
             this.dragOffset = {
                 x: e.clientX - rect.left,
                 y: e.clientY - rect.top
             };
             
-            startX = e.clientX;
-            startY = e.clientY;
-            
             this.fab.style.transition = 'none';
-            this.fab.style.cursor = 'grabbing';
-        };
+            e.preventDefault();
+        });
         
-        const onMouseMove = (e) => {
+        document.addEventListener('mousemove', (e) => {
             if (!this.isDragging) return;
             
-            // Detectar movimiento
-            const deltaX = Math.abs(e.clientX - startX);
-            const deltaY = Math.abs(e.clientY - startY);
-            
-            if (deltaX > 5 || deltaY > 5) {
-                hasMoved = true;
-            }
-            
-            // Mover siempre, no esperar a hasMoved
             let newX = e.clientX - this.dragOffset.x;
             let newY = e.clientY - this.dragOffset.y;
             
@@ -380,60 +369,48 @@ class AdminFloatingAssistant {
             this.fab.style.top = `${newY}px`;
             this.fab.style.right = 'auto';
             this.fab.style.bottom = 'auto';
-        };
+        });
         
-        const onMouseUp = (e) => {
-            if (!this.isDragging) return;
-            
-            this.isDragging = false;
-            this.fab.style.transition = '';
-            this.fab.style.cursor = 'grab';
-            
-            if (hasMoved) {
-                // Fue un drag - guardar posición
+        document.addEventListener('mouseup', () => {
+            if (this.isDragging) {
+                this.isDragging = false;
+                this.fab.style.transition = '';
                 this.savePosition();
-            } else {
-                // Fue un click - abrir panel
-                this.togglePanel();
+                
+                // Prevenir que se dispare el click después del drag
+                setTimeout(() => { this.isDragging = false; }, 100);
             }
-            
-            hasMoved = false;
-        };
-        
-        this.fab.addEventListener('mousedown', onMouseDown);
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+        });
     }
     
     savePosition() {
-        const position = {
-            left: this.fab.style.left,
-            top: this.fab.style.top,
-            right: this.fab.style.right,
-            bottom: this.fab.style.bottom
-        };
-        
-        localStorage.setItem('adminFabPosition', JSON.stringify(position));
+        const rect = this.fab.getBoundingClientRect();
+        localStorage.setItem('admin_fab_position', JSON.stringify({
+            x: rect.left,
+            y: rect.top
+        }));
     }
     
     restorePosition() {
-        const savedPosition = localStorage.getItem('adminFabPosition');
-        if (!savedPosition) return;
-        
-        try {
-            const position = JSON.parse(savedPosition);
-            
-            if (position.left !== 'auto' && position.left) {
-                this.fab.style.left = position.left;
+        const savedPos = localStorage.getItem('admin_fab_position');
+        if (savedPos) {
+            try {
+                const { x, y } = JSON.parse(savedPos);
+                
+                // Ensure position is within current viewport
+                const maxX = window.innerWidth - this.fab.offsetWidth;
+                const maxY = window.innerHeight - this.fab.offsetHeight;
+                
+                const safeX = Math.max(0, Math.min(x, maxX));
+                const safeY = Math.max(0, Math.min(y, maxY));
+                
+                this.fab.style.left = `${safeX}px`;
+                this.fab.style.top = `${safeY}px`;
                 this.fab.style.right = 'auto';
-            }
-            
-            if (position.top !== 'auto' && position.top) {
-                this.fab.style.top = position.top;
                 this.fab.style.bottom = 'auto';
+            } catch (error) {
+                console.error('Error restoring FAB position:', error);
             }
-        } catch (error) {
-            console.error('Error restoring FAB position:', error);
         }
     }
 }
