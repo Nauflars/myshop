@@ -25,6 +25,15 @@ class AdminAssistantAction
     public const ACTION_UPDATE_PRODUCT = 'update_product';
     public const ACTION_DELETE_PRODUCT = 'delete_product';
 
+    // Inventory management actions (spec-008 US2)
+    public const ACTION_UPDATE_STOCK = 'update_stock';
+    public const ACTION_QUERY_LOW_STOCK = 'query_low_stock';
+    public const ACTION_QUERY_STOCK = 'query_stock';
+
+    // Pricing management actions (spec-008)
+    public const ACTION_UPDATE_PRICE = 'update_price';
+    public const ACTION_QUERY_PRICE_HISTORY = 'query_price_history';
+
     // Analytics query actions
     public const ACTION_QUERY_SALES = 'query_sales';
     public const ACTION_QUERY_PRODUCT_STATS = 'query_product_stats';
