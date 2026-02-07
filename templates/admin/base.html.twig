@@ -298,5 +298,42 @@
             {% block body_content %}{% endblock %}
         </div>
     </main>
+
+    {# Admin Floating Assistant - spec-008 #}
+    <link rel="stylesheet" href="{{ asset('css/admin-floating-assistant.css') }}">
+    
+    {# Floating Action Button #}
+    <button id="admin-floating-fab" aria-label="Abrir asistente virtual" title="Asistente Virtual Admin">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+    </button>
+
+    {# Chat Panel #}
+    <div id="admin-floating-panel">
+        <div class="admin-floating-header">
+            <div class="admin-floating-header-title">
+                🤖 Asistente Virtual
+                <span class="admin-floating-header-badge">Admin</span>
+            </div>
+            <button id="admin-floating-close" aria-label="Cerrar panel">&times;</button>
+        </div>
+        
+        <div id="admin-floating-messages">
+            {# Messages will be injected here by JavaScript #}
+        </div>
+        
+        <form id="admin-floating-form">
+            <textarea 
+                id="admin-floating-input" 
+                placeholder="Escribe tu mensaje..."
+                rows="1"
+                aria-label="Campo de mensaje"
+            ></textarea>
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
+
+    <script src="{{ asset('js/admin-floating-assistant.js') }}"></script>
 </body>
 </html>
