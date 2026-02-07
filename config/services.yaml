@@ -99,6 +99,9 @@ services:
     App\Infrastructure\AI\Service\ConversationManager:
         public: true
 
+    App\Infrastructure\AI\Service\AdminConversationManager:
+        public: true
+
     App\Application\Service\UnansweredQuestionCapture:
         public: true
 
