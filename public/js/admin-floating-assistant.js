@@ -16,6 +16,7 @@ class AdminFloatingAssistant {
         
         this.fab = null;
         this.panel = null;
+        this.header = null;
         this.messageForm = null;
         this.messageInput = null;
         this.messagesContainer = null;
@@ -33,6 +34,7 @@ class AdminFloatingAssistant {
         // Buscar elementos del DOM
         this.fab = document.getElementById('admin-floating-fab');
         this.panel = document.getElementById('admin-floating-panel');
+        this.header = this.panel?.querySelector('.admin-floating-header');
         this.messageForm = document.getElementById('admin-floating-form');
         this.messageInput = document.getElementById('admin-floating-input');
         this.messagesContainer = document.getElementById('admin-floating-messages');
@@ -44,16 +46,17 @@ class AdminFloatingAssistant {
             return;
         }
         
-        // Restaurar posición del FAB
+        // Restaurar posición del PANEL
         this.restorePosition();
         
-        // Bind event listeners (FAB click is handled in makeFabDraggable)
+        // Bind event listeners
+        this.fab?.addEventListener('click', () => this.togglePanel());
         this.closeButton?.addEventListener('click', () => this.closePanel());
         this.clearButton?.addEventListener('click', () => this.handleClearConversation());
         this.messageForm?.addEventListener('submit', (e) => this.handleSubmit(e));
         
-        // Make FAB draggable
-        this.makeFabDraggable();
+        // Make PANEL draggable (not FAB)
+        this.makePanelDraggable();
         
         // Click fuera del panel para cerrar
         document.addEventListener('click', (e) => this.handleOutsideClick(e));
@@ -329,26 +332,23 @@ class AdminFloatingAssistant {
         this.messagesContainer.appendChild(welcome);
     }
     
-    makeFabDraggable() {
-        // Click handler para abrir/cerrar panel
-        this.fab.addEventListener('click', (e) => {
-            if (!this.isDragging) {
-                this.togglePanel();
-            }
-        });
+    makePanelDraggable() {
+        if (!this.header) return;
         
-        // Drag handler - siguiendo patrón del chatbot cliente
-        this.fab.style.cursor = 'move';
+        this.header.style.cursor = 'move';
         
-        this.fab.addEventListener('mousedown', (e) => {
+        this.header.addEventListener('mousedown', (e) => {
+            // Don't drag if clicking on buttons
+            if (e.target.tagName === 'BUTTON') return;
+            
             this.isDragging = true;
-            const rect = this.fab.getBoundingClientRect();
+            const rect = this.panel.getBoundingClientRect();
             this.dragOffset = {
                 x: e.clientX - rect.left,
                 y: e.clientY - rect.top
             };
             
-            this.fab.style.transition = 'none';
+            this.panel.style.transition = 'none';
             e.preventDefault();
         });
         
@@ -359,57 +359,54 @@ class AdminFloatingAssistant {
             let newY = e.clientY - this.dragOffset.y;
             
             // Keep within viewport bounds
-            const maxX = window.innerWidth - this.fab.offsetWidth;
-            const maxY = window.innerHeight - this.fab.offsetHeight;
+            const maxX = window.innerWidth - this.panel.offsetWidth;
+            const maxY = window.innerHeight - this.panel.offsetHeight;
             
             newX = Math.max(0, Math.min(newX, maxX));
             newY = Math.max(0, Math.min(newY, maxY));
             
-            this.fab.style.left = `${newX}px`;
-            this.fab.style.top = `${newY}px`;
-            this.fab.style.right = 'auto';
-            this.fab.style.bottom = 'auto';
+            this.panel.style.left = `${newX}px`;
+            this.panel.style.top = `${newY}px`;
+            this.panel.style.right = 'auto';
+            this.panel.style.bottom = 'auto';
         });
         
         document.addEventListener('mouseup', () => {
             if (this.isDragging) {
                 this.isDragging = false;
-                this.fab.style.transition = '';
+                this.panel.style.transition = '';
                 this.savePosition();
-                
-                // Prevenir que se dispare el click después del drag
-                setTimeout(() => { this.isDragging = false; }, 100);
             }
         });
     }
     
     savePosition() {
-        const rect = this.fab.getBoundingClientRect();
-        localStorage.setItem('admin_fab_position', JSON.stringify({
+        const rect = this.panel.getBoundingClientRect();
+        localStorage.setItem('admin_panel_position', JSON.stringify({
             x: rect.left,
             y: rect.top
         }));
     }
     
     restorePosition() {
-        const savedPos = localStorage.getItem('admin_fab_position');
+        const savedPos = localStorage.getItem('admin_panel_position');
         if (savedPos) {
             try {
                 const { x, y } = JSON.parse(savedPos);
                 
                 // Ensure position is within current viewport
-                const maxX = window.innerWidth - this.fab.offsetWidth;
-                const maxY = window.innerHeight - this.fab.offsetHeight;
+                const maxX = window.innerWidth - 400; // approx panel width
+                const maxY = window.innerHeight - 600; // approx panel height
                 
                 const safeX = Math.max(0, Math.min(x, maxX));
                 const safeY = Math.max(0, Math.min(y, maxY));
                 
-                this.fab.style.left = `${safeX}px`;
-                this.fab.style.top = `${safeY}px`;
-                this.fab.style.right = 'auto';
-                this.fab.style.bottom = 'auto';
+                this.panel.style.left = `${safeX}px`;
+                this.panel.style.top = `${safeY}px`;
+                this.panel.style.right = 'auto';
+                this.panel.style.bottom = 'auto';
             } catch (error) {
-                console.error('Error restoring FAB position:', error);
+                console.error('Error restoring panel position:', error);
             }
         }
     }
