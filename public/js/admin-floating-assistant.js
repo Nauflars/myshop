@@ -100,6 +100,9 @@ class AdminFloatingAssistant {
     handleOutsideClick(e) {
         if (!this.isOpen) return;
         
+        // No cerrar si estamos arrastrando
+        if (this.isDragging) return;
+        
         // Si el click es fuera del panel y no es el FAB
         if (!this.panel.contains(e.target) && !this.fab.contains(e.target)) {
             this.closePanel();
@@ -168,7 +171,7 @@ class AdminFloatingAssistant {
         }
     }
     
-    addMessage(sender, text) {
+    addMessage(sender, text, skipSave = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `admin-floating-message admin-floating-message-${sender}`;
         
@@ -187,9 +190,11 @@ class AdminFloatingAssistant {
         this.messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
         
-        // Guardar en historial
-        this.messageHistory.push({ sender, text, time: now.toISOString() });
-        this.saveState();
+        // Guardar en historial solo si no viene de una restauración
+        if (!skipSave) {
+            this.messageHistory.push({ sender, text, time: now.toISOString() });
+            this.saveState();
+        }
     }
     
     showTypingIndicator() {
@@ -229,7 +234,7 @@ class AdminFloatingAssistant {
                 
                 // Agregar mensajes del historial
                 data.messages.forEach(msg => {
-                    this.addMessage(msg.sender === 'admin' ? 'admin' : 'assistant', msg.message);
+                    this.addMessage(msg.sender === 'admin' ? 'admin' : 'assistant', msg.message, true);
                 });
             }
         } catch (error) {
@@ -259,6 +264,9 @@ class AdminFloatingAssistant {
             
             // Restaurar mensajes en el UI
             if (this.messageHistory.length > 0) {
+                // Limpiar mensajes existentes primero
+                this.messagesContainer.innerHTML = '';
+                
                 this.messageHistory.forEach(msg => {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = `admin-floating-message admin-floating-message-${msg.sender}`;
@@ -269,7 +277,7 @@ class AdminFloatingAssistant {
                     
                     const timeDiv = document.createElement('div');
                     timeDiv.className = 'admin-floating-message-time';
-                    const time = new Date (msg.time);
+                    const time = new Date(msg.time);
                     timeDiv.textContent = time.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
                     
                     messageDiv.appendChild(contentDiv);
@@ -338,12 +346,17 @@ class AdminFloatingAssistant {
     }
     
     makeFabDraggable() {
-        this.fab.style.cursor = 'move';
+        this.fab.style.cursor = 'grab';
         
-        let startX, startY;
+        let startX = 0;
+        let startY = 0;
         let hasMoved = false;
         
-        this.fab.addEventListener('mousedown', (e) => {
+        const onMouseDown = (e) => {
+            // Prevenir comportamiento por defecto
+            e.preventDefault();
+            e.stopPropagation();
+            
             this.isDragging = true;
             hasMoved = false;
             
@@ -357,11 +370,10 @@ class AdminFloatingAssistant {
             startY = e.clientY;
             
             this.fab.style.transition = 'none';
-            e.preventDefault();
-            e.stopPropagation();
-        });
+            this.fab.style.cursor = 'grabbing';
+        };
         
-        document.addEventListener('mousemove', (e) => {
+        const onMouseMove = (e) => {
             if (!this.isDragging) return;
             
             // Detectar movimiento
@@ -372,8 +384,7 @@ class AdminFloatingAssistant {
                 hasMoved = true;
             }
             
-            if (!hasMoved) return;
-            
+            // Mover siempre, no esperar a hasMoved
             let newX = e.clientX - this.dragOffset.x;
             let newY = e.clientY - this.dragOffset.y;
             
@@ -388,23 +399,29 @@ class AdminFloatingAssistant {
             this.fab.style.top = `${newY}px`;
             this.fab.style.right = 'auto';
             this.fab.style.bottom = 'auto';
-        });
+        };
         
-        document.addEventListener('mouseup', (e) => {
-            if (this.isDragging) {
-                this.isDragging = false;
-                this.fab.style.transition = '';
-                
-                if (hasMoved) {
-                    this.savePosition();
-                } else {
-                    // Was a click, not a drag - toggle panel
-                    this.togglePanel();
-                }
-                
-                hasMoved = false;
+        const onMouseUp = (e) => {
+            if (!this.isDragging) return;
+            
+            this.isDragging = false;
+            this.fab.style.transition = '';
+            this.fab.style.cursor = 'grab';
+            
+            if (hasMoved) {
+                // Fue un drag - guardar posición
+                this.savePosition();
+            } else {
+                // Fue un click - abrir panel
+                this.togglePanel();
             }
-        });
+            
+            hasMoved = false;
+        };
+        
+        this.fab.addEventListener('mousedown', onMouseDown);
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     }
     
     savePosition() {
