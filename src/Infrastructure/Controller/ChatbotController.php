@@ -83,11 +83,18 @@ class ChatbotController extends AbstractController
             $conversationId = $saveUserResult['conversationId'];
             
             // Load or create customer context (spec-009)
-            $userId = (string) $user->getId();
-            $context = $this->contextManager->getOrCreateContext($userId);
-            
-            // Refresh TTL on interaction (spec-009 US3)
-            $this->contextManager->refreshTtl($userId);
+            // Wrapped in try-catch to ensure Redis failures don't break chatbot
+            $context = null;
+            try {
+                $userId = (string) $user->getId();
+                $context = $this->contextManager->getOrCreateContext($userId);
+                
+                // Refresh TTL on interaction (spec-009 US3)
+                $this->contextManager->refreshTtl($userId);
+            } catch (\Exception $e) {
+                error_log('Error loading customer context: ' . $e->getMessage());
+                // Continue without context - chatbot will work in stateless mode
+            }
             
             // Build message bag with conversation history for context
             $messages = [];
@@ -108,7 +115,9 @@ class ChatbotController extends AbstractController
                 $assistantResponse = $result->getContent();
                 
                 // Update context after successful AI interaction (spec-009)
-                $context->incrementTurnCount();
+                if ($context !== null) {
+                    $context->incrementTurnCount();
+                }
                 // Note: Tool execution context updates will be added in T017
             } catch (\Exception $e) {
                 error_log('Symfony AI Agent Error: ' . $e->getMessage());
@@ -140,11 +149,13 @@ class ChatbotController extends AbstractController
             }
             
             // Save updated context to Redis (spec-009)
-            try {
-                $this->contextManager->saveContext($context);
-            } catch (\Exception $e) {
-                // Log error but don't fail the request - context is not critical
-                error_log('Error saving customer context: ' . $e->getMessage());
+            if ($context !== null) {
+                try {
+                    $this->contextManager->saveContext($context);
+                } catch (\Exception $e) {
+                    // Log error but don't fail the request - context is not critical
+                    error_log('Error saving customer context: ' . $e->getMessage());
+                }
             }
             
             return $this->json([
