@@ -13,12 +13,16 @@ services:
       - symfony_log:/var/www/html/var/log
     environment:
       DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-rootpassword}@mysql:3306/${MYSQL_DATABASE:-myshop}
+      REDIS_URL: redis://redis:6379
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-8ce516593a3682d05d249ef72edac2e5}
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CUSTOMER_CONTEXT_TTL: ${CUSTOMER_CONTEXT_TTL:-1800}
+      ADMIN_CONTEXT_TTL: ${ADMIN_CONTEXT_TTL:-3600}
     depends_on:
       - mysql
+      - redis
     networks:
       - myshop_network
 
@@ -53,6 +57,22 @@ services:
       - myshop_network
     command: --default-authentication-plugin=mysql_native_password
 
+  redis:
+    image: redis:7-alpine
+    container_name: myshop_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - myshop_network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
@@ -74,6 +94,8 @@ services:
 
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local
   symfony_cache:
     driver: local
