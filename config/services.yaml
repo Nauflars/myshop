@@ -1,6 +1,10 @@
 parameters:
     # Stock management configuration (spec-008 US2)
     app.stock.low_threshold: 10  # Products with stock below this are considered low stock
+    
+    # Context storage TTL configuration (spec-009)
+    app.context.customer_ttl: '%env(int:CUSTOMER_CONTEXT_TTL)%'
+    app.context.admin_ttl: '%env(int:ADMIN_CONTEXT_TTL)%'
 
 services:
     _defaults:
@@ -60,6 +64,21 @@ services:
     # Chatbot Services (commented out - stub implementation only)
     # App\Infrastructure\Chatbot\:
     #     resource: '../src/Infrastructure/Chatbot/'
+
+    # Context Storage Infrastructure (spec-009)
+    App\Domain\Repository\ContextStorageInterface:
+        class: App\Infrastructure\Repository\RedisContextStorage
+        arguments:
+            $redis: '@Predis\Client'
+
+    # Context Management Services (spec-009)
+    App\Application\Service\CustomerContextManager:
+        arguments:
+            $ttl: '%app.context.customer_ttl%'
+
+    App\Application\Service\AdminContextManager:
+        arguments:
+            $ttl: '%app.context.admin_ttl%'
 
 when@test:
     services:

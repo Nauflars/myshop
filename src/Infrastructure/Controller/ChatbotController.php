@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Service\CustomerContextManager;
 use App\Application\Service\UnansweredQuestionCapture;
 use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
@@ -22,6 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * ChatbotController - Handles chat interactions with conversation persistence
  * 
  * Updated in spec-003 to persist conversations to database.
+ * Updated in spec-009 to add conversational context and memory management.
  */
 #[Route('/api/chat')]
 class ChatbotController extends AbstractController
@@ -31,6 +33,7 @@ class ChatbotController extends AbstractController
         private readonly RoleAwareAssistant $roleAwareAssistant,
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
+        private readonly CustomerContextManager $contextManager,
         #[Autowire(service: 'ai.agent.openAiAgent')]
         private readonly AgentInterface $agent
     ) {
@@ -79,6 +82,13 @@ class ChatbotController extends AbstractController
             
             $conversationId = $saveUserResult['conversationId'];
             
+            // Load or create customer context (spec-009)
+            $userId = (string) $user->getId();
+            $context = $this->contextManager->getOrCreateContext($userId);
+            
+            // Refresh TTL on interaction (spec-009 US3)
+            $this->contextManager->refreshTtl($userId);
+            
             // Build message bag with conversation history for context
             $messages = [];
             foreach ($conversationHistory as $msg) {
@@ -96,6 +106,10 @@ class ChatbotController extends AbstractController
                 $messageBag = new MessageBag(...$messages);
                 $result = $this->agent->call($messageBag);
                 $assistantResponse = $result->getContent();
+                
+                // Update context after successful AI interaction (spec-009)
+                $context->incrementTurnCount();
+                // Note: Tool execution context updates will be added in T017
             } catch (\Exception $e) {
                 error_log('Symfony AI Agent Error: ' . $e->getMessage());
                 error_log('Stack trace: ' . $e->getTraceAsString());
@@ -123,6 +137,14 @@ class ChatbotController extends AbstractController
             if (!$saveAssistantResult['success']) {
                 // Log error but don't fail the request - user already got the response
                 error_log('Error saving assistant message: ' . $saveAssistantResult['message']);
+            }
+            
+            // Save updated context to Redis (spec-009)
+            try {
+                $this->contextManager->saveContext($context);
+            } catch (\Exception $e) {
+                // Log error but don't fail the request - context is not critical
+                error_log('Error saving customer context: ' . $e->getMessage());
             }
             
             return $this->json([
@@ -214,6 +236,39 @@ class ChatbotController extends AbstractController
             error_log('Clear Chat Error: ' . $e->getMessage());
             return $this->json([
                 'error' => 'Error al limpiar la conversación',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    /**
+     * Reset customer context (spec-009 US4)
+     * Clears context from Redis, allowing fresh start
+     */
+    #[Route('/reset-context', name: 'api_chatbot_reset_context', methods: ['POST'])]
+    public function resetContext(): JsonResponse
+    {
+        try {
+            $user = $this->security->getUser();
+            if (!$user instanceof User) {
+                return $this->json([
+                    'error' => 'Usuario no autenticado',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            
+            $userId = (string) $user->getId();
+            $deleted = $this->contextManager->deleteContext($userId);
+            
+            return $this->json([
+                'success' => true,
+                'message' => $deleted 
+                    ? 'Context reset successful. Starting fresh conversation.'
+                    : 'No context to reset. Ready for new conversation.',
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log('Reset Context Error: ' . $e->getMessage());
+            return $this->json([
+                'error' => 'Error al resetear el contexto',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

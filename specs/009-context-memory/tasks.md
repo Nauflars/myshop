@@ -52,12 +52,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [P] Create CustomerConversationContext value object in src/Domain/ValueObject/CustomerConversationContext.php
-- [ ] T012 [P] Define customer context attributes: userId, flow, selectedProducts, cartSnapshot, lastTool, language
-- [ ] T013 [P] Create CustomerContextManager service in src/Application/Service/CustomerContextManager.php
-- [ ] T014 Update existing ChatbotController to load context before AI interaction in src/Infrastructure/Controller/ChatbotController.php
+- [X] T011 [P] Create CustomerConversationContext value object in src/Domain/ValueObject/CustomerConversationContext.php
+- [X] T012 [P] Define customer context attributes: userId, flow, selectedProducts, cartSnapshot, lastTool, language
+- [X] T013 [P] Create CustomerContextManager service in src/Application/Service/CustomerContextManager.php
+- [X] T014 Update existing ChatbotController to load context before AI interaction in src/Infrastructure/Controller/ChatbotController.php
 - [ ] T015 Implement context injection into AI system prompt in CustomerContextManager::enrichPrompt()
-- [ ] T016 Update ChatbotController to save context after successful message in src/Infrastructure/Controller/ChatbotController.php
+- [X] T016 Update ChatbotController to save context after successful message in src/Infrastructure/Controller/ChatbotController.php
 - [ ] T017 [P] Create context update logic after tool executions in CustomerContextManager::updateAfterToolExecution()
 - [ ] T018 Add context serialization for customer context in ContextSerializer service
 - [ ] T019 Update chatbot.js to send conversationId on every message (already implemented, verify)
