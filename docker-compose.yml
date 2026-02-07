@@ -17,8 +17,12 @@ services:
       APP_SECRET: ${APP_SECRET:-8ce516593a3682d05d249ef72edac2e5}
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      REDIS_URL: redis://redis:6379
+      CUSTOMER_CONTEXT_TTL: ${CUSTOMER_CONTEXT_TTL:-1800}
+      ADMIN_CONTEXT_TTL: ${ADMIN_CONTEXT_TTL:-3600}
     depends_on:
       - mysql
+      - redis
     networks:
       - myshop_network
 
@@ -72,12 +76,31 @@ services:
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 ###< doctrine/doctrine-bundle ###
 
+  redis:
+    image: redis:7-alpine
+    container_name: myshop_redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - myshop_network
+
 volumes:
   mysql_data:
     driver: local
   symfony_cache:
     driver: local
   symfony_log:
+    driver: local
+  redis_data:
+    driver: local
 
 ###> doctrine/doctrine-bundle ###
   database_data:

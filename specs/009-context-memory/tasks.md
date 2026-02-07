@@ -27,15 +27,15 @@
 
 ### Implementation for Infrastructure
 
-- [ ] T001 [P] Add Redis service to docker-compose.yml with configuration (port 6379, persistent volume)
-- [ ] T002 [P] Add symfony/redis-bundle to composer.json dependencies
-- [ ] T003 [P] Configure Redis connection in config/packages/redis.yaml
-- [ ] T004 [P] Create ConversationContext abstract base class in src/Domain/ValueObject/ConversationContext.php
-- [ ] T005 [P] Create ContextStorageInterface in src/Domain/Repository/ContextStorageInterface.php
-- [ ] T006 [P] Create RedisContextStorage implementation in src/Infrastructure/Repository/RedisContextStorage.php
-- [ ] T007 [P] Create ContextSerializer service in src/Application/Service/ContextSerializer.php
-- [ ] T008 Add context TTL configuration to .env (CUSTOMER_CONTEXT_TTL=1800, ADMIN_CONTEXT_TTL=3600)
-- [ ] T009 Create Symfony console command to test context storage in src/Command/TestContextCommand.php
+- [X] T001 [P] Add Redis service to docker-compose.yml with configuration (port 6379, persistent volume)
+- [X] T002 [P] Add symfony/redis-bundle to composer.json dependencies
+- [X] T003 [P] Configure Redis connection in config/packages/redis.yaml
+- [X] T004 [P] Create ConversationContext abstract base class in src/Domain/ValueObject/ConversationContext.php
+- [X] T005 [P] Create ContextStorageInterface in src/Domain/Repository/ContextStorageInterface.php
+- [X] T006 [P] Create RedisContextStorage implementation in src/Infrastructure/Repository/RedisContextStorage.php
+- [X] T007 [P] Create ContextSerializer service in src/Application/Service/ContextSerializer.php
+- [X] T008 Add context TTL configuration to .env (CUSTOMER_CONTEXT_TTL=1800, ADMIN_CONTEXT_TTL=3600)
+- [X] T009 Create Symfony console command to test context storage in src/Command/TestContextCommand.php
 - [ ] T010 Write unit tests for ConversationContext and RedisContextStorage in tests/Unit/
 
 **Checkpoint**: Redis running, context storage working, base classes created and tested
