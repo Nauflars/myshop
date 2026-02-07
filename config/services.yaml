@@ -83,6 +83,16 @@ services:
         arguments:
             $ttl: '%app.context.admin_ttl%'
 
+    # AI Services - prevent inlining for dependency injection
+    App\Infrastructure\AI\Service\RoleAwareAssistant:
+        public: true
+
+    App\Infrastructure\AI\Service\ConversationManager:
+        public: true
+
+    App\Application\Service\UnansweredQuestionCapture:
+        public: true
+
 when@test:
     services:
         _defaults:
