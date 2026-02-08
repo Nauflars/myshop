@@ -45,6 +45,7 @@ services:
     App\Infrastructure\Controller\ChatbotController:
         arguments:
             $agent: '@ai.agent.openAiAgent'
+            $unifiedContextManager: '@App\Application\Service\UnifiedCustomerContextManager'
 
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
