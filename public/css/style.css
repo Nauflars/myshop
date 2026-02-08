@@ -1729,28 +1729,6 @@ input[type="number"]::-webkit-outer-spin-button {
     color: var(--second-color);
 }
 
-/* Responsive - Tablet (768px) */
-@media (max-width: 768px) {
-    /* Navigation */
-    .navbar .container {
-        flex-wrap: wrap;
-    }
-
-    .mobile-menu-toggle {
-        display: block;
-        order: 3;
-    }
-
-    .nav-menu {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        order: 4;
-        padding: 1rem 0;
-        gap: 0;
-    }
-
-
 /* ====================================
    RESPONSIVE DESIGN - ENHANCED
    ==================================== */
