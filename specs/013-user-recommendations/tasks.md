@@ -28,12 +28,12 @@
 
 ### Verification Tasks
 
-- [ ] T000 Verify MongoDB is running and accessible from PHP container
-- [ ] T001 Verify product_embeddings collection exists in MongoDB with vector index
-- [ ] T002 Verify OpenAI API key is configured and embeddings endpoint is accessible
-- [ ] T003 Verify MySQL User entity has id, email, orders relationship
-- [ ] T004 Verify MySQL Order entity has user relationship, orderItems, completedAt timestamp
-- [ ] T005 Verify Redis is running and accessible for caching
+- [X] T000 Verify MongoDB is running and accessible from PHP container
+- [X] T001 Verify product_embeddings collection exists in MongoDB with vector index
+- [X] T002 Verify OpenAI API key is configured and embeddings endpoint is accessible
+- [X] T003 Verify MySQL User entity has id, email, orders relationship
+- [X] T004 Verify MySQL Order entity has user relationship, orderItems, completedAt timestamp
+- [X] T005 Verify Redis is running and accessible for caching
 
 **Checkpoint**: All dependencies confirmed, ready for implementation
 
@@ -49,29 +49,29 @@
 
 ### Domain Layer
 
-- [ ] T010 [P] [US1] [Phase1] Create UserProfile entity in `src/Domain/Entity/UserProfile.php`
+- [X] T010 [P] [US1] [Phase1] Create UserProfile entity in `src/Domain/Entity/UserProfile.php`
   - Properties: userId (string), embeddingVector (array), lastUpdated (DateTimeImmutable)
   - Properties: dataSnapshot (array), metadata (array), createdAt, updatedAt
   - Methods: getUserId(), getEmbeddingVector(), getLastUpdated(), getDataSnapshot()
   - Validation: embeddingVector must be array of 1536 floats
 
-- [ ] T011 [P] [US1] [Phase1] Create ProfileSnapshot value object in `src/Domain/ValueObject/ProfileSnapshot.php`
+- [X] T011 [P] [US1] [Phase1] Create ProfileSnapshot value object in `src/Domain/ValueObject/ProfileSnapshot.php`
   - Properties: recentPurchases (array), recentSearches (array), dominantCategories (array)
   - Methods: getRecentPurchases(), getRecentSearches(), getDominantCategories()
   - Immutable value object pattern
 
-- [ ] T012 [P] [US1] [Phase1] Create RecommendationResult value object in `src/Domain/ValueObject/RecommendationResult.php`
+- [X] T012 [P] [US1] [Phase1] Create RecommendationResult value object in `src/Domain/ValueObject/RecommendationResult.php`
   - Properties: products (array of Product), similarityScores (array), generatedAt (DateTimeImmutable)
   - Methods: getProducts(), getScores(), count(), isEmpty()
 
-- [ ] T013 [P] [US1] [Phase1] Create UserProfileRepositoryInterface in `src/Domain/Repository/UserProfileRepositoryInterface.php`
+- [X] T013 [P] [US1] [Phase1] Create UserProfileRepositoryInterface in `src/Domain/Repository/UserProfileRepositoryInterface.php`
   - Methods: findByUserId(string): ?UserProfile
   - Methods: save(UserProfile): void, delete(string $userId): void
   - Methods: findSimilarProducts(array $embedding, int $limit): array
 
 ###Infrastructure Layer
 
-- [ ] T014 [US1] [Phase1] Create MongoDBUserProfileRepository in `src/Infrastructure/Repository/MongoDBUserProfileRepository.php`
+- [X] T014 [US1] [Phase1] Create MongoDBUserProfileRepository in `src/Infrastructure/Repository/MongoDBUserProfileRepository.php`
   - Implement UserProfileRepositoryInterface
   - Inject MongoDB client and database name
   - Collection: user_profiles
@@ -79,20 +79,20 @@
   - Method: save() - upsert profile document
   - Method: delete() - remove by userId
 
-- [ ] T015 [US1] [Phase1] Implement findSimilarProducts() in MongoDBUserProfileRepository
+- [X] T015 [US1] [Phase1] Implement findSimilarProducts() in MongoDBUserProfileRepository
   - Use MongoDB $vectorSearch aggregation pipeline
   - Query product_embeddings collection
   - Match against user embeddingVector
   - Return top N products by cosine similarity
   - Include similarity scores in results
 
-- [ ] T016 [P] [US1] [Phase1] Configure MongoDB collection and indexes
+- [X] T016 [P] [US1] [Phase1] Configure MongoDB collection and indexes
   - Create user_profiles collection if not exists
   - Create unique index on userId: `db.user_profiles.createIndex({userId: 1}, {unique: true})`
   - Create index on lastUpdated: `db.user_profiles.createIndex({lastUpdated: 1})`
   - Create vector search index on embeddingVector field
 
-- [ ] T017 [P] [US1] [Phase1] Create console command CreateUserProfileIndexesCommand in `src/Infrastructure/Command/CreateUserProfileIndexesCommand.php`
+- [X] T017 [P] [US1] [Phase1] Create console command CreateUserProfileIndexesCommand in `src/Infrastructure/Command/CreateUserProfileIndexesCommand.php`
   - Command name: `app:user-profile:create-indexes`
   - Create all required MongoDB indexes
   - Verify vector search index configuration
