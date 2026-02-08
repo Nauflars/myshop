@@ -45,7 +45,6 @@ services:
     App\Infrastructure\Controller\ChatbotController:
         arguments:
             $agent: '@ai.agent.openAiAgent'
-            $unifiedContextManager: '@App\Application\Service\UnifiedCustomerContextManager'
 
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
@@ -88,7 +87,7 @@ services:
         arguments:
             $redis: '@Predis\Client'
             $logger: '@logger'
-            $defaultTtl: '%env(int:CONTEXT_TTL)%'
+            $defaultTtl: '%env(int:CUSTOMER_CONTEXT_TTL)%'
 
     # Unified Context Managers (spec-012)
     App\Application\Service\UnifiedCustomerContextManager:
@@ -105,18 +104,18 @@ services:
             $logger: '@logger'
             $ttl: '%app.context.admin_ttl%'
 
-    # Legacy Context Management Services (spec-009) - DEPRECATED AND DISABLED
-    # These services are disabled to prevent accidental usage after spec-012 migration
-    # Use UnifiedCustomerContextManager and UnifiedAdminContextManager instead
-    #App\Application\Service\CustomerContextManager:
-    #    public: true
-    #    arguments:
-    #        $ttl: '%app.context.customer_ttl%'
-    #
-    #App\Application\Service\AdminContextManager:
-    #    public: true
-    #    arguments:
-    #        $ttl: '%app.context.admin_ttl%'
+    # Legacy Context Management Services (spec-009) - DEPRECATED BUT NEEDED FOR AUTOWIRING
+    # These services must be configured even though they're deprecated to prevent autowiring errors
+    # Use UnifiedCustomerContextManager and UnifiedAdminContextManager instead in new code
+    App\Application\Service\CustomerContextManager:
+        public: true
+        arguments:
+            $ttl: '%app.context.customer_ttl%'
+
+    App\Application\Service\AdminContextManager:
+        public: true
+        arguments:
+            $ttl: '%app.context.admin_ttl%'
 
     # AI Services - prevent inlining for dependency injection
     App\Infrastructure\AI\Service\RoleAwareAssistant:
@@ -258,3 +257,30 @@ services:
     # Symfony Stopwatch for profiling (spec-010 Phase 5 T074)
     Symfony\Component\Stopwatch\Stopwatch:
         public: true
+
+    # MongoDB User Profile Repository (spec-013)
+    App\Infrastructure\Repository\MongoDBUserProfileRepository:
+        public: true
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $databaseName: '%env(MONGO_DATABASE)%'
+            $logger: '@logger'
+
+    App\Domain\Repository\UserProfileRepositoryInterface: '@App\Infrastructure\Repository\MongoDBUserProfileRepository'
+
+    # User Profile Commands (spec-013)
+    App\Infrastructure\Command\CreateUserProfileIndexesCommand:
+        public: true
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $databaseName: '%env(MONGO_DATABASE)%'
+            $logger: '@logger'
+        tags: ['console.command']
+
+    App\Infrastructure\Command\RefreshUserProfilesCommand:
+        public: true
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $profileService: '@App\Application\Service\UserProfileService'
+            $logger: '@logger'
+        tags: ['console.command']

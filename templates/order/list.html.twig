@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                         ${order.items.map(item => `
                                             <li class="mb-2">
                                                 <strong>${escapeHtml(item.productName)}</strong> × ${item.quantity}
-                                                <span class="text-muted ms-2">${item.price.currency} ${(item.price.amount / 100).toFixed(2)}</span>
+                                                <strong>Price:</strong> ${(item.priceInCents / 100).toFixed(2)} ${item.currency} <br>
+
                                             </li>
                                         `).join('')}
                                     </ul>

@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Controller;
 
 use App\Application\UseCase\Checkout;
+use App\Application\Service\UserProfileUpdateService;
 use App\Domain\Entity\Order;
 use App\Domain\Entity\OrderItem;
 use App\Domain\Repository\OrderRepositoryInterface;
@@ -20,7 +21,8 @@ class OrderController extends AbstractController
 {
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly Checkout $checkout
+        private readonly Checkout $checkout,
+        private readonly UserProfileUpdateService $profileUpdateService
     ) {
     }
 
@@ -29,6 +31,15 @@ class OrderController extends AbstractController
     {
         try {
             $order = $this->checkout->execute($user);
+            
+            // Update user profile automatically after checkout (spec-013 auto-update)
+            try {
+                $this->profileUpdateService->scheduleProfileUpdate($user);
+            } catch (\Exception $e) {
+                // Log but don't fail - profile update is non-critical
+                error_log('Profile update after checkout error: ' . $e->getMessage());
+            }
+            
             return $this->json($this->serializeOrder($order), Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
@@ -76,6 +87,16 @@ class OrderController extends AbstractController
         try {
             $order->setStatus($newStatus);
             $this->orderRepository->save($order);
+            
+            // Update user profile automatically when order is completed (spec-013 auto-update)
+            if ($newStatus === Order::STATUS_DELIVERED || $newStatus === Order::STATUS_SHIPPED) {
+                try {
+                    $this->profileUpdateService->scheduleProfileUpdate($order->getUser());
+                } catch (\Exception $e) {
+                    // Log but don't fail - profile update is non-critical
+                    error_log('Profile update after order completion error: ' . $e->getMessage());
+                }
+            }
 
             return $this->json($this->serializeOrder($order));
         } catch (\Exception $e) {

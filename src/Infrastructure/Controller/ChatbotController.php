@@ -4,6 +4,7 @@ namespace App\Infrastructure\Controller;
 
 use App\Application\Service\UnifiedCustomerContextManager;
 use App\Application\Service\UnansweredQuestionCapture;
+use App\Application\Service\UserProfileUpdateService;
 use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
 use App\Infrastructure\AI\Service\ConversationManager;
@@ -34,7 +35,8 @@ class ChatbotController extends AbstractController
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
         private readonly UnifiedCustomerContextManager $unifiedContextManager,
-        private readonly AgentInterface $agent
+        private readonly AgentInterface $agent,
+        private readonly UserProfileUpdateService $profileUpdateService
     ) {
     }
 
@@ -105,9 +107,9 @@ class ChatbotController extends AbstractController
                         $messages[] = Message::ofUser($msg['content']);
                     } elseif ($msg['role'] === 'assistant') {
                         $messages[] = Message::ofAssistant($msg['content']);
-                    } elseif ($msg['role'] === 'system') {
-                        $messages[] = Message::ofSystem($msg['content']);
                     }
+                    // Note: System messages are handled by the AI Agent configuration
+                    // Symfony AI Platform doesn't support Message::ofSystem() in this version
                 }
             }
             
@@ -203,6 +205,14 @@ class ChatbotController extends AbstractController
             if (!$saveAssistantResult['success']) {
                 // Log error but don't fail the request - user already got the response
                 error_log('Error saving assistant message: ' . $saveAssistantResult['message']);
+            }
+            
+            // Update user profile automatically after search (spec-013 auto-update)
+            try {
+                $this->profileUpdateService->scheduleProfileUpdate($user);
+            } catch (\Exception $e) {
+                // Log but don't fail - profile update is non-critical
+                error_log('Profile update error: ' . $e->getMessage());
             }
             
             return $this->json([

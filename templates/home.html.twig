@@ -9,6 +9,54 @@
     <a href="{{ path('product_list') }}" class="btn btn-primary">Shop Now</a>
 </div>
 
+{# Personalized Recommendations Section (spec-013) #}
+{% if recommendations and recommendations.count > 0 %}
+<section class="recommendations">
+    <h2>
+        {% if isPersonalized %}
+            🎯 Recommended For You
+        {% else %}
+            ⭐ Featured Products
+        {% endif %}
+    </h2>
+    
+    {% if isPersonalized %}
+        <p class="recommendations-subtitle">Based on your interests and purchase history</p>
+    {% endif %}
+    
+    <div class="product-grid">
+        {% for item in recommendations.productsWithScores %}
+            {% set product = item.product %}
+            {% set score = item.score %}
+            
+            <div class="product-card">
+                <h3>{{ product.name }}</h3>
+                <p class="category">{{ product.category.name ?? 'Uncategorized' }}</p>
+                <p class="price">${{ product.price.format }}</p>
+                <p class="stock">
+                    {% if product.stock > 0 %}
+                        <span class="in-stock">✓ In Stock</span>
+                    {% else %}
+                        <span class="out-of-stock">Out of Stock</span>
+                    {% endif %}
+                </p>
+                
+                {# Show similarity score for personalized recommendations #}
+                {% if isPersonalized and score > 0 %}
+                    <div class="similarity-indicator" title="Match score: {{ (score * 100)|round }}%">
+                        <div class="similarity-bar" style="width: {{ (score * 100)|round }}%"></div>
+                    </div>
+                {% endif %}
+                
+                <a href="{{ path('product_show', {id: product.id}) }}" class="btn btn-secondary">View Details</a>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# Fallback: Load featured products via API if no recommendations #}
+{% if not recommendations or recommendations.count == 0 %}
 <section class="featured-products">
     <h2>Featured Products</h2>
     <div id="featured-products" class="product-grid">
@@ -34,4 +82,50 @@ fetch('/api/products?limit=8')
     })
     .catch(error => console.error('Error loading products:', error));
 </script>
+{% endif %}
+
+<style>
+.recommendations {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.recommendations h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.recommendations-subtitle {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.similarity-indicator {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.similarity-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    transition: width 0.3s ease;
+}
+
+.in-stock {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.out-of-stock {
+    color: #f44336;
+    font-weight: 500;
+}
+</style>
 {% endblock %}
