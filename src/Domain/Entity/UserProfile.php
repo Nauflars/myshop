@@ -34,7 +34,9 @@ class UserProfile
         $this->metadata = $metadata;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
-        $this->lastActivityDate = $metadata['lastActivityDate'] ?? null;
+        
+        // Don't set lastActivityDate from metadata here - it will be set by reflection in fromArray
+        $this->lastActivityDate = null;
     }
 
     private function validateEmbeddingVector(array $vector): void
@@ -141,17 +143,43 @@ class UserProfile
      */
     public static function fromArray(array $data): self
     {
+        // Convert BSON arrays to PHP arrays
+        $recentPurchases = $data['dataSnapshot']['recentPurchases'] ?? [];
+        if ($recentPurchases instanceof \MongoDB\Model\BSONArray) {
+            $recentPurchases = $recentPurchases->getArrayCopy();
+        }
+
+        $recentSearches = $data['dataSnapshot']['recentSearches'] ?? [];
+        if ($recentSearches instanceof \MongoDB\Model\BSONArray) {
+            $recentSearches = $recentSearches->getArrayCopy();
+        }
+
+        $dominantCategories = $data['dataSnapshot']['dominantCategories'] ?? [];
+        if ($dominantCategories instanceof \MongoDB\Model\BSONArray) {
+            $dominantCategories = $dominantCategories->getArrayCopy();
+        }
+
+        $embeddingVector = $data['embeddingVector'];
+        if ($embeddingVector instanceof \MongoDB\Model\BSONArray) {
+            $embeddingVector = $embeddingVector->getArrayCopy();
+        }
+
+        $metadata = $data['metadata'] ?? [];
+        if ($metadata instanceof \MongoDB\Model\BSONDocument) {
+            $metadata = (array) $metadata;
+        }
+
         $snapshot = new ProfileSnapshot(
-            $data['dataSnapshot']['recentPurchases'] ?? [],
-            $data['dataSnapshot']['recentSearches'] ?? [],
-            $data['dataSnapshot']['dominantCategories'] ?? []
+            $recentPurchases,
+            $recentSearches,
+            $dominantCategories
         );
 
         $profile = new self(
             $data['userId'],
-            $data['embeddingVector'],
+            $embeddingVector,
             $snapshot,
-            $data['metadata'] ?? []
+            $metadata
         );
 
         // Restore timestamps
@@ -159,14 +187,38 @@ class UserProfile
             $reflection = new \ReflectionClass($profile);
             $property = $reflection->getProperty('createdAt');
             $property->setAccessible(true);
-            $property->setValue($profile, new \DateTimeImmutable($data['createdAt']));
+            
+            $createdAt = $data['createdAt'];
+            if ($createdAt instanceof \MongoDB\BSON\UTCDateTime) {
+                $createdAt = $createdAt->toDateTime()->format('c');
+            }
+            $property->setValue($profile, new \DateTimeImmutable($createdAt));
         }
 
         if (isset($data['updatedAt'])) {
             $reflection = new \ReflectionClass($profile);
             $property = $reflection->getProperty('updatedAt');
             $property->setAccessible(true);
-            $property->setValue($profile, new \DateTimeImmutable($data['updatedAt']));
+            
+            $updatedAt = $data['updatedAt'];
+            if ($updatedAt instanceof \MongoDB\BSON\UTCDateTime) {
+                $updatedAt = $updatedAt->toDateTime()->format('c');
+            }
+            $property->setValue($profile, new \DateTimeImmutable($updatedAt));
+        }
+
+        if (isset($data['lastActivityDate'])) {
+            $reflection = new \ReflectionClass($profile);
+            $property = $reflection->getProperty('lastActivityDate');
+            $property->setAccessible(true);
+            
+            $lastActivityDate = $data['lastActivityDate'];
+            if ($lastActivityDate instanceof \MongoDB\BSON\UTCDateTime) {
+                $lastActivityDate = $lastActivityDate->toDateTime()->format('c');
+            }
+            if ($lastActivityDate !== null) {
+                $property->setValue($profile, new \DateTimeImmutable($lastActivityDate));
+            }
         }
 
         return $profile;

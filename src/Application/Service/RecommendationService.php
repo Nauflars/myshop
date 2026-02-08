@@ -26,7 +26,7 @@ class RecommendationService
 
     private const RECOMMENDATION_LIMIT = 20;
     private const CACHE_TTL = 1800; // 30 minutes
-    private const MIN_SIMILARITY_SCORE = 0.5;
+    private const MIN_SIMILARITY_SCORE = 0.35; // Lower threshold to show more relevant products
 
     public function __construct(
         UserProfileRepositoryInterface $profileRepository,
@@ -77,17 +77,27 @@ class RecommendationService
         $profile = $this->profileRepository->findByUserId($user->getId());
 
         if (!$profile) {
-            $this->logger->info('No profile found, using fallback recommendations', [
+            $this->logger->warning('No profile found, using fallback recommendations', [
                 'userId' => $user->getId(),
             ]);
             return $this->getFallbackRecommendations($limit);
         }
+
+        $this->logger->info('Profile found for recommendations', [
+            'userId' => $user->getId(),
+            'embeddingLength' => count($profile->getEmbeddingVector()),
+        ]);
 
         // Perform vector similarity search
         $similarProducts = $this->profileRepository->findSimilarProducts(
             $profile->getEmbeddingVector(),
             $limit
         );
+
+        $this->logger->info('Vector search completed', [
+            'userId' => $user->getId(),
+            'resultsCount' => count($similarProducts),
+        ]);
 
         if (empty($similarProducts)) {
             $this->logger->warning('Vector search returned no results', [
@@ -157,7 +167,7 @@ class RecommendationService
     /**
      * Enrich product IDs with full Product entities from MySQL
      * 
-     * @param string[] $productIds
+     * @param string[] $productIds UUID strings from MongoDB
      * @return Product[]
      */
     private function enrichWithMySQLData(array $productIds): array
@@ -167,18 +177,23 @@ class RecommendationService
         }
 
         try {
-            $qb = $this->entityManager->createQueryBuilder();
-            $qb->select('p')
-                ->from(Product::class, 'p')
-                ->where($qb->expr()->in('p.id', ':productIds'))
-                ->andWhere('p.stock > 0') // Only show in-stock products
-                ->setParameter('productIds', $productIds);
+            // Query products one by one since IN clause doesn't work reliably with UUID binary
+            $products = [];
+            $productRepo = $this->entityManager->getRepository(Product::class);
+            
+            foreach ($productIds as $id) {
+                $product = $productRepo->find($id);
+                if ($product && $product->getStock() > 0) {
+                    $products[] = $product;
+                }
+            }
 
-            return $qb->getQuery()->getResult();
+            return $products;
         } catch (\Exception $e) {
             $this->logger->error('Failed to enrich products from MySQL', [
                 'productIds' => $productIds,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return [];
         }

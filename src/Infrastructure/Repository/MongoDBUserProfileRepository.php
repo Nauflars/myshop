@@ -33,14 +33,24 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
             $document = $collection->findOne(['userId' => $userId]);
 
             if (!$document) {
+                $this->logger->info('DEBUG: Profile document not found in MongoDB', [
+                    'userId' => $userId,
+                    'collection' => $this->collectionName,
+                ]);
                 return null;
             }
+
+            $this->logger->info('DEBUG: Profile document found, converting to entity', [
+                'userId' => $userId,
+                'documentKeys' => array_keys((array) $document),
+            ]);
 
             return UserProfile::fromArray((array) $document);
         } catch (\Exception $e) {
             $this->logger->error('Failed to find user profile', [
                 'userId' => $userId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             return null;
         }
@@ -94,46 +104,127 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
         try {
             $collection = $this->database->selectCollection('product_embeddings');
 
-            $pipeline = [
-                [
-                    '$vectorSearch' => [
-                        'index' => 'vector_index',
-                        'path' => 'embedding',
-                        'queryVector' => $embedding,
-                        'numCandidates' => $limit * 10,
-                        'limit' => $limit,
-                    ],
-                ],
-                [
-                    '$project' => [
-                        'productId' => '$product_id',
-                        'score' => ['$meta' => 'vectorSearchScore'],
-                    ],
-                ],
-            ];
+            $this->logger->info('Starting vector search using PHP cosine similarity', [
+                'embeddingLength' => count($embedding),
+                'limit' => $limit,
+                'collection' => 'product_embeddings',
+            ]);
 
-            $results = $collection->aggregate($pipeline);
-            $products = [];
+            // Fetch all product embeddings
+            $allEmbeddings = $collection->find(
+                [],
+                [
+                    'projection' => [
+                        'product_id' => 1,
+                        'embedding' => 1,
+                        '_id' => 0,
+                    ],
+                ]
+            )->toArray();
 
-            foreach ($results as $result) {
-                $products[] = [
-                    'productId' => $result['productId'],
-                    'score' => $result['score'],
+            $this->logger->info('DEBUG: Embeddings fetched from MongoDB', [
+                'count' => count($allEmbeddings),
+                'first_has_embedding' => isset($allEmbeddings[0]['embedding']) ? 'yes' : 'no',
+                'first_embedding_type' => isset($allEmbeddings[0]['embedding']) ? get_class($allEmbeddings[0]['embedding']) : 'N/A',
+            ]);
+
+            $results = [];
+            $iteration = 0;
+
+            foreach ($allEmbeddings as $doc) {
+                $docArray = (array) $doc;
+
+                if (!isset($docArray['embedding'])) {
+                    continue;
+                }
+
+                // Convert BSON array to PHP array
+                $productEmbedding = $docArray['embedding'];
+                if ($productEmbedding instanceof \MongoDB\Model\BSONArray) {
+                    $productEmbedding = iterator_to_array($productEmbedding);
+                } elseif (is_object($productEmbedding) && method_exists($productEmbedding, 'getArrayCopy')) {
+                    $productEmbedding = $productEmbedding->getArrayCopy();
+                } elseif (!is_array($productEmbedding)) {
+                    continue;
+                }
+
+                // Calculate cosine similarity
+                $similarity = $this->calculateCosineSimilarity($embedding, $productEmbedding);
+
+                // Log first 3 calculations for debugging
+                if ($iteration < 3) {
+                    $this->logger->info('DEBUG: Similarity calculation', [
+                        'iteration' => $iteration,
+                        'productId' => $docArray['product_id'],
+                        'productEmbeddingLength' => count($productEmbedding),
+                        'queryEmbeddingLength' => count($embedding),
+                        'similarity' => $similarity,
+                    ]);
+                }
+
+                $results[] = [
+                    'productId' => $docArray['product_id'],
+                    'score' => $similarity,
                 ];
+
+                $iteration++;
             }
 
+            // Sort by similarity descending
+            usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+
+            $this->logger->info('DEBUG: Results sorted', [
+                'totalResults' => count($results),
+                'topScore' => isset($results[0]) ? $results[0]['score'] : 'N/A',
+                'top3Scores' => array_slice(array_map(fn($r) => $r['score'], $results), 0, 3),
+            ]);
+
+            // Limit results
+            $results = array_slice($results, 0, $limit);
+
             $this->logger->info('Vector search completed', [
-                'resultCount' => count($products),
+                'resultCount' => count($results),
                 'limit' => $limit,
             ]);
 
-            return $products;
+            return $results;
         } catch (\Exception $e) {
             $this->logger->error('Failed to perform vector search', [
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'embeddingLength' => count($embedding),
             ]);
             return [];
         }
+    }
+
+    /**
+     * Calculate cosine similarity between two vectors
+     */
+    private function calculateCosineSimilarity(array $vec1, array $vec2): float
+    {
+        if (count($vec1) !== count($vec2)) {
+            throw new \InvalidArgumentException('Vectors must have the same dimensions');
+        }
+
+        $dotProduct = 0;
+        $magnitude1 = 0;
+        $magnitude2 = 0;
+
+        for ($i = 0; $i < count($vec1); $i++) {
+            $dotProduct += $vec1[$i] * $vec2[$i];
+            $magnitude1 += $vec1[$i] * $vec1[$i];
+            $magnitude2 += $vec2[$i] * $vec2[$i];
+        }
+
+        $magnitude1 = sqrt($magnitude1);
+        $magnitude2 = sqrt($magnitude2);
+
+        if ($magnitude1 == 0 || $magnitude2 == 0) {
+            return 0.0;
+        }
+
+        return $dotProduct / ($magnitude1 * $magnitude2);
     }
 
     public function findStaleProfiles(int $daysOld = 30): array
