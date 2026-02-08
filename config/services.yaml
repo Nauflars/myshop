@@ -82,6 +82,14 @@ services:
         arguments:
             $redis: '@Predis\Client'
 
+    # Unified Conversation Storage (spec-012)
+    App\Infrastructure\Repository\UnifiedConversationStorage:
+        public: true
+        arguments:
+            $redis: '@Predis\Client'
+            $logger: '@logger'
+            $defaultTtl: '%env(int:CONTEXT_TTL)%'
+
     # Context Management Services (spec-009)
     App\Application\Service\CustomerContextManager:
         public: true

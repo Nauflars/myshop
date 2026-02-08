@@ -113,7 +113,22 @@ class ChatbotController extends AbstractController
                 
                 // Extract response content - handle both string and array responses
                 $content = $result->getContent();
-                $assistantResponse = is_array($content) ? json_encode($content) : (string) $content;
+                
+                // Handle different response types from AI Agent
+                if (is_string($content)) {
+                    $assistantResponse = $content;
+                } elseif (is_array($content)) {
+                    // If array is empty or contains empty objects, provide fallback
+                    if (empty($content) || $this->isEmptyArrayResponse($content)) {
+                        $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                    } else {
+                        // Try to extract a meaningful message from the array
+                        $assistantResponse = $this->extractMessageFromArray($content);
+                    }
+                } else {
+                    // Fallback for unexpected types
+                    $assistantResponse = (string) $content;
+                }
                 
                 // Update context after successful AI interaction (spec-009)
                 if ($context !== null) {
@@ -180,6 +195,52 @@ class ChatbotController extends AbstractController
                 'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    /**
+     * Check if array response contains only empty objects
+     */
+    private function isEmptyArrayResponse(array $content): bool
+    {
+        foreach ($content as $item) {
+            if (!is_array($item) && !is_object($item)) {
+                return false;
+            }
+            if (is_array($item) && !empty($item)) {
+                return false;
+            }
+            if (is_object($item)) {
+                $vars = get_object_vars($item);
+                if (!empty($vars)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Extract meaningful message from array response
+     */
+    private function extractMessageFromArray(array $content): string
+    {
+        // Try to find 'message' key in response
+        if (isset($content['message']) && is_string($content['message'])) {
+            return $content['message'];
+        }
+        
+        // Try to find first string value in array
+        foreach ($content as $value) {
+            if (is_string($value) && !empty(trim($value))) {
+                return $value;
+            }
+            if (is_array($value) && isset($value['message'])) {
+                return $value['message'];
+            }
+        }
+        
+        // If nothing found, return JSON representation
+        return json_encode($content);
     }
     
     #[Route('/history/{conversationId}', name: 'api_chatbot_history', methods: ['GET'])]

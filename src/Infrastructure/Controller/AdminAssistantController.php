@@ -111,7 +111,21 @@ class AdminAssistantController extends AbstractController
             // Get AI response with context enrichment
             $response = $this->adminAgent->call($messageBag);
             $content = $response->getContent();
-            $assistantReply = is_array($content) ? json_encode($content) : (string) $content;
+            
+            // Handle different response types from AI Agent
+            if (is_string($content)) {
+                $assistantReply = $content;
+            } elseif (is_array($content)) {
+                // If array is empty or contains empty objects, provide fallback
+                if (empty($content) || $this->isEmptyArrayResponse($content)) {
+                    $assistantReply = "I've processed your request. Is there anything else I can help you with?";
+                } else {
+                    // Try to extract a meaningful message from the array
+                    $assistantReply = $this->extractMessageFromArray($content);
+                }
+            } else {
+                $assistantReply = (string) $content;
+            }
 
             // Update context after AI interaction
             if ($context !== null) {
@@ -227,5 +241,51 @@ class AdminAssistantController extends AbstractController
             'success' => true,
             'message' => 'Contexto limpiado',
         ]);
+    }
+    
+    /**
+     * Check if array response contains only empty objects
+     */
+    private function isEmptyArrayResponse(array $content): bool
+    {
+        foreach ($content as $item) {
+            if (!is_array($item) && !is_object($item)) {
+                return false;
+            }
+            if (is_array($item) && !empty($item)) {
+                return false;
+            }
+            if (is_object($item)) {
+                $vars = get_object_vars($item);
+                if (!empty($vars)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Extract meaningful message from array response
+     */
+    private function extractMessageFromArray(array $content): string
+    {
+        // Try to find 'message' key in response
+        if (isset($content['message']) && is_string($content['message'])) {
+            return $content['message'];
+        }
+        
+        // Try to find first string value in array
+        foreach ($content as $value) {
+            if (is_string($value) && !empty(trim($value))) {
+                return $value;
+            }
+            if (is_array($value) && isset($value['message'])) {
+                return $value['message'];
+            }
+        }
+        
+        // If nothing found, return JSON representation
+        return json_encode($content);
     }
 }
