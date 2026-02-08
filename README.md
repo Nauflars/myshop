@@ -6,13 +6,16 @@ A Symfony 7 e-commerce application built with Domain-Driven Design (DDD) archite
 
 - **User Management**: Registration, authentication with roles (Admin, Seller, Customer)
 - **Product Catalog**: CRUD operations, search, filtering by category/price
+- **Semantic Search** ⭐ NEW: AI-powered natural language product search using OpenAI embeddings and MongoDB vector search
 - **Shopping Cart**: Add/remove items, update quantities, real-time updates
 - **Order Management**: Checkout, order history, status tracking
 - **AI Chatbot**: Intelligent assistant using symfony/ai with custom tools
+  - Customer Virtual Assistant with natural language search capabilities
+  - Admin Virtual Assistant for operational support
 - **RESTful API**: JSON API for all operations
-- **Docker Support**: Complete containerized environment
+- **Docker Support**: Complete containerized environment with MongoDB and Redis
 - **Responsive Design**: Fully responsive UI for desktop, tablet, and mobile devices
-- **Comprehensive Tests**: Unit tests for Domain, Application, and Infrastructure layers
+- **Comprehensive Tests**: Unit, integration, and performance tests
 - **Custom Brand Colors**: Professional color scheme with #06038D primary and #E87722 secondary colors
 
 ## Architecture
@@ -39,12 +42,18 @@ Technical implementations:
 ## Tech Stack
 
 - **Backend**: Symfony 7, PHP 8.3
-- **Database**: MySQL 8.0
+- **Databases**: 
+  - MySQL 8.0 (primary database - products, orders, users)
+  - MongoDB 7.0 (vector database - semantic search embeddings)
+  - Redis 7 (caching - conversation context, query embeddings)
+- **AI Services**:
+  - OpenAI API (GPT-4o-mini for chat, text-embedding-3-small for semantic search)
+  - Symfony AI Bundle for agent orchestration
 - **Web Server**: Nginx
 - **Containerization**: Docker, Docker Compose
 - **ORM**: Doctrine
 - **Testing**: PHPUnit
-- **Frontend**: Twig, Vanilla JavaScript
+- **Frontend**: Twig, Vanilla JavaScript, Chart.js
 
 ## Prerequisites
 
@@ -76,16 +85,27 @@ Technical implementations:
    docker-compose exec php composer install
    ```
 
-5. **Initialize database**:
+5. **Initialize databases**:
    ```bash
+   # MySQL migrations
    docker-compose exec php php bin/console doctrine:migrations:migrate --no-interaction
    docker-compose exec php php bin/console doctrine:fixtures:load --no-interaction
+   
+   # MongoDB vector index (for semantic search)
+   docker-compose exec php php bin/console app:vector-index:create
+   
+   # Sync products to MongoDB
+   docker-compose exec php php bin/console app:embedding:sync-all
    ```
 
 6. **Access the application**:
    - **Web**: http://localhost
    - **API**: http://localhost/api
    - **Health Check**: http://localhost/health
+   - **Admin Search Metrics**: http://localhost/admin/search-metrics
+   - **phpMyAdmin** (MySQL): http://localhost:8081
+   - **Mongo Express** (MongoDB): http://localhost:8082 (user: `admin`, pass: `admin`)
+   - **Redis Commander** (Redis): http://localhost:8083
 
 ## Default Users
 
@@ -300,6 +320,125 @@ docker-compose exec mysql mysql -u root -prootpassword myshop
 # View logs
 make logs
 ```
+
+## Semantic Product Search ⭐ NEW
+
+The application features an AI-powered semantic search system that understands natural language queries and finds relevant products based on meaning, not just keywords.
+
+### Features
+
+- **Natural Language Understanding**: Search using phrases like "laptop for gaming" or "affordable phone for photography"
+- **Automatic Synchronization**: Product changes automatically update search index
+- **Dual Search Modes**: 
+  - **Semantic Mode**: AI-powered search with OpenAI embeddings (1536 dimensions)
+  - **Keyword Mode**: Traditional MySQL LIKE search
+- **Redis Caching**: 80%+ cache hit rate reduces API costs by caching query embeddings
+- **Vector Similarity**: MongoDB vector search with cosine similarity scoring
+- **Virtual Assistant Integration**: Semantic search available to customer chatbot via AI tool
+
+### Quick Usage
+
+**API Search**:
+```http
+GET /api/products/search?q=laptop%20for%20video%20editing&mode=semantic&limit=20
+```
+
+**Response**:
+```json
+{
+  "products": [
+    {
+      "id": "uuid",
+      "name": "Dell XPS 15",
+      "description": "High-performance laptop...",
+      "similarity_score": 0.92
+    }
+  ],
+  "metadata": {
+    "mode": "semantic",
+    "total_results": 45,
+    "execution_time_ms": 234.5
+  }
+}
+```
+
+**Virtual Assistant**:
+```
+Customer: "Show me laptops good for video editing"
+VA: *performs semantic search*
+VA: "I found 3 excellent options. The Dell XPS 15 has powerful specs..."
+```
+
+### Admin Dashboard
+
+Monitor search performance at: `http://localhost/admin/search-metrics`
+
+**Metrics**:
+- Total searches (24h period)
+- Average response time (P50, P95, P99)
+- Cache hit rate (target: ≥80%)
+- OpenAI API costs (daily/monthly)
+- Empty search rate
+
+### Architecture
+
+```
+Customer Search Query
+  ↓
+Generate OpenAI Embedding (or use cached)
+  ↓
+MongoDB Vector Similarity Search
+  ↓
+Enrich with MySQL Product Data
+  ↓
+Ranked Results (0.0-1.0 similarity score)
+```
+
+**Databases**:
+- **MySQL**: Source of truth (products, prices, stock)
+- **MongoDB**: Vector embeddings for semantic search
+- **Redis**: Cache for query embeddings (TTL: 1 hour)
+
+### Cost Efficiency
+
+- **Model**: OpenAI text-embedding-3-small ($0.02 per 1M tokens)
+- **Typical Cost**: $0.01-$1.00/month (well under $50 budget)
+- **Cache Hit Rate**: 80%+ reduces API calls by 80%
+- **Average Query**: ~10 tokens = $0.000002 per search
+
+### Documentation
+
+- **Admin Guide**: [docs/ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md)
+- **Developer Guide**: [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
+- **API Documentation**: [docs/API.md](docs/API.md)
+- **Database Schema**: [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
+- **Cost Estimation**: [docs/COST_ESTIMATION.md](docs/COST_ESTIMATION.md)
+- **Troubleshooting**: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- **Performance Guide**: [specs/010-semantic-search/PERFORMANCE.md](specs/010-semantic-search/PERFORMANCE.md)
+
+### Console Commands
+
+```bash
+# Sync all products to MongoDB
+docker exec myshop_php bin/console app:embedding:sync-all
+
+# Check sync status for product
+docker exec myshop_php bin/console app:embedding:status <product-id>
+
+# Create vector index (first-time setup)
+docker exec myshop_php bin/console app:vector-index:create
+
+# Clear embedding cache
+docker exec myshop_php bin/console app:cache:clear-embeddings
+
+# View cost metrics
+docker exec myshop_php bin/console app:metrics:cost --period=30days
+
+# Run health check
+docker exec myshop_php bin/console app:health-check
+```
+
+---
 
 ## AI Chatbot
 

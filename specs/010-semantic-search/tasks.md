@@ -236,22 +236,22 @@
 
 ### Implementation for Validation
 
-- [ ] T105 [P] Write unit tests for all domain value objects in tests/Unit/Domain/ValueObject/
-- [ ] T106 [P] Write unit tests for all application services in tests/Unit/Application/Service/
-- [ ] T107 [P] Write integration tests for product sync flow in tests/Integration/ProductEmbedding/
-- [ ] T108 [P] Write integration tests for search flow in tests/Integration/Search/
-- [ ] T109 [P] Write integration tests for VA integration in tests/Integration/AI/
+- [X] T105 [P] Write unit tests for all domain value objects in tests/Unit/Domain/ValueObject/
+- [X] T106 [P] Write unit tests for all application services in tests/Unit/Application/Service/
+- [X] T107 [P] Write integration tests for product sync flow in tests/Integration/ProductEmbedding/
+- [X] T108 [P] Write integration tests for search flow in tests/Integration/Search/
+- [X] T109 [P] Write integration tests for VA integration in tests/Integration/AI/
 - [ ] T110 Write end-to-end tests simulating user journeys in tests/E2E/
-- [ ] T111 Create test data fixtures (sample products with embeddings) in tests/Fixtures/
-- [ ] T112 Write tests for edge cases documented in spec.md in tests/Unit/EdgeCases/
-- [ ] T113 Implement search quality tests (expected results for curated queries) in tests/Functional/
-- [ ] T114 Create admin documentation for semantic search features in docs/ADMIN_GUIDE.md
-- [ ] T115 Create developer documentation for extending semantic search in docs/DEVELOPER_GUIDE.md
-- [ ] T116 Document API endpoints and parameters in docs/API.md
-- [ ] T117 Document MongoDB schema and indexes in docs/DATABASE_SCHEMA.md
-- [ ] T118 Document OpenAI API usage and cost estimation in docs/COST_ESTIMATION.md
-- [ ] T119 Create troubleshooting guide for common issues in docs/TROUBLESHOOTING.md
-- [ ] T120 Update main README.md with semantic search feature description
+- [X] T111 Create test data fixtures (sample products with embeddings) in tests/Fixtures/
+- [X] T112 Write tests for edge cases documented in spec.md in tests/Unit/EdgeCases/
+- [X] T113 Implement search quality tests (expected results for curated queries) in tests/Functional/
+- [X] T114 Create admin documentation for semantic search features in docs/ADMIN_GUIDE.md
+- [X] T115 Create developer documentation for extending semantic search in docs/DEVELOPER_GUIDE.md
+- [X] T116 Document API endpoints and parameters in docs/API.md
+- [X] T117 Document MongoDB schema and indexes in docs/DATABASE_SCHEMA.md
+- [X] T118 Document OpenAI API usage and cost estimation in docs/COST_ESTIMATION.md
+- [X] T119 Create troubleshooting guide for common issues in docs/TROUBLESHOOTING.md
+- [X] T120 Update main README.md with semantic search feature description
 
 **Checkpoint**: All tests green, documentation complete, ready for production deployment
 
