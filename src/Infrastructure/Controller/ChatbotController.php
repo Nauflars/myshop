@@ -121,9 +121,18 @@ class ChatbotController extends AbstractController
                 // Extract response content - handle both string and array responses
                 $content = $result->getContent();
                 
+                // Log for debugging
+                error_log('AI Response type: ' . gettype($content));
+                error_log('AI Response content: ' . json_encode($content));
+                
                 // Handle different response types from AI Agent
                 if (is_string($content)) {
-                    $assistantResponse = $content;
+                    // Check if string is actually "[{},{}]" pattern
+                    if (preg_match('/^\[\s*\{\s*\}\s*(?:,\s*\{\s*\}\s*)*\]$/', trim($content))) {
+                        $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                    } else {
+                        $assistantResponse = $content;
+                    }
                 } elseif (is_array($content)) {
                     // If array is empty or contains empty objects, provide fallback
                     if (empty($content) || $this->isEmptyArrayResponse($content)) {
@@ -131,6 +140,11 @@ class ChatbotController extends AbstractController
                     } else {
                         // Try to extract a meaningful message from the array
                         $assistantResponse = $this->extractMessageFromArray($content);
+                        
+                        // If extraction returned JSON of empty objects, use fallback
+                        if (preg_match('/^\[\s*\{\s*\}\s*(?:,\s*\{\s*\}\s*)*\]$/', trim($assistantResponse))) {
+                            $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                        }
                     }
                 } else {
                     // Fallback for unexpected types
@@ -214,20 +228,34 @@ class ChatbotController extends AbstractController
      */
     private function isEmptyArrayResponse(array $content): bool
     {
+        if (empty($content)) {
+            return true;
+        }
+        
         foreach ($content as $item) {
+            // If item is not an array or object, it has content
             if (!is_array($item) && !is_object($item)) {
                 return false;
             }
+            
+            // Check if array has content
             if (is_array($item) && !empty($item)) {
                 return false;
             }
+            
+            // Check if object has properties
             if (is_object($item)) {
                 $vars = get_object_vars($item);
                 if (!empty($vars)) {
                     return false;
                 }
+                // Also check for stdClass specifically
+                if ($item instanceof \stdClass && (array)$item !== []) {
+                    return false;
+                }
             }
         }
+        
         return true;
     }
     
@@ -251,7 +279,12 @@ class ChatbotController extends AbstractController
             }
         }
         
-        // If nothing found, return JSON representation
+        // If nothing meaningful found, check if it's empty objects before encoding
+        if ($this->isEmptyArrayResponse($content)) {
+            return "I've processed your request. Is there anything else I can help you with?";
+        }
+        
+        // Last resort: return JSON representation
         return json_encode($content);
     }
     
