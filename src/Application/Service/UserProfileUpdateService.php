@@ -76,11 +76,13 @@ class UserProfileUpdateService
                     recentSearches: [],
                     dominantCategories: []
                 );
+                
+                // Generate profile with basic snapshot
+                $this->userProfileService->refreshProfile($user, $snapshot);
+            } else {
+                // Generate profile normally (refreshProfile will aggregate data internally)
+                $this->userProfileService->refreshProfile($user);
             }
-
-            // Step 2: Generate or update profile with embedding
-            // Note: refreshProfile() internally aggregates data and generates embedding
-            $this->userProfileService->refreshProfile($user);
 
             $this->logger->info('User profile updated successfully', [
                 'userId' => $user->getId(),

@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Command;
 
+use App\Application\UseCase\CreateUser;
 use App\Domain\Entity\User;
 use App\Domain\ValueObject\Email;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,15 +21,15 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class CreateTestUserCommand extends Command
 {
     private EntityManagerInterface $entityManager;
-    private UserPasswordHasherInterface $passwordHasher;
+    private CreateUser $createUser;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher
+        CreateUser $createUser
     ) {
         parent::__construct();
         $this->entityManager = $entityManager;
-        $this->passwordHasher = $passwordHasher;
+        $this->createUser = $createUser;
     }
 
     protected function configure(): void
@@ -57,31 +58,22 @@ class CreateTestUserCommand extends Command
             return Command::SUCCESS;
         }
 
-        // Create new user
-        $emailVO = new Email($email);
-        
-        // Hash password first
-        // We need a temporary user to hash the password, so we'll hash it with a dummy object
-        $tempUser = new class($emailVO) implements \Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface {
-            private $email;
-            public function __construct($email) { $this->email = $email; }
-            public function getPassword(): ?string { return null; }
-            public function getUserIdentifier(): string { return (string)$this->email; }
-        };
-        $hashedPassword = $this->passwordHasher->hashPassword($tempUser, $password);
-        
-        // Now create the real user with the hashed password
-        $user = new User($name, $emailVO, $hashedPassword, 'ROLE_CUSTOMER');
-
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        $io->success("✓ User created successfully!");
-        $io->writeln("Email: $email");
-        $io->writeln("Name: $name");
-        $io->writeln("Password: $password");
-        $io->writeln("User ID: " . $user->getId());
-
-        return Command::SUCCESS;
+        // Use CreateUser use case (includes automatic profile creation)
+        try {
+            $user = $this->createUser->execute($name, $email, $password, 'ROLE_CUSTOMER');
+            
+            $io->success("✓ User created successfully!");
+            $io->writeln("Email: $email");
+            $io->writeln("Name: $name");
+            $io->writeln("Password: $password");
+            $io->writeln("User ID: " . $user->getId());
+            $io->writeln("");
+            $io->writeln("⏳ Profile creation scheduled automatically...");
+            
+            return Command::SUCCESS;
+        } catch (\Exception $e) {
+            $io->error("Failed to create user: " . $e->getMessage());
+            return Command::FAILURE;
+        }
     }
 }

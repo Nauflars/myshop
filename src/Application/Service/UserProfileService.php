@@ -5,6 +5,7 @@ namespace App\Application\Service;
 use App\Domain\Entity\User;
 use App\Domain\Entity\UserProfile;
 use App\Domain\Repository\UserProfileRepositoryInterface;
+use App\Domain\ValueObject\ProfileSnapshot;
 use App\Infrastructure\AI\Service\OpenAIEmbeddingService;
 use Psr\Log\LoggerInterface;
 
@@ -34,16 +35,26 @@ class UserProfileService
 
     /**
      * Refresh user profile by regenerating embedding from current data
+     * 
+     * @param User $user The user whose profile to refresh
+     * @param ProfileSnapshot|null $forceSnapshot Optional pre-built snapshot (for new users without activity)
      */
-    public function refreshProfile(User $user): ?UserProfile
+    public function refreshProfile(User $user, ?ProfileSnapshot $forceSnapshot = null): ?UserProfile
     {
         try {
             $this->logger->info('Starting profile refresh', [
                 'userId' => $user->getId(),
             ]);
 
-            // Step 1: Aggregate user data
-            $snapshot = $this->aggregationService->aggregateUserData($user);
+            // Step 1: Aggregate user data (or use provided snapshot)
+            if ($forceSnapshot !== null) {
+                $snapshot = $forceSnapshot;
+                $this->logger->info('Using provided snapshot for new user', [
+                    'userId' => $user->getId(),
+                ]);
+            } else {
+                $snapshot = $this->aggregationService->aggregateUserData($user);
+            }
 
             // Check if user has any meaningful data
             if ($snapshot->isEmpty()) {
