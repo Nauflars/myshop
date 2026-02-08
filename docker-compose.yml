@@ -99,6 +99,53 @@ services:
       retries: 5
     command: --wiredTigerCacheSizeGB 0.5
 
+  # phpMyAdmin - MySQL Web Interface
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: myshop_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      UPLOAD_LIMIT: 100M
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - myshop_network
+
+  # Mongo Express - MongoDB Web Interface
+  mongo-express:
+    image: mongo-express:latest
+    container_name: myshop_mongo_express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME:-root}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD:-rootpassword}
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-root}:${MONGO_ROOT_PASSWORD:-rootpassword}@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER:-admin}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-admin}
+    ports:
+      - "8082:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - myshop_network
+
+  # Redis Commander - Redis Web Interface
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: myshop_redis_commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8083:8081"
+    depends_on:
+      - redis
+    networks:
+      - myshop_network
+
 ###> doctrine/doctrine-bundle ###
   database:
     image: postgres:${POSTGRES_VERSION:-16}-alpine
