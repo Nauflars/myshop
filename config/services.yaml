@@ -45,11 +45,11 @@ services:
     App\Infrastructure\Controller\ChatbotController:
         arguments:
             $agent: '@ai.agent.openAiAgent'
+            $unifiedContextManager: '@App\Application\Service\UnifiedCustomerContextManager'
 
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
             $adminAgent: '@ai.agent.adminAssistant'
-            $contextManager: '@App\Application\Service\AdminContextManager'
 
     # Use Cases
     App\Application\UseCase\:
@@ -82,16 +82,41 @@ services:
         arguments:
             $redis: '@Predis\Client'
 
-    # Context Management Services (spec-009)
-    App\Application\Service\CustomerContextManager:
+    # Unified Conversation Storage (spec-012)
+    App\Infrastructure\Repository\UnifiedConversationStorage:
         public: true
         arguments:
+            $redis: '@Predis\Client'
+            $logger: '@logger'
+            $defaultTtl: '%env(int:CONTEXT_TTL)%'
+
+    # Unified Context Managers (spec-012)
+    App\Application\Service\UnifiedCustomerContextManager:
+        public: true
+        arguments:
+            $storage: '@App\Infrastructure\Repository\UnifiedConversationStorage'
+            $logger: '@logger'
             $ttl: '%app.context.customer_ttl%'
 
-    App\Application\Service\AdminContextManager:
+    App\Application\Service\UnifiedAdminContextManager:
         public: true
         arguments:
+            $storage: '@App\Infrastructure\Repository\UnifiedConversationStorage'
+            $logger: '@logger'
             $ttl: '%app.context.admin_ttl%'
+
+    # Legacy Context Management Services (spec-009) - DEPRECATED AND DISABLED
+    # These services are disabled to prevent accidental usage after spec-012 migration
+    # Use UnifiedCustomerContextManager and UnifiedAdminContextManager instead
+    #App\Application\Service\CustomerContextManager:
+    #    public: true
+    #    arguments:
+    #        $ttl: '%app.context.customer_ttl%'
+    #
+    #App\Application\Service\AdminContextManager:
+    #    public: true
+    #    arguments:
+    #        $ttl: '%app.context.admin_ttl%'
 
     # AI Services - prevent inlining for dependency injection
     App\Infrastructure\AI\Service\RoleAwareAssistant:

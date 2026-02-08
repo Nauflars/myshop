@@ -83,7 +83,7 @@ ai:
                     - If there's an error, explain clearly and offer help
             tools: true
             fault_tolerant_toolbox: true  
-            keep_tool_messages: false
+            keep_tool_messages: true
             include_sources: false
 
         # Admin Virtual Assistant Agent (spec-007)
@@ -202,6 +202,6 @@ ai:
                     - To cancel: "no", "cancel", "wait", "better not"
             tools: true
             fault_tolerant_toolbox: true  
-            keep_tool_messages: false
+            keep_tool_messages: true
             include_sources: false
 

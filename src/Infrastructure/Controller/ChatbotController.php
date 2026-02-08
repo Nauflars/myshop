@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Controller;
 
-use App\Application\Service\CustomerContextManager;
+use App\Application\Service\UnifiedCustomerContextManager;
 use App\Application\Service\UnansweredQuestionCapture;
 use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
@@ -23,6 +23,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * 
  * Updated in spec-003 to persist conversations to database.
  * Updated in spec-009 to add conversational context and memory management.
+ * Updated in spec-012 to use unified conversation architecture with Redis history.
  */
 #[Route('/api/chat')]
 class ChatbotController extends AbstractController
@@ -32,7 +33,7 @@ class ChatbotController extends AbstractController
         private readonly RoleAwareAssistant $roleAwareAssistant,
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
-        private readonly CustomerContextManager $contextManager,
+        private readonly UnifiedCustomerContextManager $unifiedContextManager,
         private readonly AgentInterface $agent
     ) {
     }
@@ -61,16 +62,7 @@ class ChatbotController extends AbstractController
             $userMessage = trim($data['message']);
             $conversationId = $data['conversationId'] ?? null;
             
-            // Load conversation history if conversationId provided
-            $conversationHistory = [];
-            if ($conversationId !== null) {
-                $loadResult = $this->conversationManager->loadConversation($user, $conversationId);
-                if ($loadResult['success']) {
-                    $conversationHistory = $this->conversationManager->formatMessagesForAI($loadResult['messages']);
-                }
-            }
-            
-            // Save user message to database
+            // Save user message to database first (MySQL)
             $saveUserResult = $this->conversationManager->saveUserMessage($user, $conversationId, $userMessage);
             if (!$saveUserResult['success']) {
                 return $this->json([
@@ -79,31 +71,47 @@ class ChatbotController extends AbstractController
             }
             
             $conversationId = $saveUserResult['conversationId'];
+            $userId = (string) $user->getId();
             
-            // Load or create customer context (spec-009)
-            // Wrapped in try-catch to ensure Redis failures don't break chatbot
-            $context = null;
+            // Load or create unified conversation context (spec-012)
+            // This includes both state and last 10 messages from Redis
+            $unifiedConversation = null;
             try {
-                $userId = (string) $user->getId();
-                $context = $this->contextManager->getOrCreateContext($userId);
+                $unifiedConversation = $this->unifiedContextManager->getOrCreateConversation($userId, $conversationId);
                 
-                // Refresh TTL on interaction (spec-009 US3)
-                $this->contextManager->refreshTtl($userId);
+                // Add current user message to Redis history
+                $this->unifiedContextManager->addMessage(
+                    $userId,
+                    $unifiedConversation['conversationId'],
+                    'user',
+                    $userMessage
+                );
             } catch (\Exception $e) {
-                error_log('Error loading customer context: ' . $e->getMessage());
-                // Continue without context - chatbot will work in stateless mode
+                error_log('Error loading unified conversation: ' . $e->getMessage());
+                // Continue without Redis context - chatbot will work in stateless mode
             }
             
-            // Build message bag with conversation history for context
+            // Build message bag with context and history from Redis
             $messages = [];
-            foreach ($conversationHistory as $msg) {
-                if ($msg['role'] === 'user') {
-                    $messages[] = Message::ofUser($msg['content']);
-                } elseif ($msg['role'] === 'assistant') {
-                    $messages[] = Message::ofAssistant($msg['content']);
+            if ($unifiedConversation !== null) {
+                // Use buildMessageBagContext which includes system message with state + history
+                $contextMessages = $this->unifiedContextManager->buildMessageBagContext(
+                    $userId,
+                    $unifiedConversation['conversationId']
+                );
+                
+                foreach ($contextMessages as $msg) {
+                    if ($msg['role'] === 'user') {
+                        $messages[] = Message::ofUser($msg['content']);
+                    } elseif ($msg['role'] === 'assistant') {
+                        $messages[] = Message::ofAssistant($msg['content']);
+                    } elseif ($msg['role'] === 'system') {
+                        $messages[] = Message::ofSystem($msg['content']);
+                    }
                 }
             }
-            // Add current user message
+            
+            // Add current user message to MessageBag
             $messages[] = Message::ofUser($userMessage);
             
             // Use Symfony AI Agent to process the message with context
@@ -113,11 +121,55 @@ class ChatbotController extends AbstractController
                 
                 // Extract response content - handle both string and array responses
                 $content = $result->getContent();
-                $assistantResponse = is_array($content) ? json_encode($content) : (string) $content;
                 
-                // Update context after successful AI interaction (spec-009)
-                if ($context !== null) {
-                    $context->incrementTurnCount();
+                // Log for debugging
+                error_log('AI Response type: ' . gettype($content));
+                error_log('AI Response content: ' . json_encode($content));
+                
+                // Handle different response types from AI Agent
+                if (is_string($content)) {
+                    // Check if string is actually "[{},{}]" pattern
+                    if (preg_match('/^\[\s*\{\s*\}\s*(?:,\s*\{\s*\}\s*)*\]$/', trim($content))) {
+                        $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                    } else {
+                        $assistantResponse = $content;
+                    }
+                } elseif (is_array($content)) {
+                    // If array is empty or contains empty objects, provide fallback
+                    if (empty($content) || $this->isEmptyArrayResponse($content)) {
+                        $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                    } else {
+                        // Try to extract a meaningful message from the array
+                        $assistantResponse = $this->extractMessageFromArray($content);
+                        
+                        // If extraction returned JSON of empty objects, use fallback
+                        if (preg_match('/^\[\s*\{\s*\}\s*(?:,\s*\{\s*\}\s*)*\]$/', trim($assistantResponse))) {
+                            $assistantResponse = "I've processed your request. Is there anything else I can help you with?";
+                        }
+                    }
+                } else {
+                    // Fallback for unexpected types
+                    $assistantResponse = (string) $content;
+                }
+                
+                // Update context after successful AI interaction (spec-012)
+                if ($unifiedConversation !== null) {
+                    try {
+                        // Add assistant response to Redis history
+                        $this->unifiedContextManager->addMessage(
+                            $userId,
+                            $unifiedConversation['conversationId'],
+                            'assistant',
+                            $assistantResponse
+                        );
+                        
+                        // Update state with turn count
+                        $state = $this->unifiedContextManager->getState($userId, $unifiedConversation['conversationId']);
+                        $state['turn_count'] = ($state['turn_count'] ?? 0) + 1;
+                        $this->unifiedContextManager->updateState($userId, $unifiedConversation['conversationId'], $state);
+                    } catch (\Exception $e) {
+                        error_log('Error updating unified conversation: ' . $e->getMessage());
+                    }
                 }
                 // Note: Tool execution context updates will be added in T017
             } catch (\Exception $e) {
@@ -153,16 +205,6 @@ class ChatbotController extends AbstractController
                 error_log('Error saving assistant message: ' . $saveAssistantResult['message']);
             }
             
-            // Save updated context to Redis (spec-009)
-            if ($context !== null) {
-                try {
-                    $this->contextManager->saveContext($context);
-                } catch (\Exception $e) {
-                    // Log error but don't fail the request - context is not critical
-                    error_log('Error saving customer context: ' . $e->getMessage());
-                }
-            }
-            
             return $this->json([
                 'response' => $assistantResponse,
                 'conversationId' => $conversationId,
@@ -180,6 +222,71 @@ class ChatbotController extends AbstractController
                 'file' => $e->getFile() . ':' . $e->getLine(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    /**
+     * Check if array response contains only empty objects
+     */
+    private function isEmptyArrayResponse(array $content): bool
+    {
+        if (empty($content)) {
+            return true;
+        }
+        
+        foreach ($content as $item) {
+            // If item is not an array or object, it has content
+            if (!is_array($item) && !is_object($item)) {
+                return false;
+            }
+            
+            // Check if array has content
+            if (is_array($item) && !empty($item)) {
+                return false;
+            }
+            
+            // Check if object has properties
+            if (is_object($item)) {
+                $vars = get_object_vars($item);
+                if (!empty($vars)) {
+                    return false;
+                }
+                // Also check for stdClass specifically
+                if ($item instanceof \stdClass && (array)$item !== []) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Extract meaningful message from array response
+     */
+    private function extractMessageFromArray(array $content): string
+    {
+        // Try to find 'message' key in response
+        if (isset($content['message']) && is_string($content['message'])) {
+            return $content['message'];
+        }
+        
+        // Try to find first string value in array
+        foreach ($content as $value) {
+            if (is_string($value) && !empty(trim($value))) {
+                return $value;
+            }
+            if (is_array($value) && isset($value['message'])) {
+                return $value['message'];
+            }
+        }
+        
+        // If nothing meaningful found, check if it's empty objects before encoding
+        if ($this->isEmptyArrayResponse($content)) {
+            return "I've processed your request. Is there anything else I can help you with?";
+        }
+        
+        // Last resort: return JSON representation
+        return json_encode($content);
     }
     
     #[Route('/history/{conversationId}', name: 'api_chatbot_history', methods: ['GET'])]
@@ -266,7 +373,7 @@ class ChatbotController extends AbstractController
      * Clears context from Redis, allowing fresh start
      */
     #[Route('/reset-context', name: 'api_chatbot_reset_context', methods: ['POST'])]
-    public function resetContext(): JsonResponse
+    public function resetContext(Request $request): JsonResponse
     {
         try {
             $user = $this->security->getUser();
@@ -276,8 +383,17 @@ class ChatbotController extends AbstractController
                 ], Response::HTTP_UNAUTHORIZED);
             }
             
+            $data = json_decode($request->getContent(), true);
+            $conversationId = $data['conversationId'] ?? null;
+            
+            if (!$conversationId) {
+                return $this->json([
+                    'error' => 'conversationId is required',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            
             $userId = (string) $user->getId();
-            $deleted = $this->contextManager->deleteContext($userId);
+            $deleted = $this->unifiedContextManager->deleteConversation($userId, $conversationId);
             
             return $this->json([
                 'success' => true,
