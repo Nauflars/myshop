@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\Service\SearchFacade;
-use App\Application\Service\CustomerContextManager;
+use App\Application\Service\UnifiedCustomerContextManager;
 use App\Domain\ValueObject\SearchQuery;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -28,7 +28,7 @@ final class SemanticProductSearchTool
 {
     public function __construct(
         private readonly SearchFacade $searchFacade,
-        private readonly CustomerContextManager $contextManager,
+        private readonly UnifiedCustomerContextManager $contextManager,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -132,85 +132,27 @@ final class SemanticProductSearchTool
      * T066: Enrich query with customer context
      * 
      * Adds contextual information from previous conversation to improve search relevance
+     * 
+     * NOTE: Context enrichment temporarily disabled pending spec-012 full integration.
+     * UnifiedCustomerContextManager requires conversationId which is not available in tool context.
      */
     private function enrichQueryWithContext(string $query, ?string $userId): string
     {
-        if ($userId === null) {
-            return $query;
-        }
-
-        try {
-            $context = $this->contextManager->loadContext($userId);
-            
-            if ($context === null) {
-                return $query;
-            }
-
-            // Extract relevant context for search enrichment
-            $preferences = $context->getCustomerPreferences();
-            
-            // Add category preference if available and not explicitly specified in query
-            if (isset($preferences['preferred_category']) && !empty($preferences['preferred_category'])) {
-                $preferredCategory = $preferences['preferred_category'];
-                
-                // Only add if query doesn't already mention the category
-                if (stripos($query, $preferredCategory) === false) {
-                    $this->logger->debug('Enriching query with category preference', [
-                        'original_query' => $query,
-                        'preferred_category' => $preferredCategory,
-                    ]);
-                    // Note: Not modifying query to avoid over-constraint
-                    // Context enrichment is passive for now
-                }
-            }
-
-            return $query;
-
-        } catch (\Exception $e) {
-            $this->logger->warning('Failed to enrich query with context', [
-                'user_id' => $userId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return $query;
-        }
+        // TODO: Re-enable after implementing conversationId propagation to tools
+        return $query;
     }
 
     /**
      * T071: Track semantic search usage in customer context
+     * 
+     * NOTE: Context tracking temporarily disabled pending spec-012 full integration.
+     * UnifiedCustomerContextManager requires conversationId which is not available in tool context.
      */
     private function trackSearchInContext(string $userId, string $query, int $resultCount): void
     {
-        try {
-            $context = $this->contextManager->getOrCreateContext($userId);
-            
-            // Update conversation state to indicate search activity
-            $context->setFlow('product_search');
-            
-            // Track search in customer preferences
-            $preferences = $context->getCustomerPreferences();
-            $preferences['last_search_query'] = $query;
-            $preferences['last_search_results_count'] = $resultCount;
-            $preferences['search_count'] = ($preferences['search_count'] ?? 0) + 1;
-            
-            $context->setCustomerPreferences($preferences);
-            
-            // Save updated context
-            $this->contextManager->saveContext($context);
-
-            $this->logger->debug('Search activity tracked in customer context', [
-                'user_id' => $userId,
-                'query' => $query,
-                'result_count' => $resultCount,
-            ]);
-
-        } catch (\Exception $e) {
-            // Don't fail the search if context tracking fails
-            $this->logger->warning('Failed to track search in context', [
-                'user_id' => $userId,
-                'error' => $e->getMessage(),
-            ]);
-        }
+        // TODO: Re-enable after implementing conversationId propagation to tools
+        // Context updates should happen at the controller level, not in individual tools
+        return;
     }
 
     /**
