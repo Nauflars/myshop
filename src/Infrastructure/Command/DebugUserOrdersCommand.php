@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Infrastructure\Command;
+
+use App\Domain\Entity\User;
+use App\Domain\Entity\Order;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+#[AsCommand(
+    name: 'app:debug:user-orders',
+    description: 'Debug user orders and purchases'
+)]
+class DebugUserOrdersCommand extends Command
+{
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        parent::__construct();
+        $this->entityManager = $entityManager;
+    }
+
+    protected function configure(): void
+    {
+        $this->addOption(
+            'user-id',
+            'u',
+            InputOption::VALUE_REQUIRED,
+            'User ID to debug'
+        );
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $userId = $input->getOption('user-id');
+
+        if (!$userId) {
+            $io->error('Please provide --user-id');
+            return Command::INVALID;
+        }
+
+        $user = $this->entityManager->getRepository(User::class)->find($userId);
+
+        if (!$user) {
+            $io->error("User not found: {$userId}");
+            return Command::FAILURE;
+        }
+
+        $io->title("Debugging orders for user: {$user->getName()}");
+
+        // Query orders
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('o, oi, p')
+            ->from(Order::class, 'o')
+            ->join('o.items', 'oi')
+            ->join('oi.product', 'p')
+            ->where('o.user = :user')
+            ->setParameter('user', $user);
+
+        $orders = $qb->getQuery()->getResult();
+
+        $io->section("Total orders: " . count($orders));
+
+        foreach ($orders as $order) {
+            $io->writeln("Order {$order->getOrderNumber()} - Status: {$order->getStatus()}");
+            
+            foreach ($order->getItems() as $item) {
+                $product = $item->getProduct();
+                $io->writeln("  - {$product->getName()} (x{$item->getQuantity()})");
+            }
+        }
+
+        // Query shipped/delivered only
+        $qb2 = $this->entityManager->createQueryBuilder();
+        $qb2->select('o, oi, p')
+            ->from(Order::class, 'o')
+            ->join('o.items', 'oi')
+            ->join('oi.product', 'p')
+            ->where('o.user = :user')
+            ->andWhere($qb2->expr()->in('o.status', ['DELIVERED', 'SHIPPED']))
+            ->setParameter('user', $user);
+
+        $shippedOrders = $qb2->getQuery()->getResult();
+
+        $io->section("Shipped/Delivered orders: " . count($shippedOrders));
+
+        foreach ($shippedOrders as $order) {
+            $io->writeln("Order {$order->getOrderNumber()} - Status: {$order->getStatus()}");
+            
+            foreach ($order->getItems() as $item) {
+                $product = $item->getProduct();
+                $io->writeln("  - {$product->getName()} (x{$item->getQuantity()})");
+            }
+        }
+
+        return Command::SUCCESS;
+    }
+}

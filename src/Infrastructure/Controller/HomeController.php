@@ -2,17 +2,61 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Service\RecommendationService;
+use App\Domain\ValueObject\RecommendationResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Psr\Log\LoggerInterface;
 
 class HomeController extends AbstractController
 {
+    private RecommendationService $recommendationService;
+    private LoggerInterface $logger;
+
+    public function __construct(
+        RecommendationService $recommendationService,
+        LoggerInterface $logger
+    ) {
+        $this->recommendationService = $recommendationService;
+        $this->logger = $logger;
+    }
+
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('home.html.twig');
+        $recommendations = null;
+        $user = $this->getUser();
+
+        // Get personalized recommendations for authenticated users
+        if ($user) {
+            try {
+                $recommendations = $this->recommendationService->getRecommendationsForUser($user, 12);
+                
+                $this->logger->info('Recommendations displayed on home page', [
+                    'userId' => $user->getId(),
+                    'count' => $recommendations->count(),
+                    'avgScore' => $recommendations->getAverageScore(),
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Failed to get recommendations for home page', [
+                    'userId' => $user->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+                
+                // Graceful fallback - get default recommendations
+                $recommendations = $this->recommendationService->getFallbackRecommendations(12);
+            }
+        } else {
+            // Guest users get fallback recommendations
+            $recommendations = $this->recommendationService->getFallbackRecommendations(12);
+        }
+
+        return $this->render('home.html.twig', [
+            'recommendations' => $recommendations,
+            'isPersonalized' => $user !== null,
+        ]);
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]

@@ -258,3 +258,30 @@ services:
     # Symfony Stopwatch for profiling (spec-010 Phase 5 T074)
     Symfony\Component\Stopwatch\Stopwatch:
         public: true
+
+    # MongoDB User Profile Repository (spec-013)
+    App\Infrastructure\Repository\MongoDBUserProfileRepository:
+        public: true
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $databaseName: '%env(MONGO_DATABASE)%'
+            $logger: '@logger'
+
+    App\Domain\Repository\UserProfileRepositoryInterface: '@App\Infrastructure\Repository\MongoDBUserProfileRepository'
+
+    # User Profile Commands (spec-013)
+    App\Infrastructure\Command\CreateUserProfileIndexesCommand:
+        public: true
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $databaseName: '%env(MONGO_DATABASE)%'
+            $logger: '@logger'
+        tags: ['console.command']
+
+    App\Infrastructure\Command\RefreshUserProfilesCommand:
+        public: true
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $profileService: '@App\Application\Service\UserProfileService'
+            $logger: '@logger'
+        tags: ['console.command']
