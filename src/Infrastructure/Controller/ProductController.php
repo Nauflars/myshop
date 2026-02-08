@@ -4,12 +4,15 @@ namespace App\Infrastructure\Controller;
 
 use App\Application\Service\ErrorMessageTranslator;
 use App\Application\Service\SearchFacade;
+use App\Application\Service\UserProfileUpdateService;
 use App\Application\UseCase\SearchProduct;
 use App\Domain\Entity\Product;
+use App\Domain\Entity\User;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
 use App\Domain\ValueObject\SearchQuery;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +26,9 @@ class ProductController extends AbstractController
         private readonly ProductRepositoryInterface $productRepository,
         private readonly SearchProduct $searchProduct,
         private readonly SearchFacade $searchFacade,
-        private readonly ErrorMessageTranslator $errorTranslator
+        private readonly ErrorMessageTranslator $errorTranslator,
+        private readonly UserProfileUpdateService $profileUpdateService,
+        private readonly Security $security
     ) {
     }
 
@@ -41,6 +46,17 @@ class ProductController extends AbstractController
             minPrice: $minPrice ? (int) ($minPrice * 100) : null,
             maxPrice: $maxPrice ? (int) ($maxPrice * 100) : null
         );
+        
+        // Update user profile automatically after search (spec-013 auto-update)
+        $user = $this->security->getUser();
+        if ($user instanceof User && !empty($query)) {
+            try {
+                $this->profileUpdateService->scheduleProfileUpdate($user);
+            } catch (\Exception $e) {
+                // Log but don't fail - profile update is non-critical
+                error_log('Profile update after product list search error: ' . $e->getMessage());
+            }
+        }
 
         return $this->json(array_map([$this, 'serializeProduct'], $products));
     }
@@ -83,6 +99,17 @@ class ProductController extends AbstractController
             );
 
             $result = $this->searchFacade->search($searchQuery, $mode);
+            
+            // Update user profile automatically after search (spec-013 auto-update)
+            $user = $this->security->getUser();
+            if ($user instanceof User && !empty($query)) {
+                try {
+                    $this->profileUpdateService->scheduleProfileUpdate($user);
+                } catch (\Exception $e) {
+                    // Log but don't fail - profile update is non-critical
+                    error_log('Profile update after product search error: ' . $e->getMessage());
+                }
+            }
 
             return $this->json($result->toArray());
 
@@ -198,9 +225,10 @@ class ProductController extends AbstractController
             'id' => $product->getId(),
             'name' => $product->getName(),
             'description' => $product->getDescription(),
-            'price' => $product->getPrice()->format(),
-            'priceInCents' => $product->getPrice()->getAmountInCents(),
-            'currency' => $product->getPrice()->getCurrency(),
+            'price' => [
+                'amount' => $product->getPrice()->getAmountInCents(),
+                'currency' => $product->getPrice()->getCurrency(),
+            ],
             'stock' => $product->getStock(),
             'category' => $product->getCategory(),
             'inStock' => $product->isInStock(),

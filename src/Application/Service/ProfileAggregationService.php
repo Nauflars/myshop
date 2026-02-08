@@ -4,6 +4,8 @@ namespace App\Application\Service;
 
 use App\Domain\Entity\User;
 use App\Domain\Entity\Order;
+use App\Domain\Entity\Conversation;
+use App\Domain\Entity\ConversationMessage;
 use App\Domain\ValueObject\ProfileSnapshot;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -140,8 +142,8 @@ class ProfileAggregationService
                 $item->expiresAfter(3600); // 1 hour TTL
 
                 // Query conversation history from database
-                $conversationRepo = $this->entityManager->getRepository('App\Domain\Entity\Conversation');
-                $messageRepo = $this->entityManager->getRepository('App\Domain\Entity\ConversationMessage');
+                $conversationRepo = $this->entityManager->getRepository(Conversation::class);
+                $messageRepo = $this->entityManager->getRepository(ConversationMessage::class);
                 
                 // Get user's conversations
                 $conversations = $conversationRepo->findBy(
@@ -155,12 +157,12 @@ class ProfileAggregationService
                     // Get user messages from this conversation
                     $messages = $messageRepo->findBy(
                         ['conversation' => $conversation, 'role' => 'user'],
-                        ['createdAt' => 'DESC'],
+                        ['timestamp' => 'DESC'],
                         20 // Recent 20 messages per conversation
                     );
                     
                     foreach ($messages as $message) {
-                        $text = $message->getMessageText();
+                        $text = $message->getContent();
                         // Extract meaningful queries (longer than 3 chars, not commands)
                         if (strlen($text) > 3 && !str_starts_with($text, '/')) {
                             $searches[] = $text;
