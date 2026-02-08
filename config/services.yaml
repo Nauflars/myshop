@@ -88,7 +88,7 @@ services:
         arguments:
             $redis: '@Predis\Client'
             $logger: '@logger'
-            $defaultTtl: '%env(int:CONTEXT_TTL)%'
+            $defaultTtl: '%env(int:CUSTOMER_CONTEXT_TTL)%'
 
     # Unified Context Managers (spec-012)
     App\Application\Service\UnifiedCustomerContextManager:
