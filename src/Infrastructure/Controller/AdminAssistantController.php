@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Controller;
 
 use App\Domain\Entity\User;
-use App\Application\Service\AdminContextManager;
+use App\Application\Service\UnifiedAdminContextManager;
 use App\Infrastructure\AI\Service\AdminConversationManager;
 use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Platform\Message\Message;
+use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * AdminAssistantController - Admin Virtual Assistant chat interface
  * 
  * Part of spec-007: Admin Virtual Assistant
+ * Updated in spec-012 to use unified conversation architecture
  * Provides AI-powered assistant exclusively for administrators
  */
 #[Route('/admin/assistant')]
@@ -30,7 +33,7 @@ class AdminAssistantController extends AbstractController
         private readonly AdminConversationManager $conversationManager,
         private readonly Security $security,
         private readonly AgentInterface $adminAgent,
-        private readonly AdminContextManager $contextManager
+        private readonly UnifiedAdminContextManager $unifiedContextManager
     ) {
     }
 
@@ -89,26 +92,54 @@ class AdminAssistantController extends AbstractController
             $userMessage = trim($data['message']);
             $sessionId = $data['session_id'] ?? null;
 
-            // Get or create conversation
+            // Get or create conversation (MySQL)
             $conversation = $this->conversationManager->getOrCreateConversation($user, $sessionId);
 
-            // Load or create admin context (spec-009 Phase 2)
-            $context = null;
-            try {
-                $adminId = (string) $user->getId();
-                $context = $this->contextManager->getOrCreateContext($adminId);
-                $this->contextManager->refreshTtl($adminId);
-            } catch (\Exception $e) {
-                error_log('Error loading admin context: ' . $e->getMessage());
-            }
-
-            // Save admin message
+            // Save admin message to MySQL
             $this->conversationManager->saveAdminMessage($conversation, $userMessage);
 
-            // Get conversation history as MessageBag
-            $messageBag = $this->conversationManager->conversationToMessageBag($conversation);
+            // Load or create unified conversation context (spec-012)
+            $adminId = (string) $user->getId();
+            $conversationId = (string) $conversation->getId();
+            $unifiedConversation = null;
+            
+            try {
+                $unifiedConversation = $this->unifiedContextManager->getOrCreateConversation($adminId, $conversationId);
+                
+                // Add current admin message to Redis history
+                $this->unifiedContextManager->addMessage(
+                    $adminId,
+                    $unifiedConversation['conversationId'],
+                    'user',
+                    $userMessage
+                );
+            } catch (\Exception $e) {
+                error_log('Error loading unified admin conversation: ' . $e->getMessage());
+            }
 
-            // Get AI response with context enrichment
+            // Build message bag with context and history from Redis
+            $messages = [];
+            if ($unifiedConversation !== null) {
+                $contextMessages = $this->unifiedContextManager->buildMessageBagContext(
+                    $adminId,
+                    $unifiedConversation['conversationId']
+                );
+                
+                foreach ($contextMessages as $msg) {
+                    if ($msg['role'] === 'user') {
+                        $messages[] = Message::ofUser($msg['content']);
+                    } elseif ($msg['role'] === 'assistant') {
+                        $messages[] = Message::ofAssistant($msg['content']);
+                    }
+                    // System messages are included in the conversation history context
+                }
+            }
+            
+            // Add current user message to MessageBag
+            $messages[] = Message::ofUser($userMessage);
+            
+            // Get AI response
+            $messageBag = new MessageBag(...$messages);
             $response = $this->adminAgent->call($messageBag);
             $content = $response->getContent();
             
@@ -127,17 +158,27 @@ class AdminAssistantController extends AbstractController
                 $assistantReply = (string) $content;
             }
 
-            // Update context after AI interaction
-            if ($context !== null) {
-                $context->incrementTurnCount();
+            // Update context after AI interaction (spec-012)
+            if ($unifiedConversation !== null) {
                 try {
-                    $this->contextManager->saveContext($context);
+                    // Add assistant response to Redis history
+                    $this->unifiedContextManager->addMessage(
+                        $adminId,
+                        $unifiedConversation['conversationId'],
+                        'assistant',
+                        $assistantReply
+                    );
+                    
+                    // Update state with turn count
+                    $state = $this->unifiedContextManager->getState($adminId, $unifiedConversation['conversationId']);
+                    $state['turn_count'] = ($state['turn_count'] ?? 0) + 1;
+                    $this->unifiedContextManager->updateState($adminId, $unifiedConversation['conversationId'], $state);
                 } catch (\Exception $e) {
-                    error_log('Error saving admin context: ' . $e->getMessage());
+                    error_log('Error updating unified admin conversation: ' . $e->getMessage());
                 }
             }
 
-            // Save assistant response
+            // Save assistant response to MySQL
             $this->conversationManager->saveAssistantMessage($conversation, $assistantReply);
 
             return $this->json([

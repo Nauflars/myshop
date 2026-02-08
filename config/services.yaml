@@ -90,7 +90,23 @@ services:
             $logger: '@logger'
             $defaultTtl: '%env(int:CONTEXT_TTL)%'
 
-    # Context Management Services (spec-009)
+    # Unified Context Managers (spec-012)
+    App\Application\Service\UnifiedCustomerContextManager:
+        public: true
+        arguments:
+            $storage: '@App\Infrastructure\Repository\UnifiedConversationStorage'
+            $logger: '@logger'
+            $ttl: '%app.context.customer_ttl%'
+
+    App\Application\Service\UnifiedAdminContextManager:
+        public: true
+        arguments:
+            $storage: '@App\Infrastructure\Repository\UnifiedConversationStorage'
+            $logger: '@logger'
+            $ttl: '%app.context.admin_ttl%'
+
+    # Legacy Context Management Services (spec-009) - DEPRECATED
+    # Will be removed after migration to spec-012 unified architecture
     App\Application\Service\CustomerContextManager:
         public: true
         arguments:
