@@ -79,7 +79,8 @@ class UserProfileUpdateService
             }
 
             // Step 2: Generate or update profile with embedding
-            $this->userProfileService->generateOrUpdateProfile($user, $snapshot);
+            // Note: refreshProfile() internally aggregates data and generates embedding
+            $this->userProfileService->refreshProfile($user);
 
             $this->logger->info('User profile updated successfully', [
                 'userId' => $user->getId(),
