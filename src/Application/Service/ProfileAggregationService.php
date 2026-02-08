@@ -126,7 +126,7 @@ class ProfileAggregationService
     /**
      * Aggregate search queries from conversation history
      * 
-     * Retrieves recent search queries from Redis conversation context
+     * Retrieves recent search queries from conversation messages
      * 
      * @return string[]
      */
@@ -140,11 +140,36 @@ class ProfileAggregationService
                 $item->expiresAfter(3600); // 1 hour TTL
 
                 // Query conversation history from database
-                // For now, return empty array - this would be implemented
-                // with actual conversation tracking from spec-012
+                $conversationRepo = $this->entityManager->getRepository('App\Domain\Entity\Conversation');
+                $messageRepo = $this->entityManager->getRepository('App\Domain\Entity\ConversationMessage');
                 
-                // TODO: Implement search query extraction from UnifiedConversation
-                return [];
+                // Get user's conversations
+                $conversations = $conversationRepo->findBy(
+                    ['user' => $user],
+                    ['updatedAt' => 'DESC'],
+                    10 // Limit to recent 10 conversations
+                );
+                
+                $searches = [];
+                foreach ($conversations as $conversation) {
+                    // Get user messages from this conversation
+                    $messages = $messageRepo->findBy(
+                        ['conversation' => $conversation, 'role' => 'user'],
+                        ['createdAt' => 'DESC'],
+                        20 // Recent 20 messages per conversation
+                    );
+                    
+                    foreach ($messages as $message) {
+                        $text = $message->getMessageText();
+                        // Extract meaningful queries (longer than 3 chars, not commands)
+                        if (strlen($text) > 3 && !str_starts_with($text, '/')) {
+                            $searches[] = $text;
+                        }
+                    }
+                }
+                
+                // Return most recent unique searches
+                return array_unique(array_slice($searches, 0, self::RECENT_SEARCHES_LIMIT));
             });
         } catch (\Exception $e) {
             $this->logger->error('Failed to aggregate searches', [

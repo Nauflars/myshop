@@ -62,11 +62,20 @@ class UserProfileUpdateService
                 count($snapshot->getRecentSearches()) > 0 ||
                 count($snapshot->getDominantCategories()) > 0;
 
+            // If no activity, create a basic profile with user name/interests
             if (!$hasActivity) {
-                $this->logger->info('User has no activity, skipping profile generation', [
+                $this->logger->info('User has no recorded activity, creating basic profile', [
                     'userId' => $user->getId(),
                 ]);
-                return;
+                
+                // Create basic snapshot with user name as initial interest
+                $userName = $user->getName() ?? '';
+                $initialData = !empty($userName) ? [$userName] : ['new user'];
+                $snapshot = new \App\Domain\ValueObject\ProfileSnapshot(
+                    recentPurchases: $initialData,
+                    recentSearches: [],
+                    dominantCategories: []
+                );
             }
 
             // Step 2: Generate or update profile with embedding
