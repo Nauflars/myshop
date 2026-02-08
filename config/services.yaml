@@ -49,7 +49,7 @@ services:
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
             $adminAgent: '@ai.agent.adminAssistant'
-            $contextManager: '@App\Application\Service\AdminContextManager'
+            $unifiedContextManager: '@App\Application\Service\UnifiedAdminContextManager'
 
     # Use Cases
     App\Application\UseCase\:
