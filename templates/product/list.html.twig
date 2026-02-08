@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <p class="card-text text-muted">${escapeHtml(product.category)}</p>
                                 <p class="card-text small">${escapeHtml(product.description.substring(0, 100))}${product.description.length > 100 ? '...' : ''}</p>
                                 <p class="card-text">
-                                    <strong>Price:</strong> ${product.price.currency} ${(product.price.amount / 100).toFixed(2)}<br>
+                                    <strong>Price:</strong> ${(product.priceInCents / 100).toFixed(2)} ${product.currency} <br>
                                     <strong>Stock:</strong> ${product.stock}${product.stock < 10 && product.stock > 0 ? ' <span class="badge bg-warning">Low Stock</span>' : ''}
                                     ${product.similarity_score ? `<br><strong>Match:</strong> <span class="badge bg-success">${(product.similarity_score * 100).toFixed(0)}%</span>` : ''}
                                 </p>
