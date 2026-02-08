@@ -105,8 +105,9 @@ class ChatbotController extends AbstractController
                         $messages[] = Message::ofUser($msg['content']);
                     } elseif ($msg['role'] === 'assistant') {
                         $messages[] = Message::ofAssistant($msg['content']);
+                    } elseif ($msg['role'] === 'system') {
+                        $messages[] = Message::ofSystem($msg['content']);
                     }
-                    // System messages are included in the conversation history context
                 }
             }
             
