@@ -105,17 +105,18 @@ services:
             $logger: '@logger'
             $ttl: '%app.context.admin_ttl%'
 
-    # Legacy Context Management Services (spec-009) - DEPRECATED
-    # Will be removed after migration to spec-012 unified architecture
-    App\Application\Service\CustomerContextManager:
-        public: true
-        arguments:
-            $ttl: '%app.context.customer_ttl%'
-
-    App\Application\Service\AdminContextManager:
-        public: true
-        arguments:
-            $ttl: '%app.context.admin_ttl%'
+    # Legacy Context Management Services (spec-009) - DEPRECATED AND DISABLED
+    # These services are disabled to prevent accidental usage after spec-012 migration
+    # Use UnifiedCustomerContextManager and UnifiedAdminContextManager instead
+    #App\Application\Service\CustomerContextManager:
+    #    public: true
+    #    arguments:
+    #        $ttl: '%app.context.customer_ttl%'
+    #
+    #App\Application\Service\AdminContextManager:
+    #    public: true
+    #    arguments:
+    #        $ttl: '%app.context.admin_ttl%'
 
     # AI Services - prevent inlining for dependency injection
     App\Infrastructure\AI\Service\RoleAwareAssistant:
