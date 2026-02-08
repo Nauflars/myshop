@@ -139,7 +139,7 @@ class ProfileAggregationService
             $cacheKey = "user_searches_{$user->getId()}";
 
             return $this->cache->get($cacheKey, function (ItemInterface $item) use ($user) {
-                $item->expiresAfter(3600); // 1 hour TTL
+                $item->expiresAfter(60); // 1 minute TTL (frequent updates for real-time profiles)
 
                 // Query conversation history from database
                 $conversationRepo = $this->entityManager->getRepository(Conversation::class);
