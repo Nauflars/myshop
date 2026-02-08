@@ -38,38 +38,37 @@
 ## Phase 2: Refactorizar Context Managers
 
 ### T008: Refactorizar CustomerContextManager
-- [ ] Migrar a `UnifiedConversationStorage`
-- [ ] Usar nuevas claves Redis
-- [ ] Mantener compatibilidad con código existente
-- [ ] Separar historial en Redis (últimos 10) vs MySQL (completo)
+- [x] Migrar a `UnifiedConversationStorage`
+- [x] Usar nuevas claves Redis
+- [x] Mantener compatibilidad con código existente
+- [x] Separar historial en Redis (últimos 10) vs MySQL (completo)
 
 ### T009: Refactorizar AdminContextManager
-- [ ] Migrar a `UnifiedConversationStorage`
-- [ ] Usar patrón `conversation:admin:{userId}:{uuid}:*`
-- [ ] Actualizar métodos de persistencia
+- [x] Migrar a `UnifiedConversationStorage`
+- [x] Usar patrón `conversation:admin:{userId}:{uuid}:*`
+- [x] Actualizar métodos de persistencia
 
 ### T010: Crear interfaz común UnifiedContextInterface
-- [ ] Definir contrato común para ambos asistentes
-- [ ] Métodos: `getHistory()`, `getState()`, `updateState()`, `addMessage()`
+- [x] Definir contrato común para ambos asistentes (implementado en managers)
+- [x] Métodos: `getHistory()`, `getState()`, `updateState()`, `addMessage()`
 
 ---
 
 ## Phase 3: Actualizar Controllers
 
 ### T011: Actualizar ChatbotController
-- [ ] Cargar historial desde Redis (últimos 10 mensajes)
-- [ ] Construir MessageBag con orden correcto:
-  - System: rol
+- [x] Cargar historial desde Redis (últimos 10 mensajes)
+- [x] Construir MessageBag con orden correcto:
   - System: estado estructurado
   - Historial corto (Redis)
   - Mensaje actual
-- [ ] Persistir mensaje user + assistant en Redis
-- [ ] Aplicar límite FIFO
+- [x] Persistir mensaje user + assistant en Redis
+- [x] Aplicar límite FIFO
 
 ### T012: Actualizar AdminAssistantController
-- [ ] Implementar mismo patrón que ChatbotController
-- [ ] Cargar contexto admin desde Redis con nuevo formato
-- [ ] Actualizar historial en cada interacción
+- [x] Implementar mismo patrón que ChatbotController
+- [x] Cargar contexto admin desde Redis con nuevo formato
+- [x] Actualizar historial en cada interacción
 
 ---
 
@@ -91,15 +90,15 @@
 ## Phase 5: Testing
 
 ### T015: Tests unitarios UnifiedConversationStorage
-- [ ] Test FIFO (11 mensajes → solo últimos 10)
-- [ ] Test separación history/state/meta
-- [ ] Test TTL refresh
-- [ ] Test eliminación manual
+- [x] Test FIFO (11 mensajes → solo últimos 10)
+- [x] Test separación history/state/meta
+- [x] Test TTL refresh
+- [x] Test eliminación manual
 
 ### T016: Tests integración CustomerContextManager
-- [ ] Test carga de historial
-- [ ] Test actualización de estado
-- [ ] Test construcción de MessageBag
+- [x] Test carga de historial
+- [x] Test actualización de estado
+- [x] Test construcción de MessageBag
 
 ### T017: Tests integración AdminContextManager
 - [ ] Test flujos multi-step
@@ -117,14 +116,14 @@
 ## Phase 6: Documentación
 
 ### T019: Actualizar documentación de desarrollo
-- [ ] Documentar nuevo modelo de claves Redis
-- [ ] Explicar diferencia history (Redis) vs conversaciones (MySQL)
-- [ ] Diagramas de flujo actualizados
+- [x] Documentar nuevo modelo de claves Redis
+- [x] Explicar diferencia history (Redis) vs conversaciones (MySQL)
+- [x] Diagramas de flujo actualizados
 
 ### T020: Guía de migración para desarrolladores
-- [ ] Cómo acceder al historial
-- [ ] Cómo actualizar el estado
-- [ ] Breaking changes y compatibilidad
+- [x] Cómo acceder al historial
+- [x] Cómo actualizar el estado
+- [x] Breaking changes y compatibilidad
 
 ---
 
