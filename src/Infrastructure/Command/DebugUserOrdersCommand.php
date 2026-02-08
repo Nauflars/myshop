@@ -55,16 +55,9 @@ class DebugUserOrdersCommand extends Command
 
         $io->title("Debugging orders for user: {$user->getName()}");
 
-        // Query orders
-        $qb = $this->entityManager->createQueryBuilder();
-        $qb->select('o, oi, p')
-            ->from(Order::class, 'o')
-            ->join('o.items', 'oi')
-            ->join('oi.product', 'p')
-            ->where('o.user = :user')
-            ->setParameter('user', $user);
-
-        $orders = $qb->getQuery()->getResult();
+        // Query orders using repository
+        $orderRepository = $this->entityManager->getRepository(Order::class);
+        $orders = $orderRepository->findBy(['user' => $user]);
 
         $io->section("Total orders: " . count($orders));
 
@@ -77,17 +70,11 @@ class DebugUserOrdersCommand extends Command
             }
         }
 
-        // Query shipped/delivered only
-        $qb2 = $this->entityManager->createQueryBuilder();
-        $qb2->select('o, oi, p')
-            ->from(Order::class, 'o')
-            ->join('o.items', 'oi')
-            ->join('oi.product', 'p')
-            ->where('o.user = :user')
-            ->andWhere($qb2->expr()->in('o.status', ['DELIVERED', 'SHIPPED']))
-            ->setParameter('user', $user);
-
-        $shippedOrders = $qb2->getQuery()->getResult();
+        // Filter shipped/delivered only
+        $shippedOrders = array_filter($orders, function($order) {
+            $status = $order->getStatus();
+            return $status === Order::STATUS_DELIVERED || $status === Order::STATUS_SHIPPED;
+        });
 
         $io->section("Shipped/Delivered orders: " . count($shippedOrders));
 
@@ -100,6 +87,5 @@ class DebugUserOrdersCommand extends Command
             }
         }
 
-        return Command::SUCCESS;
-    }
+        return Command::SUCCESS;    }
 }

@@ -60,16 +60,25 @@ class ProfileAggregationService
     public function aggregatePurchases(User $user): array
     {
         try {
-            $qb = $this->entityManager->createQueryBuilder();
-            $qb->select('o')
-                ->from(Order::class, 'o')
-                ->where('o.user = :user')
-                ->andWhere($qb->expr()->in('o.status', ['DELIVERED', 'SHIPPED']))
-                ->setParameter('user', $user)
-                ->orderBy('o.updatedAt', 'DESC')
-                ->setMaxResults(self::RECENT_PURCHASES_LIMIT);
-
-            $orders = $qb->getQuery()->getResult();
+            // Get order repository
+            $orderRepository = $this->entityManager->getRepository(Order::class);
+            
+            // Query orders with completed status for this user
+            $allOrders = $orderRepository->findBy(['user' => $user]);
+            
+            // Filter by status and sort
+            $completedOrders = array_filter($allOrders, function($order) {
+                $status = $order->getStatus();
+                return $status === Order::STATUS_DELIVERED || $status === Order::STATUS_SHIPPED;
+            });
+            
+            // Sort by updatedAt descending
+            usort($completedOrders, function($a, $b) {
+                return $b->getUpdatedAt() <=> $a->getUpdatedAt();
+            });
+            
+            // Limit to recent purchases
+            $orders = array_slice($completedOrders, 0, self::RECENT_PURCHASES_LIMIT);
 
             $purchases = [];
             $now = new \DateTimeImmutable();
