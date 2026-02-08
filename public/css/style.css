@@ -1887,12 +1887,22 @@ input[type="number"]::-webkit-outer-spin-button {
         width: auto;
     }
 
-    /* Chatbot */
+    /* Chatbot - Better positioning on tablets */
     .chatbot-widget {
         width: calc(100% - 40px);
+        max-width: 500px;
         right: 20px;
         left: 20px;
-        bottom: 90px;
+        bottom: 20px;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        margin: 0 auto;
+    }
+
+    .chatbot-trigger {
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
     }
 }
 
@@ -2067,8 +2077,10 @@ input[type="number"]::-webkit-outer-spin-button {
         height: 100vh;
         max-height: 100vh;
         bottom: 0;
+        top: 0;
         right: 0;
         left: 0;
+        margin: 0;
         border-radius: 0;
     }
 
@@ -2082,11 +2094,12 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .chatbot-trigger {
-        width: 56px;
-        height: 56px;
-        font-size: 1.35rem;
-        bottom: 15px;
-        right: 15px;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
     }
 
     /* Spacing */
@@ -2169,11 +2182,18 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .chatbot-widget {
-        max-height: 90vh;
+        max-height: calc(100vh - 20px);
+        top: 10px;
+        bottom: 10px;
     }
 
     .chatbot-messages {
-        max-height: calc(90vh - 140px);
+        max-height: calc(100vh - 150px);
+    }
+
+    .chatbot-trigger {
+        bottom: 10px;
+        right: 10px;
     }
 }
 
