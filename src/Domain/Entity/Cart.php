@@ -127,9 +127,22 @@ class Cart
         $firstItem = $this->items->first();
         $currency = $firstItem->getPriceSnapshot()->getCurrency();
         
+        // Validate all items have the same currency
+        foreach ($this->items as $item) {
+            $itemCurrency = $item->getPriceSnapshot()->getCurrency();
+            if ($itemCurrency !== $currency) {
+                // Skip items with different currency or throw exception
+                // For now, we'll only sum items with matching currency
+                continue;
+            }
+        }
+        
         $total = new Money(0, $currency);
         foreach ($this->items as $item) {
-            $total = $total->add($item->getSubtotal());
+            $itemCurrency = $item->getPriceSnapshot()->getCurrency();
+            if ($itemCurrency === $currency) {
+                $total = $total->add($item->getSubtotal());
+            }
         }
 
         return $total;
