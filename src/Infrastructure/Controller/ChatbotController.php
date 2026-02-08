@@ -107,9 +107,9 @@ class ChatbotController extends AbstractController
                         $messages[] = Message::ofUser($msg['content']);
                     } elseif ($msg['role'] === 'assistant') {
                         $messages[] = Message::ofAssistant($msg['content']);
-                    } elseif ($msg['role'] === 'system') {
-                        $messages[] = Message::ofSystem($msg['content']);
                     }
+                    // Note: System messages are handled by the AI Agent configuration
+                    // Symfony AI Platform doesn't support Message::ofSystem() in this version
                 }
             }
             
