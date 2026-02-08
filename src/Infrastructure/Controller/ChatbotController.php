@@ -339,7 +339,7 @@ class ChatbotController extends AbstractController
      * Clears context from Redis, allowing fresh start
      */
     #[Route('/reset-context', name: 'api_chatbot_reset_context', methods: ['POST'])]
-    public function resetContext(): JsonResponse
+    public function resetContext(Request $request): JsonResponse
     {
         try {
             $user = $this->security->getUser();
@@ -347,6 +347,15 @@ class ChatbotController extends AbstractController
                 return $this->json([
                     'error' => 'User not authenticated',
                 ], Response::HTTP_UNAUTHORIZED);
+            }
+            
+            $data = json_decode($request->getContent(), true);
+            $conversationId = $data['conversationId'] ?? null;
+            
+            if (!$conversationId) {
+                return $this->json([
+                    'error' => 'conversationId is required',
+                ], Response::HTTP_BAD_REQUEST);
             }
             
             $userId = (string) $user->getId();
