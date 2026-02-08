@@ -32,7 +32,7 @@
             <div class="product-card">
                 <h3>{{ product.name }}</h3>
                 <p class="category">{{ product.category.name ?? 'Uncategorized' }}</p>
-                <p class="price">${{ product.formattedPrice }}</p>
+                <p class="price">${{ product.price.format }}</p>
                 <p class="stock">
                     {% if product.stock > 0 %}
                         <span class="in-stock">✓ In Stock</span>
