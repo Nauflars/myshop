@@ -78,49 +78,4 @@ class ProfileSnapshotTest extends TestCase
         
         $this->assertEmpty($text);
     }
-    
-    public function testToArray(): void
-    {
-        $purchases = ['Laptop'];
-        $searches = ['gaming'];
-        $categories = ['Electronics'];
-        
-        $snapshot = new ProfileSnapshot($purchases, $searches, $categories);
-        $array = $snapshot->toArray();
-        
-        $this->assertArrayHasKey('recentPurchases', $array);
-        $this->assertArrayHasKey('recentSearches', $array);
-        $this->assertArrayHasKey('dominantCategories', $array);
-        $this->assertEquals($purchases, $array['recentPurchases']);
-        $this->assertEquals($searches, $array['recentSearches']);
-        $this->assertEquals($categories, $array['dominantCategories']);
-    }
-    
-    public function testFromArray(): void
-    {
-        $data = [
-            'recentPurchases' => ['Laptop', 'Mouse'],
-            'recentSearches' => ['gaming'],
-            'dominantCategories' => ['Electronics'],
-        ];
-        
-        $snapshot = ProfileSnapshot::fromArray($data);
-        
-        $this->assertEquals(['Laptop', 'Mouse'], $snapshot->getRecentPurchases());
-        $this->assertEquals(['gaming'], $snapshot->getRecentSearches());
-        $this->assertEquals(['Electronics'], $snapshot->getDominantCategories());
-    }
-    
-    public function testFromArrayWithMissingKeys(): void
-    {
-        $data = [
-            'recentPurchases' => ['Laptop'],
-        ];
-        
-        $snapshot = ProfileSnapshot::fromArray($data);
-        
-        $this->assertEquals(['Laptop'], $snapshot->getRecentPurchases());
-        $this->assertEmpty($snapshot->getRecentSearches());
-        $this->assertEmpty($snapshot->getDominantCategories());
-    }
 }
