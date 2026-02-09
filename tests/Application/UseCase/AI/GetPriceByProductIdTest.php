@@ -106,9 +106,8 @@ class GetPriceByProductIdTest extends TestCase
         $product->method('getStock')->willReturn($stock);
         $product->method('isInStock')->willReturn($stock > 0);
         
-        $money = $this->createMock(Money::class);
-        $money->method('getAmount')->willReturn($price);
-        $money->method('getCurrency')->willReturn('USD');
+        // Create real Money instance instead of mock (Money is final)
+        $money = new Money((int)($price * 100), 'USD'); // Convert to cents
         
         $product->method('getPrice')->willReturn($money);
         

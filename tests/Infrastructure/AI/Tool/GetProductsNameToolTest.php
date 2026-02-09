@@ -43,7 +43,7 @@ class GetProductsNameToolTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertCount(2, $result['data']);
         $this->assertEquals(2, $result['count']);
-        $this->assertStringContainsString('Found 2 products', $result['message']);
+        $this->assertStringContainsString('Se encontraron 2 producto', $result['message']);
     }
     
     public function testInvokeWithSearchTerm(): void
@@ -107,7 +107,7 @@ class GetProductsNameToolTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertEquals(0, $result['count']);
         $this->assertEmpty($result['data']);
-        $this->assertStringContainsString('No products found', $result['message']);
+        $this->assertStringContainsString('No se encontraron productos', $result['message']);
     }
     
     public function testInvokeHandlesException(): void
@@ -125,7 +125,7 @@ class GetProductsNameToolTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertEquals(0, $result['count']);
         $this->assertEmpty($result['data']);
-        $this->assertStringContainsString('Failed to retrieve products', $result['message']);
+        $this->assertStringContainsString('No se pudieron recuperar los productos', $result['message']);
     }
     
     public function testInvokeFormatsMessageCorrectlyForSingleProduct(): void
@@ -144,7 +144,7 @@ class GetProductsNameToolTest extends TestCase
         $result = ($this->tool)();
         
         // Assert
-        $this->assertStringContainsString('Found 1 product', $result['message']);
-        $this->assertStringNotContainsString('products', $result['message']); // Should be singular
+        $this->assertStringContainsString('Se encontraron 1 producto', $result['message']);
+        $this->assertStringNotContainsString('productos', $result['message']); // Should be singular
     }
 }

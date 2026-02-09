@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Application\UseCase\AI;
 
-use App\Application\UseCase\AI\GetProductsNameBMaxPrice;
+use App\Application\UseCase\AI\GetProductsNameByMaxPrice;
 use App\Domain\Entity\Product;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
@@ -132,9 +132,8 @@ class GetProductsNameByMaxPriceTest extends TestCase
         $product->method('getName')->willReturn($name);
         $product->method('getCategory')->willReturn($category);
         
-        $money = $this->createMock(Money::class);
-        $money->method('getAmount')->willReturn($priceAmount);
-        $money->method('getCurrency')->willReturn('USD');
+        // Create real Money instance instead of mock (Money is final)
+        $money = new Money((int)($priceAmount * 100), 'USD'); // Convert to cents
         
         $product->method('getPrice')->willReturn($money);
         

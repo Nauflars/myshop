@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\AI\Tool;
 
-use App\Application\UseCase\AI\GetProductImagesByProductId;
+use App\Application\UseCase\AI\GetProductImagesByProductName;
 use App\Infrastructure\AI\Tool\GetProductImagesByProductIdTool;
 use PHPUnit\Framework\TestCase;
 
@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
  */
 class GetProductImagesByProductIdToolTest extends TestCase
 {
-    private GetProductImagesByProductId $getProductImagesByProductId;
+    private GetProductImagesByProductName $getProductImagesByProductName;
     private GetProductImagesByProductIdTool $tool;
     
     protected function setUp(): void
     {
-        $this->getProductImagesByProductId = $this->createMock(GetProductImagesByProductId::class);
-        $this->tool = new GetProductImagesByProductIdTool($this->getProductImagesByProductId);
+        $this->getProductImagesByProductName = $this->createMock(GetProductImagesByProductName::class);
+        $this->tool = new GetProductImagesByProductIdTool($this->getProductImagesByProductName);
     }
     
     public function testInvokeReturnsSuccessWithImages(): void
@@ -35,7 +35,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
             ],
         ];
         
-        $this->getProductImagesByProductId
+        $this->getProductImagesByProductName
             ->expects($this->once())
             ->method('execute')
             ->with('prod-123')
@@ -50,7 +50,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
         $this->assertEquals('Laptop', $result['data']['productName']);
         $this->assertCount(2, $result['data']['images']);
         $this->assertEquals(2, $result['data']['imageCount']);
-        $this->assertStringContainsString('Found 2 images', $result['message']);
+        $this->assertStringContainsString('Se encontraron 2 imagen', $result['message']);
     }
     
     public function testInvokeReturnsFailureWhenProductNotFound(): void
@@ -63,7 +63,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
             'images' => [],
         ];
         
-        $this->getProductImagesByProductId
+        $this->getProductImagesByProductName
             ->expects($this->once())
             ->method('execute')
             ->with('nonexistent')
@@ -75,7 +75,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('not found', $result['message']);
+        $this->assertStringContainsString('no encontrado', $result['message']);
     }
     
     public function testInvokeHandlesNoImages(): void
@@ -88,7 +88,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
             'images' => [],
         ];
         
-        $this->getProductImagesByProductId
+        $this->getProductImagesByProductName
             ->expects($this->once())
             ->method('execute')
             ->willReturn($productData);
@@ -99,7 +99,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
         // Assert
         $this->assertTrue($result['success']);
         $this->assertEquals(0, $result['data']['imageCount']);
-        $this->assertStringContainsString('No images available', $result['message']);
+        $this->assertStringContainsString('No hay imágenes disponibles', $result['message']);
     }
     
     public function testInvokeRejectsEmptyProductId(): void
@@ -110,13 +110,13 @@ class GetProductImagesByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('required', $result['message']);
+        $this->assertStringContainsString('requerido', $result['message']);
     }
     
     public function testInvokeHandlesException(): void
     {
         // Arrange
-        $this->getProductImagesByProductId
+        $this->getProductImagesByProductName
             ->expects($this->once())
             ->method('execute')
             ->willThrowException(new \Exception('Database error'));
@@ -127,7 +127,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('Failed to retrieve', $result['message']);
+        $this->assertStringContainsString('Could not retrieve', $result['message']);
     }
     
     public function testInvokeFormatsSingularImageMessage(): void
@@ -142,7 +142,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
             ],
         ];
         
-        $this->getProductImagesByProductId
+        $this->getProductImagesByProductName
             ->expects($this->once())
             ->method('execute')
             ->willReturn($productData);
@@ -151,7 +151,7 @@ class GetProductImagesByProductIdToolTest extends TestCase
         $result = ($this->tool)('prod-789');
         
         // Assert
-        $this->assertStringContainsString('Found 1 image', $result['message']);
-        $this->assertStringNotContainsString('images', $result['message']); // Should be singular
+        $this->assertStringContainsString('Se encontraron 1 imagen', $result['message']);
+        $this->assertStringNotContainsString('imagenes', $result['message']); // Should be singular
     }
 }

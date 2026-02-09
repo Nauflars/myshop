@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\AI\Tool;
 
-use App\Application\UseCase\AI\GetPriceByProductId;
+use App\Application\UseCase\AI\GetPriceByProductName;
 use App\Infrastructure\AI\Tool\GetPriceByProductIdTool;
 use PHPUnit\Framework\TestCase;
 
@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
  */
 class GetPriceByProductIdToolTest extends TestCase
 {
-    private GetPriceByProductId $getPriceByProductId;
+    private GetPriceByProductName $getPriceByProductName;
     private GetPriceByProductIdTool $tool;
     
     protected function setUp(): void
     {
-        $this->getPriceByProductId = $this->createMock(GetPriceByProductId::class);
-        $this->tool = new GetPriceByProductIdTool($this->getPriceByProductId);
+        $this->getPriceByProductName = $this->createMock(GetPriceByProductName::class);
+        $this->tool = new GetPriceByProductIdTool($this->getPriceByProductName);
     }
     
     public function testInvokeReturnsSuccessWithPrice(): void
@@ -35,7 +35,7 @@ class GetPriceByProductIdToolTest extends TestCase
             'stockQuantity' => 50,
         ];
         
-        $this->getPriceByProductId
+        $this->getPriceByProductName
             ->expects($this->once())
             ->method('execute')
             ->with('prod-123')
@@ -66,7 +66,7 @@ class GetPriceByProductIdToolTest extends TestCase
             'stockQuantity' => null,
         ];
         
-        $this->getPriceByProductId
+        $this->getPriceByProductName
             ->expects($this->once())
             ->method('execute')
             ->with('nonexistent')
@@ -78,7 +78,7 @@ class GetPriceByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('not found', $result['message']);
+        $this->assertStringContainsString('no encontrado', $result['message']);
     }
     
     public function testInvokeHandlesOutOfStock(): void
@@ -94,7 +94,7 @@ class GetPriceByProductIdToolTest extends TestCase
             'stockQuantity' => 0,
         ];
         
-        $this->getPriceByProductId
+        $this->getPriceByProductName
             ->expects($this->once())
             ->method('execute')
             ->willReturn($productData);
@@ -105,7 +105,7 @@ class GetPriceByProductIdToolTest extends TestCase
         // Assert
         $this->assertTrue($result['success']);
         $this->assertFalse($result['data']['inStock']);
-        $this->assertStringContainsString('out of stock', $result['message']);
+        $this->assertStringContainsString('fuera de stock', $result['message']);
     }
     
     public function testInvokeRejectsEmptyProductId(): void
@@ -116,13 +116,13 @@ class GetPriceByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('required', $result['message']);
+        $this->assertStringContainsString('requerido', $result['message']);
     }
     
     public function testInvokeHandlesException(): void
     {
         // Arrange
-        $this->getPriceByProductId
+        $this->getPriceByProductName
             ->expects($this->once())
             ->method('execute')
             ->willThrowException(new \Exception('Database error'));
@@ -133,7 +133,7 @@ class GetPriceByProductIdToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertNull($result['data']);
-        $this->assertStringContainsString('Failed to retrieve', $result['message']);
+        $this->assertStringContainsString('No se pudo recuperar', $result['message']);
     }
     
     public function testInvokeFormatsCurrencyCorrectly(): void
@@ -149,7 +149,7 @@ class GetPriceByProductIdToolTest extends TestCase
             'stockQuantity' => 10,
         ];
         
-        $this->getPriceByProductId
+        $this->getPriceByProductName
             ->expects($this->once())
             ->method('execute')
             ->willReturn($productData);

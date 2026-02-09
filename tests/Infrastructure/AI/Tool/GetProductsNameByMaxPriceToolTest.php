@@ -43,7 +43,7 @@ class GetProductsNameByMaxPriceToolTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertCount(2, $result['data']);
         $this->assertEquals(2, $result['count']);
-        $this->assertStringContainsString('Found 2 products', $result['message']);
+        $this->assertStringContainsString('Se encontraron 2 producto', $result['message']);
         $this->assertStringContainsString('$50.00', $result['message']);
     }
     
@@ -104,7 +104,7 @@ class GetProductsNameByMaxPriceToolTest extends TestCase
         // Assert
         $this->assertTrue($result['success']);
         $this->assertEquals(0, $result['count']);
-        $this->assertStringContainsString('No products found', $result['message']);
+        $this->assertStringContainsString('No se encontraron productos', $result['message']);
     }
     
     public function testInvokeHandlesException(): void
@@ -121,7 +121,7 @@ class GetProductsNameByMaxPriceToolTest extends TestCase
         // Assert
         $this->assertFalse($result['success']);
         $this->assertEquals(0, $result['count']);
-        $this->assertStringContainsString('Failed to retrieve products', $result['message']);
+        $this->assertStringContainsString('No se pudieron recuperar los productos', $result['message']);
     }
     
     public function testInvokeFormatsCurrencySymbolCorrectly(): void
@@ -160,7 +160,7 @@ class GetProductsNameByMaxPriceToolTest extends TestCase
         $result = ($this->tool)(15.00);
         
         // Assert
-        $this->assertStringContainsString('Found 1 product', $result['message']);
-        $this->assertStringNotContainsString('products', $result['message']); // Should be singular
+        $this->assertStringContainsString('Se encontraron 1 producto', $result['message']);
+        $this->assertStringNotContainsString('productos', $result['message']); // Should be singular
     }
 }

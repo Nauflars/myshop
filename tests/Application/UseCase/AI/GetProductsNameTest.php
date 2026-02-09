@@ -141,6 +141,13 @@ class GetProductsNameTest extends TestCase
         $product->method('getId')->willReturn($id);
         $product->method('getName')->willReturn($name);
         $product->method('getCategory')->willReturn($category);
+        $product->method('getDescription')->willReturn("Description for {$name}");
+        $product->method('getStock')->willReturn(10);
+        $product->method('isInStock')->willReturn(true);
+        
+        // Create real Money instance instead of mock (Money is final)
+        $money = new Money(9999, 'USD'); // $99.99
+        $product->method('getPrice')->willReturn($money);
         
         return $product;
     }
