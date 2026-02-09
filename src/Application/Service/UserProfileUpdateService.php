@@ -6,6 +6,7 @@ namespace App\Application\Service;
 
 use App\Domain\Entity\User;
 use Psr\Log\LoggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 /**
  * UserProfileUpdateService - Handles automatic profile updates
@@ -19,7 +20,8 @@ class UserProfileUpdateService
     public function __construct(
         private readonly ProfileAggregationService $profileAggregation,
         private readonly UserProfileService $userProfileService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly CacheInterface $cache
     ) {
     }
 
@@ -52,6 +54,9 @@ class UserProfileUpdateService
                 'userId' => $user->getId(),
                 'email' => $user->getEmail(),
             ]);
+
+            // Clear cache FIRST to ensure fresh data is read
+            $this->clearUserCache($user);
 
             // Step 1: Aggregate user data (purchases, searches, categories)
             $snapshot = $this->profileAggregation->aggregateUserData($user);
@@ -97,6 +102,36 @@ class UserProfileUpdateService
                 'trace' => $e->getTraceAsString(),
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Clear user-related cache entries
+     */
+    private function clearUserCache(User $user): void
+    {
+        try {
+            // Clear recommendation cache (all possible limits)
+            $cacheKeys = [
+                "recommendations_{$user->getId()}_12",
+                "recommendations_{$user->getId()}_10",
+                "recommendations_{$user->getId()}_20",
+                "user_searches_{$user->getId()}",
+            ];
+
+            foreach ($cacheKeys as $key) {
+                $this->cache->delete($key);
+            }
+
+            $this->logger->info('User cache cleared after profile update', [
+                'userId' => $user->getId(),
+            ]);
+        } catch (\Exception $e) {
+            // Log but don't fail - cache clearing is non-critical
+            $this->logger->error('Failed to clear user cache', [
+                'userId' => $user->getId(),
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 }

@@ -11,6 +11,8 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
 use App\Domain\ValueObject\SearchQuery;
+use App\Entity\SearchHistory;
+use App\Repository\SearchHistoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +30,8 @@ class ProductController extends AbstractController
         private readonly SearchFacade $searchFacade,
         private readonly ErrorMessageTranslator $errorTranslator,
         private readonly UserProfileUpdateService $profileUpdateService,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly SearchHistoryRepository $searchHistoryRepository
     ) {
     }
 
@@ -51,6 +54,11 @@ class ProductController extends AbstractController
         $user = $this->security->getUser();
         if ($user instanceof User && !empty($query)) {
             try {
+                // Save search history
+                $searchHistory = new SearchHistory($user, $query, 'keyword', $category);
+                $this->searchHistoryRepository->save($searchHistory);
+                
+                // Update profile
                 $this->profileUpdateService->scheduleProfileUpdate($user);
             } catch (\Exception $e) {
                 // Log but don't fail - profile update is non-critical
@@ -104,6 +112,11 @@ class ProductController extends AbstractController
             $user = $this->security->getUser();
             if ($user instanceof User && !empty($query)) {
                 try {
+                    // Save search history
+                    $searchHistory = new SearchHistory($user, $query, $mode, $category);
+                    $this->searchHistoryRepository->save($searchHistory);
+                    
+                    // Update profile
                     $this->profileUpdateService->scheduleProfileUpdate($user);
                 } catch (\Exception $e) {
                     // Log but don't fail - profile update is non-critical

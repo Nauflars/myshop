@@ -135,13 +135,23 @@ class ProfileAggregationService
     public function aggregateSearches(User $user): array
     {
         try {
-            // Use cache to get search queries from conversation history
+            // Use cache to get search queries from conversation history and search_history table
             $cacheKey = "user_searches_{$user->getId()}";
 
             return $this->cache->get($cacheKey, function (ItemInterface $item) use ($user) {
                 $item->expiresAfter(60); // 1 minute TTL (frequent updates for real-time profiles)
 
-                // Query conversation history from database
+                $searches = [];
+                
+                // 1. Get searches from search_history table (Smart Search form)
+                $searchHistoryRepo = $this->entityManager->getRepository(\App\Entity\SearchHistory::class);
+                $recentSearches = $searchHistoryRepo->findRecentByUser($user, self::RECENT_SEARCHES_LIMIT);
+                
+                foreach ($recentSearches as $searchHistory) {
+                    $searches[] = $searchHistory->getQuery();
+                }
+                
+                // 2. Get searches from conversation history (chatbot)
                 $conversationRepo = $this->entityManager->getRepository(Conversation::class);
                 $messageRepo = $this->entityManager->getRepository(ConversationMessage::class);
                 
@@ -152,7 +162,6 @@ class ProfileAggregationService
                     10 // Limit to recent 10 conversations
                 );
                 
-                $searches = [];
                 foreach ($conversations as $conversation) {
                     // Get user messages from this conversation
                     $messages = $messageRepo->findBy(

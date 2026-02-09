@@ -18,7 +18,13 @@ services:
         exclude:
             - '../src/Domain/Entity/'
             - '../src/Domain/ValueObject/'
+            - '../src/Entity/'
             - '../src/Kernel.php'
+
+    # Doctrine Repositories
+    App\Repository\:
+        resource: '../src/Repository/'
+        tags: ['doctrine.repository_service']
 
     # Domain Repository Interfaces -> Infrastructure Implementations
     App\Domain\Repository\UserRepositoryInterface:
@@ -49,6 +55,10 @@ services:
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
             $adminAgent: '@ai.agent.adminAssistant'
+
+    # Make UserProfileUpdateService public for testing
+    App\Application\Service\UserProfileUpdateService:
+        public: true
 
     # Use Cases
     App\Application\UseCase\:

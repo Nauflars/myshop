@@ -589,6 +589,15 @@ class Chatbot {
     }
     
     formatPrice(amount, currency = 'USD') {
+        // If amount is an object with 'amount' property (from API), use that value in cents
+        if (typeof amount === 'object' && amount !== null && 'amount' in amount) {
+            amount = amount.amount / 100;
+        }
+        // If amount is a number > 1000, assume it's in cents
+        else if (typeof amount === 'number' && amount > 1000) {
+            amount = amount / 100;
+        }
+        
         return new Intl.NumberFormat('es-ES', {
             style: 'currency',
             currency: currency

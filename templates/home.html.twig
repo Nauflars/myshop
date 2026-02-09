@@ -74,7 +74,7 @@ fetch('/api/products?limit=8')
             <div class="product-card">
                 <h3>${product.name}</h3>
                 <p class="category">${product.category}</p>
-                <p class="price">${product.price}</p>
+                <p class="price">$${(product.price.amount / 100).toFixed(2)}</p>
                 <p class="stock">${product.inStock ? 'In Stock' : 'Out of Stock'}</p>
                 <a href="/products/${product.id}" class="btn btn-secondary">View Details</a>
             </div>

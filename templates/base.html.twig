@@ -24,7 +24,7 @@
                         <li><a href="{{ path('admin_home') }}" style="color: #ffd700;">🛡️ Admin Panel</a></li>
                     {% endif %}
                     <li class="user-info">
-                        {{ app.user.name }} ({{ app.user.roles[0] }})
+                        {{ app.user.name }} ({{ app.user.email }}) - {{ app.user.roles[0] }}
                     </li>
                     <li><a href="{{ path('app_logout') }}">Logout</a></li>
                 {% else %}

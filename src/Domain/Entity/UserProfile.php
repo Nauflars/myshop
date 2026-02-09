@@ -141,33 +141,53 @@ class UserProfile
     /**
      * Create from MongoDB document
      */
-    public static function fromArray(array $data): self
+    public static function fromArray(array|\MongoDB\Model\BSONDocument $data): self
     {
-        // Convert BSON arrays to PHP arrays
-        $recentPurchases = $data['dataSnapshot']['recentPurchases'] ?? [];
-        if ($recentPurchases instanceof \MongoDB\Model\BSONArray) {
-            $recentPurchases = $recentPurchases->getArrayCopy();
-        }
+        // Helper function to recursively convert BSON types to arrays
+        $convertToArray = function($value) use (&$convertToArray) {
+            if ($value instanceof \MongoDB\Model\BSONArray || $value instanceof \MongoDB\Model\BSONDocument) {
+                $result = [];
+                foreach ($value as $key => $item) {
+                    $result[$key] = $convertToArray($item);
+                }
+                return $result;
+            }
+            if (is_array($value)) {
+                $result = [];
+                foreach ($value as $key => $item) {
+                    $result[$key] = $convertToArray($item);
+                }
+                return $result;
+            }
+            return $value;
+        };
 
-        $recentSearches = $data['dataSnapshot']['recentSearches'] ?? [];
-        if ($recentSearches instanceof \MongoDB\Model\BSONArray) {
-            $recentSearches = $recentSearches->getArrayCopy();
-        }
+        // Convert entire data structure recursively
+        $data = $convertToArray($data);
 
-        $dominantCategories = $data['dataSnapshot']['dominantCategories'] ?? [];
-        if ($dominantCategories instanceof \MongoDB\Model\BSONArray) {
-            $dominantCategories = $dominantCategories->getArrayCopy();
-        }
+        // Now safely access all fields as pure PHP arrays
+        $dataSnapshot = $data['dataSnapshot'] ?? [];
+        $recentPurchases = $dataSnapshot['recentPurchases'] ?? [];
+        $recentSearches = $dataSnapshot['recentSearches'] ?? [];
+        $dominantCategories = $dataSnapshot['dominantCategories'] ?? [];
 
-        $embeddingVector = $data['embeddingVector'];
-        if ($embeddingVector instanceof \MongoDB\Model\BSONArray) {
-            $embeddingVector = $embeddingVector->getArrayCopy();
+        // Ensure they are arrays (fallback) - force conversion if still BSON
+        if ($recentPurchases instanceof \MongoDB\Model\BSONDocument || $recentPurchases instanceof \MongoDB\Model\BSONArray) {
+            $recentPurchases = $convertToArray($recentPurchases);
         }
+        if ($recentSearches instanceof \MongoDB\Model\BSONDocument || $recentSearches instanceof \MongoDB\Model\BSONArray) {
+            $recentSearches = $convertToArray($recentSearches);
+        }
+        if ($dominantCategories instanceof \MongoDB\Model\BSONDocument || $dominantCategories instanceof \MongoDB\Model\BSONArray) {
+            $dominantCategories = $convertToArray($dominantCategories);
+        }
+        
+        $recentPurchases = is_array($recentPurchases) ? $recentPurchases : [];
+        $recentSearches = is_array($recentSearches) ? $recentSearches : [];
+        $dominantCategories = is_array($dominantCategories) ? $dominantCategories : [];
 
+        $embeddingVector = $data['embeddingVector'] ?? [];
         $metadata = $data['metadata'] ?? [];
-        if ($metadata instanceof \MongoDB\Model\BSONDocument) {
-            $metadata = (array) $metadata;
-        }
 
         $snapshot = new ProfileSnapshot(
             $recentPurchases,
