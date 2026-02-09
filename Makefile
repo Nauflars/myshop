@@ -88,32 +88,32 @@ redis-monitor: ## Monitor Redis commands in real-time
 # ========================================
 
 mongo-cli: ## Open MongoDB shell
-	docker-compose exec mongodb mongosh myshop_db
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db
 
 mongo-stats: ## Show MongoDB statistics
-	docker-compose exec mongodb mongosh myshop_db --eval "db.stats()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.stats()"
 
 mongo-collections: ## List all MongoDB collections
-	docker-compose exec mongodb mongosh myshop_db --eval "db.getCollectionNames()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.getCollectionNames()"
 
 mongo-drop-embeddings: ## Drop product embeddings collection
-	docker-compose exec mongodb mongosh myshop_db --eval "db.product_embeddings.drop()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.product_embeddings.drop()"
 
 mongo-drop-profiles: ## Drop user profiles collection
-	docker-compose exec mongodb mongosh myshop_db --eval "db.user_profiles.drop()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.user_profiles.drop()"
 
 mongo-count-embeddings: ## Count product embeddings
-	docker-compose exec mongodb mongosh myshop_db --eval "db.product_embeddings.countDocuments()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.product_embeddings.countDocuments()"
 
 mongo-count-profiles: ## Count user profiles
-	docker-compose exec mongodb mongosh myshop_db --eval "db.user_profiles.countDocuments()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.user_profiles.countDocuments()"
 
 mongo-backup: ## Backup MongoDB database
-	docker-compose exec mongodb mongodump --db=myshop_db --out=/tmp/backup
+	docker-compose exec mongodb mongodump -u root -p rootpassword --authenticationDatabase admin --db=myshop_db --out=/tmp/backup
 	@echo "MongoDB backup created in /tmp/backup"
 
 mongo-indexes: ## Show MongoDB indexes
-	docker-compose exec mongodb mongosh myshop_db --eval "db.product_embeddings.getIndexes()"
+	docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop_db --eval "db.product_embeddings.getIndexes()"
 
 # ========================================
 # MySQL Commands
@@ -293,6 +293,6 @@ health-check: ## Check health of all services
 	@echo "\nMySQL status:"
 	@docker-compose exec mysql mysqladmin -uroot -proot ping || echo "MySQL not responding"
 	@echo "\nMongoDB status:"
-	@docker-compose exec mongodb mongosh --eval "db.adminCommand('ping')" || echo "MongoDB not responding"
+	@docker-compose exec mongodb mongosh -u root -p rootpassword --authenticationDatabase admin --eval "db.adminCommand('ping')" || echo "MongoDB not responding"
 	@echo "\nPHP status:"
 	@docker-compose exec php php -v | head -n 1 || echo "PHP not responding"
