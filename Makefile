@@ -120,26 +120,26 @@ mongo-indexes: ## Show MongoDB indexes
 # ========================================
 
 mysql-cli: ## Open MySQL CLI
-	docker-compose exec mysql mysql -uroot -proot myshop_db
+	docker-compose exec mysql mysql -uroot -prootpassword myshop
 
 mysql-dump: ## Dump MySQL database
-	docker-compose exec mysql mysqldump -uroot -proot myshop_db > backup_$$(date +%Y%m%d_%H%M%S).sql
+	docker-compose exec mysql mysqldump -uroot -prootpassword myshop > backup_$$(date +%Y%m%d_%H%M%S).sql
 	@echo "MySQL dump created"
 
 mysql-import: ## Import MySQL dump (usage: make mysql-import FILE=backup.sql)
-	docker-compose exec -T mysql mysql -uroot -proot myshop_db < $(FILE)
+	docker-compose exec -T mysql mysql -uroot -prootpassword myshop < $(FILE)
 
 mysql-tables: ## List all MySQL tables
-	docker-compose exec mysql mysql -uroot -proot myshop_db -e "SHOW TABLES;"
+	docker-compose exec mysql mysql -uroot -prootpassword myshop -e "SHOW TABLES;"
 
 mysql-status: ## Show MySQL status
-	docker-compose exec mysql mysql -uroot -proot -e "SHOW STATUS;"
+	docker-compose exec mysql mysql -uroot -prootpassword -e "SHOW STATUS;"
 
 mysql-processes: ## Show MySQL processes
-	docker-compose exec mysql mysql -uroot -proot -e "SHOW PROCESSLIST;"
+	docker-compose exec mysql mysql -uroot -prootpassword -e "SHOW PROCESSLIST;"
 
 mysql-size: ## Show database size
-	docker-compose exec mysql mysql -uroot -proot -e "SELECT table_schema AS 'Database', ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)' FROM information_schema.TABLES WHERE table_schema = 'myshop_db' GROUP BY table_schema;"
+	docker-compose exec mysql mysql -uroot -prootpassword -e "SELECT table_schema AS 'Database', ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS 'Size (MB)' FROM information_schema.TABLES WHERE table_schema = 'myshop' GROUP BY table_schema;"
 
 # ========================================
 # Symfony Commands
