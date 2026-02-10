@@ -1,3 +1,6 @@
+imports:
+    - { resource: 'services/queue.yaml' }
+
 parameters:
     # Stock management configuration (spec-008 US2)
     app.stock.low_threshold: 10  # Products with stock below this are considered low stock
@@ -12,6 +15,7 @@ services:
         autoconfigure: true
         bind:
             $defaultLowStockThreshold: '%app.stock.low_threshold%'
+            $databaseName: '%env(MONGODB_DB)%'
 
     App\:
         resource: '../src/'
@@ -20,6 +24,7 @@ services:
             - '../src/Domain/ValueObject/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+            - '../src/Infrastructure/MessageHandler/'  # Manually configured in services/queue.yaml
 
     # Doctrine Repositories
     App\Repository\:
@@ -41,6 +46,10 @@ services:
 
     App\Domain\Repository\ConversationRepositoryInterface:
         class: App\Infrastructure\Repository\DoctrineConversationRepository
+
+    # Embedding Configuration (spec-014)
+    App\Domain\ValueObject\EmbeddingWeights:
+        factory: ['App\Domain\ValueObject\EmbeddingWeights', 'fromEnvironment']
 
     # Controllers
     App\Infrastructure\Controller\:
@@ -294,3 +303,9 @@ services:
             $profileService: '@App\Application\Service\UserProfileService'
             $logger: '@logger'
         tags: ['console.command']
+
+# Test environment: Make services public for integration tests
+when@test:
+    services:
+        _defaults:
+            public: true  # All services public in test environment

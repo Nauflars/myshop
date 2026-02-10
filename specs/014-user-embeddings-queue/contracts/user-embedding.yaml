@@ -1,0 +1,587 @@
+# User Embedding Contract
+
+**Version**: 1.0  
+**Entity**: `UserEmbedding`  
+**Storage**: MongoDB `user_embeddings` collection  
+**Purpose**: Semantic vector representation of user interests updated asynchronously from interaction events
+
+---
+
+## MongoDB Document Schema
+
+```yaml
+type: object
+required:
+  - user_id
+  - embedding
+  - dimension_count
+  - last_updated
+  - created_at
+  - version
+
+properties:
+  _id:
+    bsonType: objectId
+    description: MongoDB internal identifier
+    example: "507f1f77bcf86cd799439011"
+
+  user_id:
+    bsonType: int
+    minimum: 1
+    description: User identifier (references MySQL users.id)
+    example: 12345
+
+  embedding:
+    bsonType: array
+    minItems: 1536
+    maxItems: 1536
+    items:
+      bsonType: double
+      minimum: -1.0
+      maximum: 1.0
+    description: L2-normalized 1536-dimensional vector from OpenAI text-embedding-3-small
+    example: [0.0123, -0.0456, 0.0789, ..., 0.0321]
+
+  dimension_count:
+    bsonType: int
+    enum: [1536]
+    description: Vector dimensionality (must match OpenAI embedding model)
+    example: 1536
+
+  last_updated:
+    bsonType: date
+    description: Timestamp of most recent embedding update
+    example: ISODate("2026-02-10T14:30:00.000Z")
+
+  event_count:
+    bsonType: int
+    minimum: 0
+    description: Total number of events incorporated into embedding
+    example: 47
+
+  last_event_type:
+    bsonType: string
+    enum:
+      - search
+      - product_view
+      - product_click
+      - product_purchase
+    description: Type of most recent event processed
+    example: "product_purchase"
+
+  last_event_id:
+    bsonType: string
+    description: Message ID of most recent event (for debugging)
+    example: "a3c4f5e8d9b2c1a0e7f6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d7c6b5a4"
+
+  created_at:
+    bsonType: date
+    description: Timestamp when user embedding was first created
+    example: ISODate("2026-01-15T09:00:00.000Z")
+
+  updated_at:
+    bsonType: date
+    description: Timestamp of last document modification (MongoDB internal)
+    example: ISODate("2026-02-10T14:30:00.000Z")
+
+  version:
+    bsonType: int
+    minimum: 1
+    description: Optimistic locking version (incremented on each update)
+    example: 12
+
+  metadata:
+    bsonType: object
+    description: Optional debugging and analytics metadata
+    properties:
+      search_count:
+        bsonType: int
+        minimum: 0
+        description: Count of search events
+      view_count:
+        bsonType: int
+        minimum: 0
+        description: Count of product view events
+      click_count:
+        bsonType: int
+        minimum: 0
+        description: Count of product click events
+      purchase_count:
+        bsonType: int
+        minimum: 0
+        description: Count of product purchase events
+      decay_lambda:
+        bsonType: double
+        description: Temporal decay constant used
+      last_recalculation:
+        bsonType: date
+        description: Last full recalculation timestamp (if any)
+    example:
+      search_count: 15
+      view_count: 23
+      click_count: 8
+      purchase_count: 1
+      decay_lambda: 0.023
+```
+
+---
+
+## Indexes
+
+```javascript
+// Unique index on user_id (1 embedding per user)
+db.user_embeddings.createIndex(
+  { user_id: 1 },
+  { unique: true, name: "idx_user_id" }
+);
+
+// Index on last_updated (detect stale embeddings)
+db.user_embeddings.createIndex(
+  { last_updated: 1 },
+  { name: "idx_last_updated" }
+);
+
+// Sparse index on version (optimistic locking queries)
+db.user_embeddings.createIndex(
+  { user_id: 1, version: 1 },
+  { name: "idx_user_version" }
+);
+
+// Vector search index (future use - similarity queries)
+db.user_embeddings.createSearchIndex({
+  name: "vector_index",
+  type: "vectorSearch",
+  definition: {
+    fields: [{
+      type: "vector",
+      path: "embedding",
+      numDimensions: 1536,
+      similarity: "cosine"
+    }]
+  }
+});
+```
+
+---
+
+## Example Documents
+
+### Example 1: New User (First Event)
+
+```json
+{
+  "_id": ObjectId("65c7f8e4d3b2a1908e7f6d5c"),
+  "user_id": 12345,
+  "embedding": [0.0234, -0.0567, 0.0890, /* ... 1533 more ... */],
+  "dimension_count": 1536,
+  "last_updated": ISODate("2026-02-10T14:30:00Z"),
+  "event_count": 1,
+  "last_event_type": "search",
+  "last_event_id": "f8e7d6c5b4a392817f6e5d4c3b2a1908e7f6d5c4b3a2918f7e6d5c4b3a29108",
+  "created_at": ISODate("2026-02-10T14:30:00Z"),
+  "updated_at": ISODate("2026-02-10T14:30:00Z"),
+  "version": 1,
+  "metadata": {
+    "search_count": 1,
+    "view_count": 0,
+    "click_count": 0,
+    "purchase_count": 0,
+    "decay_lambda": 0.023
+  }
+}
+```
+
+### Example 2: Active User (Multiple Events)
+
+```json
+{
+  "_id": ObjectId("65c8a9b5c4d3e2f10a1b2c3d"),
+  "user_id": 98765,
+  "embedding": [0.0123, -0.0456, 0.0789, /* ... 1533 more ... */],
+  "dimension_count": 1536,
+  "last_updated": ISODate("2026-02-10T16:45:30Z"),
+  "event_count": 47,
+  "last_event_type": "product_purchase",
+  "last_event_id": "9f8e7d6c5b4a392817f6e5d4c3b2a1908e7f6d5c4b3a2918f7e6d5c4b3a2918",
+  "created_at": ISODate("2026-01-15T09:00:00Z"),
+  "updated_at": ISODate("2026-02-10T16:45:30Z"),
+  "version": 47,
+  "metadata": {
+    "search_count": 15,
+    "view_count": 23,
+    "click_count": 8,
+    "purchase_count": 1,
+    "decay_lambda": 0.023,
+    "last_recalculation": null
+  }
+}
+```
+
+### Example 3: Stale User (No Recent Activity)
+
+```json
+{
+  "_id": ObjectId("65b9c8d7e6f5a4b3c2d1e0f9"),
+  "user_id": 54321,
+  "embedding": [0.0034, -0.0067, 0.0012, /* ... 1533 more ... */],
+  "dimension_count": 1536,
+  "last_updated": ISODate("2025-10-15T10:20:00Z"),  // 4 months ago
+  "event_count": 8,
+  "last_event_type": "search",
+  "last_event_id": "1a2b3c4d5e6f708192a3b4c5d6e7f809a1b2c3d4e5f607182a3b4c5d6e7f80",
+  "created_at": ISODate("2025-09-01T12:00:00Z"),
+  "updated_at": ISODate("2025-10-15T10:20:00Z"),
+  "version": 8,
+  "metadata": {
+    "search_count": 5,
+    "view_count": 3,
+    "click_count": 0,
+    "purchase_count": 0,
+    "decay_lambda": 0.023
+  }
+}
+```
+
+---
+
+## CRUD Operations
+
+### Create (First Event)
+
+**Scenario**: User has no existing embedding
+
+**MongoDB Operation**:
+```javascript
+db.user_embeddings.insertOne({
+  user_id: 12345,
+  embedding: [/* normalized event embedding */],
+  dimension_count: 1536,
+  last_updated: new Date(),
+  event_count: 1,
+  last_event_type: "search",
+  last_event_id: "abc123...",
+  created_at: new Date(),
+  updated_at: new Date(),
+  version: 1,
+  metadata: {
+    search_count: 1,
+    view_count: 0,
+    click_count: 0,
+    purchase_count: 0,
+    decay_lambda: 0.023
+  }
+});
+```
+
+### Update (Incremental Embedding)
+
+**Scenario**: Update existing user embedding with new event
+
+**MongoDB Operation** (with optimistic locking):
+```javascript
+db.user_embeddings.findOneAndUpdate(
+  {
+    user_id: 12345,
+    version: 47  // Optimistic lock
+  },
+  {
+    $set: {
+      embedding: [/* new weighted+decayed embedding */],
+      last_updated: new Date("2026-02-10T14:30:00Z"),
+      last_event_type: "product_purchase",
+      last_event_id: "xyz789...",
+      updated_at: new Date()
+    },
+    $inc: {
+      event_count: 1,
+      version: 1,
+      "metadata.purchase_count": 1
+    },
+    $max: {
+      last_updated: new Date("2026-02-10T14:30:00Z")  // Prevent old events overwriting
+    }
+  },
+  {
+    returnDocument: "after",
+    upsert: false
+  }
+);
+```
+
+**Optimistic Locking Failure**:
+```javascript
+// If version mismatch (concurrent update), returns null
+// Worker should retry: re-fetch document, recalculate, re-attempt update
+```
+
+### Read (For Similarity Search)
+
+**Scenario**: Find similar users based on embedding
+
+**MongoDB Operation**:
+```javascript
+db.user_embeddings.aggregate([
+  {
+    $vectorSearch: {
+      index: "vector_index",
+      path: "embedding",
+      queryVector: [/* target user's embedding */],
+      numCandidates: 100,
+      limit: 10
+    }
+  },
+  {
+    $project: {
+      user_id: 1,
+      similarity_score: { $meta: "vectorSearchScore" },
+      last_updated: 1,
+      event_count: 1
+    }
+  }
+]);
+```
+
+### Delete (User Account Deletion - GDPR)
+
+**Scenario**: User requests account deletion
+
+**MongoDB Operation**:
+```javascript
+db.user_embeddings.deleteOne({ user_id: 12345 });
+```
+
+---
+
+## Embedding Update Algorithm
+
+**Inputs**:
+- `current_embedding`: Existing embedding vector (1536 floats)
+- `event_embedding`: New event embedding vector (1536 floats)
+- `event_weight`: Event type weight (purchase=1.0, search=0.7, click=0.5, view=0.3)
+- `days_since_last_update`: Days between `last_updated` and `event_timestamp`
+- `decay_lambda`: Temporal decay constant (default: 0.023)
+
+**Formula**:
+```
+decay_factor = exp(-decay_lambda * days_since_last_update)
+
+new_embedding[i] = (current_embedding[i] * decay_factor + event_embedding[i] * event_weight) 
+                   / (decay_factor + event_weight)
+
+normalized_embedding[i] = new_embedding[i] / ||new_embedding||_2
+```
+
+**PHP Implementation**:
+```php
+function updateEmbedding(
+    array $currentEmbedding,
+    array $eventEmbedding,
+    float $eventWeight,
+    int $daysSinceLastUpdate,
+    float $decayLambda = 0.023
+): array {
+    $decayFactor = exp(-$decayLambda * $daysSinceLastUpdate);
+    $denominator = $decayFactor + $eventWeight;
+    
+    $newEmbedding = [];
+    for ($i = 0; $i < 1536; $i++) {
+        $newEmbedding[$i] = (
+            $currentEmbedding[$i] * $decayFactor +
+            $eventEmbedding[$i] * $eventWeight
+        ) / $denominator;
+    }
+    
+    return normalize($newEmbedding);
+}
+
+function normalize(array $vector): array {
+    $magnitude = sqrt(array_sum(array_map(fn($v) => $v ** 2, $vector)));
+    return array_map(fn($v) => $v / $magnitude, $vector);
+}
+```
+
+---
+
+## Validation Rules
+
+### Document Constraints
+
+1. **user_id Uniqueness**:
+   - One embedding per user
+   - Enforced by unique index
+
+2. **Embedding Normalization**:
+   - Vector must be L2-normalized (unit length)
+   - `sqrt(sum(embedding[i]^2)) ≈ 1.0` (within floating-point tolerance)
+
+3. **Temporal Consistency**:
+   - `last_updated >= created_at`
+   - `updated_at >= created_at`
+   - `updated_at >= last_updated`
+
+4. **Event Count Accuracy**:
+   - `event_count > 0`
+   - `event_count <= sum(metadata.*_count)`
+
+5. **Version Monotonicity**:
+   - `version` increases by 1 on each update
+   - Never decreases
+
+### Field Invariants
+
+```javascript
+// MongoDB Validation Rules
+db.runCommand({
+  collMod: "user_embeddings",
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["user_id", "embedding", "dimension_count", "last_updated", "version"],
+      properties: {
+        user_id: {
+          bsonType: "int",
+          minimum: 1
+        },
+        embedding: {
+          bsonType: "array",
+          minItems: 1536,
+          maxItems: 1536
+        },
+        dimension_count: {
+          bsonType: "int",
+          enum: [1536]
+        },
+        version: {
+          bsonType: "int",
+          minimum: 1
+        },
+        event_count: {
+          bsonType: "int",
+          minimum: 0
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+});
+```
+
+---
+
+## Error Cases
+
+### Optimistic Lock Failure
+
+**Condition**: Version mismatch during update
+
+**Handling**:
+```php
+$result = $collection->findOneAndUpdate(
+    ['user_id' => $userId, 'version' => $expectedVersion],
+    ['$set' => [...], '$inc' => ['version' => 1]]
+);
+
+if ($result === null) {
+    // Concurrent update detected
+    $this->logger->warning('Optimistic lock failed, retrying', ['user_id' => $userId]);
+    // Re-fetch, recalculate, retry
+    return $this->retryUpdate($userId, $event);
+}
+```
+
+### Invalid Embedding Dimensions
+
+**Condition**: Event embedding has wrong dimensionality
+
+**Handling**:
+- Log error with event details
+- Skip embedding update (keep old embedding)
+- Acknowledge message (don't retry - data issue)
+
+### Stale Embedding (>90 Days)
+
+**Condition**: `last_updated` is more than 90 days old
+
+**Handling**:
+- Log warning: potential accuracy degradation
+- Option 1: Apply update normally (accumulated decay)
+- Option 2: Trigger full recalculation from MySQL event log
+
+---
+
+## Monitoring & Observability
+
+**Metrics**:
+```yaml
+embeddings_created_total: Counter (new users)
+embeddings_updated_total: Counter (incremental updates)
+embedding_update_duration_seconds: Histogram
+embedding_normalization_errors_total: Counter
+optimistic_lock_failures_total: Counter
+stale_embeddings_detected_total: Counter (>90 days)
+embedding_vector_magnitude_deviation: Gauge (should be ~1.0)
+```
+
+**Alerts**:
+- `embedding_normalization_errors_total > 0` → CRITICAL (data corruption)
+- `optimistic_lock_failures_total > 100/hour` → WARNING (high concurrency or contention)
+- `stale_embeddings_detected_total > 1000` → INFO (consider recalculation job)
+
+---
+
+## Testing Contracts
+
+### 1. Embedding Normalization Test
+
+```php
+public function testEmbeddingIsNormalized(): void
+{
+    $embedding = $this->repository->findByUserId(12345);
+    $magnitude = $this->calculateMagnitude($embedding->toArray());
+    
+    $this->assertEqualsWithDelta(1.0, $magnitude, 0.0001);
+}
+```
+
+### 2. Temporal Decay Test
+
+```php
+public function testTemporalDecayReducesOldEventWeight(): void
+{
+    $oldEmbedding = new UserEmbedding([/* ... */], new DateTimeImmutable('-30 days'), 10);
+    $eventEmbedding = [/* orthogonal vector */];
+    
+    $updated = $oldEmbedding->updateWith($eventEmbedding, 1.0, new DateTimeImmutable(), 0.023);
+    
+    // Recent event should dominate due to decay
+    $similarity = $this->cosineSimilarity($updated->toArray(), $eventEmbedding);
+    $this->assertGreaterThan(0.7, $similarity);
+}
+```
+
+### 3. Optimistic Locking Test
+
+```php
+public function testConcurrentUpdatesHandledCorrectly(): void
+{
+    $userId = 12345;
+    
+    // Simulate two workers processing events simultaneously
+    $worker1 = new UpdateEmbedding Process($userId, $event1);
+    $worker2 = new UpdateEmbeddingProcess($userId, $event2);
+    
+    [$result1, $result2] = Promise::all([$worker1, $worker2]);
+    
+    // One should succeed, one should retry
+    $this->assertTrue($result1 || $result2);
+    
+    // Final embedding incorporates both events (order may vary)
+    $final = $this->repository->findByUserId($userId);
+    $this->assertEquals(2, $final->eventCount);
+}
+```
+
+---
+
+**Contract Status**: ✅ **Defined** - Schema, operations, validation, and error handling specified for user embeddings.

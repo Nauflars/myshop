@@ -1,0 +1,411 @@
+# Event Message Contract
+
+**Version**: 1.0  
+**Message Type**: `UpdateUserEmbeddingMessage`  
+**Purpose**: Asynchronous message for updating user embeddings based on interaction events  
+**Transport**: RabbitMQ AMQP  
+**Exchange**: `user_events` (topic)  
+**Routing Key Pattern**: `user.embedding.{event_type}`  
+**Queue**: `user_embedding_updates`
+
+---
+
+## Message Schema (JSON)
+
+```yaml
+type: object
+required:
+  - user_id
+  - event_type
+  - occurred_at
+  - message_id
+  - version
+
+properties:
+  user_id:
+    type: integer
+    minimum: 1
+    description: User identifier (references MySQL users.id)
+    example: 12345
+
+  event_type:
+    type: string
+    enum:
+      - search
+      - product_view
+      - product_click
+      - product_purchase
+    description: Type of user interaction
+    example: "product_purchase"
+
+  search_phrase:
+    type: string
+    minLength: 1
+    maxLength: 255
+    nullable: true
+    description: Search query text (required if event_type=search, null otherwise)
+    example: "wireless bluetooth headphones"
+
+  product_id:
+    type: integer
+    minimum: 1
+    nullable: true
+    description: Product identifier (required for product_* events, null otherwise)
+    example: 789
+
+  occurred_at:
+    type: string
+    format: date-time
+    description: ISO 8601 timestamp with timezone when event occurred
+    example: "2026-02-10T14:30:00+00:00"
+
+  metadata:
+    type: object
+    nullable: true
+    description: Optional contextual information
+    properties:
+      device:
+        type: string
+        enum: [desktop, mobile, tablet]
+        example: "mobile"
+      channel:
+        type: string
+        enum: [web, app, api]
+        example: "app"
+      category:
+        type: string
+        description: Product category for product events
+        example: "Electronics > Audio"
+      session_id:
+        type: string
+        description: User session identifier
+        example: "sess_abc123xyz"
+    example:
+      device: "mobile"
+      channel: "app"
+      category: "Electronics"
+
+  message_id:
+    type: string
+    pattern: "^[a-f0-9]{64}$"
+    description: SHA-256 hash for idempotency (user_id + event_type + reference + occurred_at)
+    example: "a3c4f5e8d9b2c1a0e7f6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d7c6b5a4"
+
+  version:
+    type: string
+    pattern: "^\\d+\\.\\d+$"
+    description: Message schema version for evolution
+    example: "1.0"
+
+# Validation Rules
+oneOf:
+  - properties:
+      event_type:
+        const: search
+    required:
+      - search_phrase
+    properties:
+      product_id:
+        type: "null"
+
+  - properties:
+      event_type:
+        enum: [product_view, product_click, product_purchase]
+    required:
+      - product_id
+    properties:
+      search_phrase:
+        type: "null"
+```
+
+---
+
+## AMQP Message Headers
+
+```yaml
+content_type: application/json
+content_encoding: utf-8
+delivery_mode: 2                    # Persistent (survives broker restart)
+priority: 5                         # 0-9 scale (5 = normal, 9 = highest)
+timestamp: <unix_timestamp>         # Message creation time
+app_id: myshop-api                  # Publishing application
+message_id: <message_id>            # Same as body.message_id (idempotency)
+correlation_id: <optional>          # For request/response patterns
+headers:
+  x-retry-count: 0                  # Incremented by failed transport
+  x-published-at: <iso8601>         # Application-level timestamp
+```
+
+---
+
+## Examples
+
+### Example 1: Search Event
+
+**Routing Key**: `user.embedding.search`
+
+```json
+{
+  "user_id": 12345,
+  "event_type": "search",
+  "search_phrase": "wireless bluetooth headphones under $50",
+  "product_id": null,
+  "occurred_at": "2026-02-10T14:30:15+00:00",
+  "metadata": {
+    "device": "desktop",
+    "channel": "web",
+    "session_id": "sess_a1b2c3d4"
+  },
+  "message_id": "f8e7d6c5b4a392817f6e5d4c3b2a1908e7f6d5c4b3a2918f7e6d5c4b3a29108",
+  "version": "1.0"
+}
+```
+
+### Example 2: Product View Event
+
+**Routing Key**: `user.embedding.product_view`
+
+```json
+{
+  "user_id": 98765,
+  "event_type": "product_view",
+  "search_phrase": null,
+  "product_id": 456,
+  "occurred_at": "2026-02-10T15:45:30+00:00",
+  "metadata": {
+    "device": "mobile",
+    "channel": "app",
+    "category": "Electronics > Audio > Headphones"
+  },
+  "message_id": "1a2b3c4d5e6f708192a3b4c5d6e7f809a1b2c3d4e5f607182a3b4c5d6e7f80",
+  "version": "1.0"
+}
+```
+
+### Example 3: Product Purchase Event (High Priority)
+
+**Routing Key**: `user.embedding.product_purchase`  
+**Priority**: 9 (highest)
+
+```json
+{
+  "user_id": 54321,
+  "event_type": "product_purchase",
+  "search_phrase": null,
+  "product_id": 789,
+  "occurred_at": "2026-02-10T16:20:00+00:00",
+  "metadata": {
+    "device": "mobile",
+    "channel": "app",
+    "category": "Electronics",
+    "order_id": "ORD-2026-001234"
+  },
+  "message_id": "9f8e7d6c5b4a392817f6e5d4c3b2a1908e7f6d5c4b3a2918f7e6d5c4b3a2918",
+  "version": "1.0"
+}
+```
+
+---
+
+## Message ID Generation
+
+**Algorithm**: SHA-256 Hash
+
+**Input Components**:
+1. User ID (integer to string)
+2. Event type (string)
+3. Reference: search_phrase OR product_id (string)
+4. Occurred at (ISO 8601 string)
+
+**PHP Implementation**:
+```php
+function generateMessageId(int $userId, string $eventType, ?string $searchPhrase, ?int $productId, DateTimeImmutable $occurredAt): string
+{
+    $reference = $searchPhrase ?? (string)$productId;
+    $input = sprintf(
+        '%d|%s|%s|%s',
+        $userId,
+        $eventType,
+        $reference,
+        $occurredAt->format(DateTimeInterface::ATOM)
+    );
+    return hash('sha256', $input);
+}
+```
+
+**Purpose**:
+- **Idempotency**: Same event data → same message ID → detect duplicates
+- **Debugging**: Traceable via logs (searchable in RabbitMQ management UI)
+- **Validation**: Worker can recompute and verify message ID integrity
+
+---
+
+## Error Cases
+
+### Invalid Message Schema
+
+**Condition**: Missing required field or invalid data type
+
+**Response**:
+- Consumer rejects message (negative ack with `requeue: false`)
+- Message routed to DLQ immediately (no retries)
+- Error logged:
+  ```json
+  {
+    "level": "error",
+    "message": "Invalid message schema",
+    "context": {
+      "validation_errors": ["Missing required field: occurred_at"],
+      "message_id": "abc123...",
+      "queue": "user_embedding_updates"
+    }
+  }
+  ```
+
+### Missing Product in MongoDB
+
+**Condition**: `product_id` in message not found in `product_embeddings` collection
+
+**Response**:
+- Worker logs warning (not an error - product may not be embedded yet)
+- Message acknowledged (successfully processed)
+- User embedding NOT updated for this event
+- Logged warning:
+  ```json
+  {
+    "level": "warning",
+    "message": "Product embedding not found, skipping event",
+    "context": {
+      "product_id": 999,
+      "user_id": 12345,
+      "message_id": "xyz789..."
+    }
+  }
+  ```
+
+### Future Event Timestamp
+
+**Condition**: `occurred_at` > current server time
+
+**Response**:
+- Worker rejects message to DLQ (clock skew issue)
+- Alert triggered for investigation
+- Error logged with timestamp details
+
+---
+
+## Versioning & Evolution
+
+**Current Version**: 1.0
+
+**Backward Compatibility Promise**:
+- New optional fields may be added
+- Required fields will never be removed
+- Enum values may be added, never removed
+- Field types will never change
+
+**Version Migration**:
+- Messages include `version` field
+- Worker checks version and applies appropriate deserializer
+- Version 2.0 would introduce new queue `user_embedding_updates_v2`
+- Grace period: both queues active during migration
+
+**Example: Adding Optional Field** (backward compatible):
+```json
+{
+  "version": "1.1",
+  // ... existing fields ...
+  "user_agent": "Mozilla/5.0 ..."  // NEW optional field
+}
+```
+
+**Example: Breaking Change** (requires new queue):
+```json
+{
+  "version": "2.0",
+  "user_id": 12345,
+  "events": [  // NEW: batched events
+    {"event_type": "search", "occurred_at": "..."},
+    {"event_type": "product_view", "occurred_at": "..."}
+  ]
+}
+```
+
+---
+
+## Monitoring & Observability
+
+**Metrics to Track**:
+- `messages_published_total{event_type}` - Counter
+- `messages_consumed_total{event_type}` - Counter
+- `message_processing_duration_seconds{event_type}` - Histogram
+- `message_validation_errors_total{error_type}` - Counter
+- `duplicate_messages_detected_total` - Counter (via message_id)
+
+**Log Fields** (structured JSON):
+```json
+{
+  "timestamp": "2026-02-10T14:30:00+00:00",
+  "level": "info",
+  "message": "Message published",
+  "context": {
+    "user_id": 12345,
+    "event_type": "search",
+    "message_id": "abc123...",
+    "routing_key": "user.embedding.search",
+    "queue": "user_embedding_updates"
+  }
+}
+```
+
+---
+
+## Testing Contracts
+
+**1. Schema Validation Test**:
+```php
+// tests/Contract/EventMessageSchemaTest.php
+public function testMessageSchemaValidation(): void
+{
+    $validator = new JsonSchemaValidator($this->getSchema());
+    
+    $validMessage = [
+        'user_id' => 123,
+        'event_type' => 'search',
+        'search_phrase' => 'test query',
+        'product_id' => null,
+        'occurred_at' => '2026-02-10T14:30:00+00:00',
+        'message_id' => hash('sha256', 'test'),
+        'version' => '1.0'
+    ];
+    
+    $this->assertTrue($validator->validate($validMessage));
+}
+```
+
+**2. Idempotency Test**:
+```php
+public function testMessageIdIsDeterministic(): void
+{
+    $id1 = $this->generateMessageId(123, 'search', 'query', null, new DateTimeImmutable('2026-02-10T14:30:00Z'));
+    $id2 = $this->generateMessageId(123, 'search', 'query', null, new DateTimeImmutable('2026-02-10T14:30:00Z'));
+    
+    $this->assertSame($id1, $id2);
+}
+```
+
+**3. Serialization Round-Trip Test**:
+```php
+public function testSerializeDeserializePreservesData(): void
+{
+    $original = new UpdateUserEmbeddingMessage(/* ... */);
+    $json = $this->serializer->serialize($original);
+    $deserialized = $this->serializer->deserialize($json);
+    
+    $this->assertEquals($original, $deserialized);
+}
+```
+
+---
+
+**Contract Status**: ✅ **Defined** - Message format, headers, validation, and error handling specified.

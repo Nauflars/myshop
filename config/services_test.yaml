@@ -1,0 +1,23 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true # Make all services public in test environment
+
+    # Make test.service_container available
+    test.service_container:
+        alias: service_container
+        public: true
+
+    # Explicitly expose services needed for integration tests
+    App\Infrastructure\MessageHandler\UpdateUserEmbeddingHandler:
+        public: true
+
+    App\Infrastructure\Persistence\UserEmbeddingRepository:
+        public: true
+
+    App\Application\Service\UserEmbeddingService:
+        public: true
+
+    App\Infrastructure\OpenAI\OpenAIEmbeddingService:
+        public: true

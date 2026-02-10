@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Controller;
 
+use App\Application\Message\UpdateUserEmbeddingMessage;
 use App\Application\Service\ErrorMessageTranslator;
 use App\Application\Service\SearchFacade;
 use App\Application\Service\UserProfileUpdateService;
@@ -9,9 +10,11 @@ use App\Application\UseCase\SearchProduct;
 use App\Domain\Entity\Product;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ProductRepositoryInterface;
+use App\Domain\ValueObject\EventType;
 use App\Domain\ValueObject\Money;
 use App\Domain\ValueObject\SearchQuery;
 use App\Entity\SearchHistory;
+use App\Infrastructure\Queue\RabbitMQPublisher;
 use App\Repository\SearchHistoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -31,7 +34,8 @@ class ProductController extends AbstractController
         private readonly ErrorMessageTranslator $errorTranslator,
         private readonly UserProfileUpdateService $profileUpdateService,
         private readonly Security $security,
-        private readonly SearchHistoryRepository $searchHistoryRepository
+        private readonly SearchHistoryRepository $searchHistoryRepository,
+        private readonly RabbitMQPublisher $rabbitMQPublisher
     ) {
     }
 
@@ -118,6 +122,16 @@ class ProductController extends AbstractController
                     
                     // Update profile
                     $this->profileUpdateService->scheduleProfileUpdate($user);
+                    
+                    // spec-014: Publish search event to queue for user embedding update
+                    $message = UpdateUserEmbeddingMessage::fromDomainEvent(
+                        userId: $user->getId(),
+                        eventType: EventType::SEARCH,
+                        searchPhrase: $query,
+                        productId: null,
+                        occurredAt: new \DateTimeImmutable()
+                    );
+                    $this->rabbitMQPublisher->publish($message);
                 } catch (\Exception $e) {
                     // Log but don't fail - profile update is non-critical
                     error_log('Profile update after product search error: ' . $e->getMessage());
@@ -149,6 +163,24 @@ class ProductController extends AbstractController
 
         if (!$product) {
             return $this->json(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+        // spec-014: Publish product view event for authenticated users
+        $user = $this->security->getUser();
+        if ($user instanceof User) {
+            try {
+                $message = UpdateUserEmbeddingMessage::fromDomainEvent(
+                    userId: $user->getId(),
+                    eventType: EventType::PRODUCT_VIEW,
+                    searchPhrase: null,
+                    productId: (int) $product->getId(),
+                    occurredAt: new \DateTimeImmutable()
+                );
+                $this->rabbitMQPublisher->publish($message);
+            } catch (\Exception $e) {
+                // Log but don't fail - event publishing is non-critical for user experience
+                error_log('Failed to publish product view event: ' . $e->getMessage());
+            }
         }
 
         return $this->json($this->serializeProduct($product));
