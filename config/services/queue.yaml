@@ -1,0 +1,97 @@
+# Queue Service Definitions for User Embeddings Queue System
+
+services:
+    # MongoDB Client
+    MongoDB\Client:
+        arguments:
+            $uri: '%env(MONGODB_URL)%'
+            $uriOptions: []
+            $driverOptions: []
+
+    # Message Publisher
+    App\Infrastructure\Queue\RabbitMQPublisher:
+        arguments:
+            $messageBus: '@messenger.bus.default'
+            $logger: '@logger'
+
+    # Message Serializer
+    App\Infrastructure\Queue\MessageSerializer:
+        arguments:
+            $serializer: '@serializer'
+
+    # Repositories
+    App\Domain\Repository\ProductEmbeddingRepositoryInterface:
+        class: App\Infrastructure\Repository\ProductEmbeddingRepository
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+
+    App\Infrastructure\Repository\ProductEmbeddingRepository:
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+
+    App\Domain\Repository\UserEmbeddingRepositoryInterface:
+        class: App\Infrastructure\Repository\UserEmbeddingRepository
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+            $databaseName: '%env(MONGODB_DB)%'
+            $collectionName: 'user_embeddings'
+
+    App\Infrastructure\Repository\UserEmbeddingRepository:
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+            $databaseName: '%env(MONGODB_DB)%'
+            $collectionName: 'user_embeddings'
+
+    # Use Cases
+    App\Application\UseCase\PublishUserInteractionEvent:
+        arguments:
+            $publisher: '@App\Infrastructure\Queue\RabbitMQPublisher'
+            $userInteractionRepository: '@App\Repository\UserInteractionRepository'
+            $logger: '@logger'
+
+    App\Application\UseCase\CalculateUserEmbedding:
+        arguments:
+            $embeddingRepository: '@App\Domain\Repository\UserEmbeddingRepositoryInterface'
+            $weights: '@App\Domain\ValueObject\EmbeddingWeights'
+            $logger: '@logger'
+
+    # Message Handler (processes messages ONLY from RabbitMQ transport - NEVER synchronously)
+    App\Infrastructure\MessageHandler\UpdateUserEmbeddingHandler:
+        autoconfigure: false
+        arguments:
+            $calculateUseCase: '@App\Application\UseCase\CalculateUserEmbedding'
+            $embeddingRepository: '@App\Domain\Repository\UserEmbeddingRepositoryInterface'
+            $productEmbeddingRepository: '@App\Domain\Repository\ProductEmbeddingRepositoryInterface'
+            $logger: '@logger'
+        tags:
+            - { name: 'messenger.message_handler', from_transport: 'user_embedding_updates' }
+
+    # Event Listener
+    App\Infrastructure\EventListener\UserInteractionEventListener:
+        arguments:
+            $publishUseCase: '@App\Application\UseCase\PublishUserInteractionEvent'
+            $logger: '@logger'
+        tags:
+            - { name: 'doctrine.event_listener', event: 'postPersist' }
+
+    # MongoDB Client
+    mongodb.client:
+        class: MongoDB\Client
+        arguments:
+            - '%env(MONGODB_URL)%'
+            - []
+            - []
+
+    # Value Objects and Domain Services (no constructor dependencies)
+    App\Domain\ValueObject\EventType: ~
+
+    # Commands
+    App\Command\SetupMongoDBEmbeddingsCommand:
+        arguments:
+            $mongoClient: '@MongoDB\Client'
+            $logger: '@logger'
+            $databaseName: '%env(MONGODB_DB)%'

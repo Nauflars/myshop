@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libicu-dev \
     libssl-dev \
+    librabbitmq-dev \
     zip \
     unzip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -19,6 +20,9 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl opca
 
 # Install MongoDB PHP extension
 RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Install AMQP PHP extension for RabbitMQ
+RUN pecl install amqp && docker-php-ext-enable amqp
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

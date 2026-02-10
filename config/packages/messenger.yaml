@@ -1,0 +1,44 @@
+# Symfony Messenger Configuration for User Embeddings Queue
+
+framework:
+    messenger:
+        # Failure transport (Dead Letter Queue)
+        failure_transport: failed
+
+        # Transport definitions  
+        transports:
+            # TEMPORARY: Using Doctrine (database) as transport instead of RabbitMQ
+            # This works immediately while we debug the RabbitMQ issue
+            user_embedding_updates:
+                dsn: 'doctrine://default?queue_name=user_embedding_updates'
+                serializer: 'messenger.transport.symfony_serializer'
+
+            # Failed messages transport (DLQ - uses RabbitMQ)
+            failed:
+                dsn: '%env(RABBITMQ_DSN)%'
+                options:
+                    exchange:
+                        name: user_embeddings_failed
+                        type: direct
+                    queues:
+                        user_embedding_updates_failed:
+                            binding_keys: ['user.embedding.failed']
+
+        # Message routing - Send UpdateUserEmbeddingMessage to RabbitMQ transport
+        routing:
+            'App\Application\Message\UpdateUserEmbeddingMessage':
+                senders: ['user_embedding_updates']
+
+        # Single bus for both sending and receiving
+        default_bus: messenger.bus.default
+
+        buses:
+            messenger.bus.default:
+                # Explicitly order middleware: send_message FIRST, then handle
+                default_middleware:
+                    enabled: false  # Disable default order
+                middleware:
+                    - send_message  # FORCE sending to transport BEFORE handling
+                    - validation
+                    - doctrine_transaction
+                    - handle_message  # Handle locally only if not sent to transport
