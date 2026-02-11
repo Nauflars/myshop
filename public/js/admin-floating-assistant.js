@@ -173,13 +173,13 @@ class AdminFloatingAssistant {
                 // Agregar respuesta del asistente
                 this.addMessage('assistant', data.reply);
             } else {
-                this.addMessage('system', `Error: ${data.error || 'Error desconocido'}`);
+                this.addMessage('system', `Error: ${data.error || 'Unknown error'}`);
             }
             
         } catch (error) {
             console.error('Error sending message:', error);
             this.removeTypingIndicator(typingId);
-            this.addMessage('system', 'Error al enviar mensaje. Por favor intenta de nuevo.');
+            this.addMessage('system', 'Error sending message. Please try again.');
         }
     }
     
@@ -273,11 +273,11 @@ class AdminFloatingAssistant {
             } else {
                 console.error('[Admin Assistant] Error loading history, status:', response.status);
                 // Error al cargar, mostrar mensaje de continuación
-                this.addMessage('assistant', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+                this.addMessage('assistant', 'Hello! Let\'s continue where we left off. How can I help you?');
             }
         } catch (error) {
             console.error('Error loading conversation history:', error);
-            this.addMessage('assistant', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+            this.addMessage('assistant', 'Hello! Let\'s continue where we left off. How can I help you?');
         }
     }
     
@@ -285,21 +285,21 @@ class AdminFloatingAssistant {
         const welcome = document.createElement('div');
         welcome.className = 'admin-floating-welcome';
         welcome.innerHTML = `
-            <h4>Asistente Virtual Admin</h4>
-            <p>¿En qué puedo ayudarte hoy?</p>
+            <h4>Admin Virtual Assistant</h4>
+            <p>How can I help you today?</p>
             <ul>
-                <li>Gestión de inventario</li>
-                <li>Actualización de precios</li>
-                <li>Análisis de ventas</li>
-                <li>Gestión de pedidos</li>
-                <li>Estadísticas de clientes</li>
+                <li>Inventory management</li>
+                <li>Price updates</li>
+                <li>Sales analysis</li>
+                <li>Order management</li>
+                <li>Customer statistics</li>
             </ul>
         `;
         this.messagesContainer.appendChild(welcome);
     }
     
     handleClearConversation() {
-        if (confirm('¿Estás seguro de que deseas limpiar la conversación? Esta acción no se puede deshacer.')) {
+        if (confirm('Are you sure you want to clear the conversation? This action cannot be undone.')) {
             this.clearConversation();
         }
     }
@@ -330,23 +330,6 @@ class AdminFloatingAssistant {
         
         // Mostrar mensaje de bienvenida
         this.showWelcomeMessage();
-    }
-    
-    showWelcomeMessage() {
-        const welcome = document.createElement('div');
-        welcome.className = 'admin-floating-welcome';
-        welcome.innerHTML = `
-            <h4>Asistente Virtual Admin</h4>
-            <p>¿En qué puedo ayudarte hoy?</p>
-            <ul>
-                <li>Gestión de inventario</li>
-                <li>Actualización de precios</li>
-                <li>Análisis de ventas</li>
-                <li>Gestión de pedidos</li>
-                <li>Estadísticas de clientes</li>
-            </ul>
-        `;
-        this.messagesContainer.appendChild(welcome);
     }
     
     makePanelDraggable() {

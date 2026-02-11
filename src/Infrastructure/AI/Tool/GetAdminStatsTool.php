@@ -56,14 +56,14 @@ final class GetAdminStatsTool
             if ($result['success']) {
                 $stats = $result['stats'];
                 
-                // Format response in Spanish
+                // Format response
                 $formattedMessage = sprintf(
-                    "📊 **Estadísticas del Negocio**\n\n" .
-                    "💰 Ventas del mes: $%.2f\n" .
-                    "📈 Ingresos totales: $%.2f\n" .
-                    "📦 Valor promedio de orden: $%.2f\n" .
-                    "👥 Usuarios activos (30 días): %d\n" .
-                    "⏳ Órdenes pendientes: %d\n\n" .
+                    "📊 **Business Statistics**\n\n" .
+                    "💰 Monthly sales: $%.2f\n" .
+                    "📈 Total revenue: $%.2f\n" .
+                    "📦 Average order value: $%.2f\n" .
+                    "👥 Active users (30 days): %d\n" .
+                    "⏳ Pending orders: %d\n\n" .
                     "**Top-Selling Products:**\n%s",
                     $stats['monthlySales'],
                     $stats['totalRevenue'],
@@ -95,7 +95,7 @@ final class GetAdminStatsTool
         $formatted = [];
         foreach ($products as $idx => $product) {
             $formatted[] = sprintf(
-                "%d. %s - $%.2f (%d en stock)",
+                "%d. %s - $%.2f (%d in stock)",
                 $idx + 1,
                 $product['name'],
                 $product['price'],

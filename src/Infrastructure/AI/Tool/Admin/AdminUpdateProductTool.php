@@ -44,7 +44,7 @@ final class AdminUpdateProductTool
         if (!$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles(), true)) {
             return [
                 'success' => false,
-                'error' => 'Acceso denegado. Solo administradores pueden actualizar productos.',
+                'error' => 'Access denied. Only administrators can update products.',
             ];
         }
 
@@ -55,7 +55,7 @@ final class AdminUpdateProductTool
             if (empty($products)) {
                 return [
                     'success' => false,
-                    'error' => "No se encontró el producto '{$productName}'",
+                    'error' => "Product '{$productName}' not found",
                     'message' => "No product exists with the name '{$productName}'. Do you want to create a new one?",
                 ];
             }
@@ -65,7 +65,7 @@ final class AdminUpdateProductTool
                 $productList = [];
                 foreach ($products as $index => $product) {
                     $productList[] = sprintf(
-                        "%d. %s (ID: %s, Precio: $%.2f, Stock: %d, Categoría: %s)",
+                        "%d. %s (ID: %s, Price: $%.2f, Stock: %d, Category: %s)",
                         $index + 1,
                         $product->getName(),
                         $product->getId(),
@@ -80,7 +80,7 @@ final class AdminUpdateProductTool
                     'requires_disambiguation' => true,
                     'message' => "I found " . count($products) . " products with that name:\n\n" .
                         implode("\n", $productList) .
-                        "\n\n¿Cuál de estos productos deseas actualizar? Responde con el número.",
+                        "\n\nWhich of these products do you want to update? Please respond with the number.",
                     'product_count' => count($products),
                 ];
             }
@@ -91,7 +91,7 @@ final class AdminUpdateProductTool
             if (!isset($products[$selectedProductIndex])) {
                 return [
                     'success' => false,
-                    'error' => "Índice inválido. Por favor selecciona un número entre 1 y " . count($products),
+                    'error' => "Invalid index. Please select a number between 1 and " . count($products),
                 ];
             }
 
@@ -111,11 +111,11 @@ final class AdminUpdateProductTool
                     'success' => false,
                     'requires_confirmation' => true,
                     'message' => "Update summary:\n" .
-                        "• Producto: {$product->getName()}\n" .
-                        "• Campo: {$fieldNameEs}\n" .
-                        "• Valor actual: {$currentValues['current_value']}\n" .
-                        "• Nuevo valor: {$displayValue}\n" .
-                        "\n¿Confirmas esta actualización? Responde 'sí', 'confirmar' o 'adelante'.",
+                        "\u2022 Product: {$product->getName()}\n" .
+                        "\u2022 Field: {$fieldNameEs}\n" .
+                        "\u2022 Current value: {$currentValues['current_value']}\n" .
+                        "\u2022 New value: {$displayValue}\n" .
+                        "\nDo you confirm this update? Respond 'yes', 'confirm' or 'go ahead'.",
                     'current_value' => $currentValues['current_value'],
                     'new_value' => $displayValue,
                 ];
@@ -139,7 +139,7 @@ final class AdminUpdateProductTool
 
             return [
                 'success' => true,
-                'message' => "✓ Producto '{$product->getName()}' actualizado exitosamente",
+                'message' => "✓ Product '{$product->getName()}' updated successfully",
                 'product_id' => $updatedProduct->getId(),
                 'product_name' => $updatedProduct->getName(),
                 'updated_field' => $fieldNameEs,
@@ -172,7 +172,7 @@ final class AdminUpdateProductTool
 
             return [
                 'success' => false,
-                'error' => 'Error inesperado al actualizar el producto',
+                'error' => 'Unexpected error while updating product',
                 'message' => 'An error occurred while updating the product. Please try again.',
             ];
         }

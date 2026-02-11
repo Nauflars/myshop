@@ -27,7 +27,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
  */
 #[AsTool(
     'SemanticProductSearchTool',
-    'Search products using natural language and AI-powered semantic search. Use this tool when the customer searches for products with natural descriptions like "something for gaming", "streaming gear", "powerful laptop". Also works with traditional keyword search. Returns relevant products with similarity scores.'
+    'Search products using natural language and AI-powered semantic search. Use this tool whenever the customer asks about, searches for, or expresses interest in products (e.g., "I need a blender", "show me laptops", "looking for gaming gear", "professional equipment for home"). Returns relevant products with details and similarity scores. This is the PRIMARY tool for product discovery.'
 )]
 final class SemanticProductSearchTool
 {
@@ -56,11 +56,18 @@ final class SemanticProductSearchTool
         ?string $mode = 'semantic',
         int $limit = 5,
         ?string $category = null,
-        float $minSimilarity = 0.6,
+        float $minSimilarity = 0.3,
         ?string $userId = null
     ): array {
         try {
             // T070: Log tool call for debugging
+            error_log('🔍 ========== SEMANTIC SEARCH TOOL CALLED ==========');
+            error_log('🔍 Query: ' . $query);
+            error_log('🔍 Mode: ' . $mode);
+            error_log('🔍 Limit: ' . $limit);
+            error_log('🔍 Min Similarity: ' . $minSimilarity);
+            error_log('🔍 Category: ' . ($category ?? 'null'));
+            
             $this->logger->info('SemanticProductSearchTool invoked', [
                 'query' => $query,
                 'mode' => $mode,
@@ -193,7 +200,7 @@ final class SemanticProductSearchTool
         }
 
         $mode = $result->getMode();
-        $modeLabel = $mode === 'semantic' ? 'búsqueda semántica con IA' : 'búsqueda por palabras clave';
+        $modeLabel = $mode === 'semantic' ? 'AI-powered semantic search' : 'keyword search';
 
         return [
             'success' => true,
@@ -202,7 +209,7 @@ final class SemanticProductSearchTool
             'search_mode' => $mode,
             'execution_time_ms' => round($result->getExecutionTimeMs(), 2),
             'message' => sprintf(
-                'Se encontraron %d producto(s) para "%s" usando %s.',
+                'Found %d product(s) for "%s" using %s.',
                 $result->count(),
                 $query,
                 $modeLabel
@@ -217,16 +224,16 @@ final class SemanticProductSearchTool
     private function formatEmptyResults(string $query, ?string $category): array
     {
         $message = sprintf(
-            'No se encontraron productos%s para "%s".',
-            $category ? " en la categoría '{$category}'" : '',
+            'No products found%s for "%s".',
+            $category ? " in category '{$category}'" : '',
             $query
         );
 
         $suggestions = [
-            'Intenta con términos más generales (ej: "laptop" en lugar de "laptop gaming RTX 4090")',
-            'Verifica la ortografía de tu búsqueda',
-            'Intenta sin especificar categoría',
-            'Usa sinónimos o descripciones alternativas',
+            'Try more general terms (e.g., "laptop" instead of "laptop gaming RTX 4090")',
+            'Check the spelling of your search',
+            'Try without specifying a category',
+            'Use synonyms or alternative descriptions',
         ];
 
         return [
@@ -235,7 +242,7 @@ final class SemanticProductSearchTool
             'count' => 0,
             'message' => $message,
             'suggestions' => $suggestions,
-            'alternative_action' => 'Puedes usar ListProductsTool para ver todos los productos disponibles.',
+            'alternative_action' => 'You can use ListProductsTool to see all available products.',
         ];
     }
 

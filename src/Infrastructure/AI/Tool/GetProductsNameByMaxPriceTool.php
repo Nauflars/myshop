@@ -52,7 +52,7 @@ final class GetProductsNameByMaxPriceTool
                 'success' => false,
                 'data' => [],
                 'count' => 0,
-                'message' => 'No se pudieron recuperar los productos por precio. Por favor, intente nuevamente.',
+                'message' => 'Could not retrieve products by price. Please try again.',
             ];
         }
     }
@@ -67,16 +67,16 @@ final class GetProductsNameByMaxPriceTool
         $currencySymbol = $this->getCurrencySymbol($currency);
         
         if ($count === 0) {
-            $message = "No se encontraron productos por debajo de {$currencySymbol}{$priceFormatted}";
+            $message = "No products found below {$currencySymbol}{$priceFormatted}";
             if ($category) {
-                $message .= " en la categoría '{$category}'";
+                $message .= " in category '{$category}'";
             }
             return $message . '.';
         }
         
-        $message = "Se encontraron {$count} producto" . ($count > 1 ? 's' : '') . " por debajo de {$currencySymbol}{$priceFormatted}";
+        $message = "Found {$count} product" . ($count > 1 ? 's' : '') . " below {$currencySymbol}{$priceFormatted}";
         if ($category) {
-            $message .= " en la categoría '{$category}'";
+            $message .= " in category '{$category}'";
         }
         
         return $message . '.';

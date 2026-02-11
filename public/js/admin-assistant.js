@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message message-${sender}`;
         
-        const displayTime = time || new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        const senderName = sender === 'admin' ? 'Tú' : 'Asistente';
+        const displayTime = time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const senderName = sender === 'admin' ? 'You' : 'Assistant';
         
         messageDiv.innerHTML = `
             <div class="message-header">
@@ -65,10 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingDiv.id = 'loadingIndicator';
         loadingDiv.innerHTML = `
             <div class="message-header">
-                <strong>Asistente</strong>
+                <strong>Assistant</strong>
             </div>
             <div class="message-content">
-                <em>Procesando...</em>
+                <em>Processing...</em>
                 <span class="loading-dots">
                     <span>.</span><span>.</span><span>.</span>
                 </span>
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Send message
     async function sendMessage(message) {
         if (isProcessing) {
-            showStatus('Ya hay un mensaje en proceso...', 'info');
+            showStatus('A message is already being processed...', 'info');
             return;
         }
 
@@ -133,13 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 conversationId = data.conversation_id;
                 addMessage('assistant', data.reply);
             } else {
-                throw new Error(data.error || 'Error desconocido');
+                throw new Error(data.error || 'Unknown error');
             }
         } catch (error) {
             removeLoading();
             showStatus(`Error: ${error.message}`, 'error');
             // Add error message to chat
-            addMessage('assistant', `❌ Lo siento, ocurrió un error al procesar tu mensaje: ${error.message}`);
+            addMessage('assistant', `❌ Sorry, an error occurred while processing your message: ${error.message}`);
         } finally {
             isProcessing = false;
             sendBtn.disabled = false;
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const message = chatInput.value.trim();
         if (!message) {
-            showStatus('Por favor escribe un mensaje', 'error');
+            showStatus('Please write a message', 'error');
             return;
         }
 
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Clear context
     clearContextBtn.addEventListener('click', async function() {
-        if (!confirm('¿Limpiar el contexto conversacional? (Referencias a productos, usuarios, etc. se olvidarán)')) {
+        if (!confirm('Clear conversational context? (References to products, users, etc. will be forgotten)')) {
             return;
         }
 
@@ -188,9 +188,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
             if (data.success) {
-                showStatus('Contexto limpiado correctamente', 'success');
+                showStatus('Context cleared successfully', 'success');
             } else {
-                throw new Error(data.error || 'Error al limpiar contexto');
+                throw new Error(data.error || 'Error clearing context');
             }
         } catch (error) {
             showStatus(`Error: ${error.message}`, 'error');
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // New conversation
     newConversationBtn.addEventListener('click', async function() {
-        if (!confirm('¿Iniciar una nueva conversación? Se perderá el historial actual.')) {
+        if (!confirm('Start a new conversation? Current history will be lost.')) {
             return;
         }
 
@@ -215,18 +215,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Clear messages
                 chatMessages.innerHTML = `
                     <div class="welcome-message">
-                        <h3>👋 ¡Nueva conversación iniciada!</h3>
-                        <p>El historial anterior ha sido archivado. ¿En qué puedo ayudarte?</p>
+                        <h3>👋 New conversation started!</h3>
+                        <p>Previous history has been archived. How can I help you?</p>
                     </div>
                 `;
                 
                 // Reset message count
                 messageCount.textContent = '0';
                 
-                showStatus('Nueva conversación iniciada', 'success');
+                showStatus('New conversation started', 'success');
                 chatInput.focus();
             } else {
-                throw new Error(data.error || 'Error al crear conversación');
+                throw new Error(data.error || 'Error creating conversation');
             }
         } catch (error) {
             showStatus(`Error: ${error.message}`, 'error');

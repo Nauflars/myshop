@@ -51,13 +51,13 @@ final class ListPreviousOrdersTool
                 'success' => true,
                 'orders' => $result['orders'],
                 'count' => $result['count'],
-                'message' => sprintf('Encontramos %d pedido(s) anterior(es).', $result['count']),
+                'message' => sprintf('Found %d previous order(s).', $result['count']),
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'orders' => [],
-                'message' => 'No se pudieron obtener tus pedidos. Por favor intenta de nuevo.',
+                'message' => 'Could not retrieve your orders. Please try again.',
             ];
         }
     }

@@ -39,7 +39,7 @@ final class GetUserInfoTool
                 return [
                     'success' => false,
                     'user' => null,
-                    'message' => 'No hay usuario autenticado.',
+                    'message' => 'No authenticated user.',
                 ];
             }
 
@@ -57,9 +57,9 @@ final class GetUserInfoTool
                     'conversationCount' => $conversationCount,
                 ],
                 'message' => sprintf(
-                    'Usuario actual: %s (%s)',
+                    'Current user: %s (%s)',
                     $user->getName(),
-                    $user->isAdmin() ? 'Administrador' : 'Cliente'
+                    $user->isAdmin() ? 'Administrator' : 'Customer'
                 ),
             ];
         } catch (\Exception $e) {

@@ -32,7 +32,7 @@ class Chatbot {
         if (this.conversationId) {
             this.loadConversationHistory();
         } else {
-            this.addMessage('bot', '¡Hola! Soy tu asistente de compras con IA. ¿En qué puedo ayudarte hoy?');
+            this.addMessage('bot', 'Hello! I\'m your AI shopping assistant. How can I help you today?');
         }
     }
 
@@ -192,12 +192,12 @@ class Chatbot {
                 }
             } else {
                 const error = await response.json();
-                this.addMessage('bot', error.error || 'Lo siento, encontré un error. Por favor intenta de nuevo.');
+                this.addMessage('bot', error.error || 'Sorry, I encountered an error. Please try again.');
             }
         } catch (error) {
             this.hideTypingIndicator();
             console.error('Chat error:', error);
-            this.addMessage('bot', 'Lo siento, tengo problemas para conectarme. Por favor intenta más tarde.');
+            this.addMessage('bot', 'Sorry, I\'m having trouble connecting. Please try again later.');
         }
     }
     
@@ -271,14 +271,14 @@ class Chatbot {
     
     isActionConfirmation(text) {
         const confirmationKeywords = [
-            'añadido al carrito',
-            'agregado al carrito',
-            'añadí',
-            'agregué',
-            'he añadido',
-            'he agregado',
-            'eliminado del carrito',
-            'removido del carrito'
+            'added to cart',
+            'added to the cart',
+            'I added',
+            'I\'ve added',
+            'I have added',
+            'removed from cart',
+            'removed from the cart',
+            'deleted from cart'
         ];
         
         const lowerText = text.toLowerCase();
@@ -286,10 +286,10 @@ class Chatbot {
     }
     
     parseActionConfirmation(text) {
-        const isSuccess = !/error|problema|no se pudo|falló/i.test(text);
+        const isSuccess = !/error|problem|could not|failed/i.test(text);
         
         // Try to extract quantity and product name
-        const quantityMatch = text.match(/(\d+)\s*(?:unidad|unidades)?\s*(?:de)?\s*([^.]+?)(?:\s*al carrito|\s*ha|\s*fueron)/i);
+        const quantityMatch = text.match(/(\d+)\s*(?:unit|units)?\s*(?:of)?\s*([^.]+?)(?:\s*to cart|\s*has|\s*were)/i);
         
         let items = [];
         if (quantityMatch) {
@@ -315,27 +315,25 @@ class Chatbot {
     isCartAction(message) {
         // Check if the bot response indicates a cart action occurred
         const cartKeywords = [
-            'añadido al carrito',
-            'agregado al carrito',
-            'añadí',
-            'agregué',
-            'he añadido',
-            'he agregado',
-            'carrito actualizado',
-            'producto añadido',
-            'producto agregado',
-            'eliminado del carrito',
-            'removido del carrito',
-            'eliminé',
-            'removí',
-            'carrito vaciado',
-            'pedido creado',
-            'orden creada',
-            'compra completada',
-            'añadir',
+            'added to cart',
+            'added to the cart',
+            'I added',
+            'I\'ve added',
+            'I have added',
+            'cart updated',
+            'product added',
+            'removed from cart',
+            'removed from the cart',
+            'deleted from cart',
+            'I removed',
+            'I deleted',
+            'cart emptied',
+            'order created',
+            'purchase completed',
+            'add',
             'total',
             'item',
-            'cantidad'
+            'quantity'
         ];
         
         const lowerMessage = message.toLowerCase();
@@ -344,7 +342,7 @@ class Chatbot {
         
         // Also trigger on success messages that mention numbers (likely quantities)
         const hasNumber = /\d+/.test(message);
-        const mentionsCart = lowerMessage.includes('carrito') || lowerMessage.includes('cart');
+        const mentionsCart = lowerMessage.includes('cart');
         
         return hasCartKeyword || (hasNumber && mentionsCart);
     }
@@ -353,11 +351,11 @@ class Chatbot {
         if (!this.conversationId) {
             // Just clear UI if no conversation exists
             this.messagesContainer.innerHTML = '';
-            this.addMessage('bot', '¡Hola! Soy tu asistente de compras con IA. ¿En qué puedo ayudarte hoy?');
+            this.addMessage('bot', 'Hello! I\'m your AI shopping assistant. How can I help you today?');
             return;
         }
 
-        if (!confirm('¿Estás seguro de que quieres limpiar el historial de conversación?')) {
+        if (!confirm('Are you sure you want to clear the conversation history?')) {
             return;
         }
 
@@ -376,14 +374,14 @@ class Chatbot {
                 this.clearConversationId();
                 this.conversationId = null;
                 this.messagesContainer.innerHTML = '';
-                this.addMessage('bot', '¡Hola! Soy tu asistente de compras con IA. ¿En qué puedo ayudarte hoy?');
+                this.addMessage('bot', 'Hello! I\'m your AI shopping assistant. How can I help you today?');
             } else {
                 const error = await response.json();
-                alert('Error al limpiar: ' + (error.error || 'Error desconocido'));
+                alert('Error clearing: ' + (error.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Clear chat error:', error);
-            alert('Error al limpiar la conversación');
+            alert('Error clearing conversation');
         }
     }
 
@@ -409,15 +407,15 @@ class Chatbot {
                     });
                 } else {
                     // No messages yet, show welcome
-                    this.addMessage('bot', '¡Hola! Soy tu asistente de compras con IA. ¿En qué puedo ayudarte hoy?');
+                    this.addMessage('bot', 'Hello! I\'m your AI shopping assistant. How can I help you today?');
                 }
             } else {
                 // Error loading, show welcome
-                this.addMessage('bot', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+                this.addMessage('bot', 'Hello! Let\'s continue where we left off. How can I help you?');
             }
         } catch (error) {
             console.error('Error loading conversation history:', error);
-            this.addMessage('bot', '¡Hola! Continuemos donde lo dejamos. ¿En qué puedo ayudarte?');
+            this.addMessage('bot', 'Hello! Let\'s continue where we left off. How can I help you?');
         }
     }
 
@@ -479,7 +477,7 @@ class Chatbot {
         }
         
         if (!products || products.length === 0) {
-            return '<p>No se encontraron productos.</p>';
+            return '<p>No products found.</p>';
         }
         
         let html = '';
@@ -505,7 +503,7 @@ class Chatbot {
         
         if (products.length > maxDisplay) {
             html += '<div class="product-divider"></div>';
-            html += `<p style="color: var(--text-light); font-size: 0.9em;">... y ${products.length - maxDisplay} productos más</p>`;
+            html += `<p style="color: var(--text-light); font-size: 0.9em;">... and ${products.length - maxDisplay} more products</p>`;
         }
         
         // Add outro text if present
@@ -522,7 +520,7 @@ class Chatbot {
                 <div class="product-name">${this.escapeHtml(product.name)}</div>
                 <div class="product-price">${this.formatPrice(product.price, product.currency)}</div>
                 ${product.description ? `<p style="margin-top: 0.5rem; color: var(--text-light);">${this.escapeHtml(product.description)}</p>` : ''}
-                ${product.stock ? `<div class="product-stock">Stock disponible: ${product.stock} unidades</div>` : ''}
+                ${product.stock ? `<div class="product-stock">Available stock: ${product.stock} units</div>` : ''}
             </div>
         `;
     }
@@ -552,7 +550,7 @@ class Chatbot {
         if (data.total !== undefined) {
             html += `
                 <div class="confirmation-total">
-                    Total del carrito: ${this.formatPrice(data.total, data.currency || 'USD')}
+                    Cart total: ${this.formatPrice(data.total, data.currency || 'USD')}
                 </div>
             `;
         }
@@ -567,10 +565,10 @@ class Chatbot {
     
     renderCartSummary(data) {
         if (!data.items || data.items.length === 0) {
-            return '<p>Tu carrito está vacío. <a href="/products" style="color: var(--main-color);">Ver productos</a></p>';
+            return '<p>Your cart is empty. <a href="/products" style="color: var(--main-color);">View products</a></p>';
         }
         
-        let html = '<div><strong>Tu carrito:</strong></div>';
+        let html = '<div><strong>Your cart:</strong></div>';
         data.items.forEach(item => {
             html += `
                 <div class="confirmation-item">

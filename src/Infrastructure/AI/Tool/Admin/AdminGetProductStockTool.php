@@ -34,7 +34,7 @@ final class AdminGetProductStockTool
         if (!$user instanceof User || !in_array('ROLE_ADMIN', $user->getRoles(), true)) {
             return [
                 'success' => false,
-                'error' => 'Acceso denegado. Solo administradores pueden consultar el inventario.',
+                'error' => 'Access denied. Only administrators can check inventory.',
             ];
         }
 
@@ -42,7 +42,7 @@ final class AdminGetProductStockTool
         if ($productId === null && $searchTerm === null) {
             return [
                 'success' => false,
-                'error' => 'Debes proporcionar un ID de producto o un término de búsqueda.',
+                'error' => 'You must provide a product ID or search term.',
             ];
         }
 
@@ -52,9 +52,9 @@ final class AdminGetProductStockTool
                 $result = $this->getProductStock->execute($productId);
                 
                 $statusText = match ($result['status']) {
-                    'out_of_stock' => 'AGOTADO',
-                    'low_stock' => 'STOCK BAJO',
-                    'in_stock' => 'DISPONIBLE',
+                    'out_of_stock' => 'OUT OF STOCK',
+                    'low_stock' => 'LOW STOCK',
+                    'in_stock' => 'IN STOCK',
                 };
 
                 $productName = $result['product']['nameEs'] ?? $result['product']['name'];
@@ -67,7 +67,7 @@ final class AdminGetProductStockTool
                     'status_text' => $statusText,
                     'is_low_stock' => $result['is_low_stock'],
                     'threshold' => $result['threshold'],
-                    'message' => "Stock de '$productName': {$result['stock']} unidades ($statusText)",
+                    'message' => "Stock for '$productName': {$result['stock']} units ($statusText)",
                 ];
             }
 
@@ -77,7 +77,7 @@ final class AdminGetProductStockTool
             if ($result['count'] === 0) {
                 return [
                     'success' => false,
-                    'error' => "No se encontraron productos que coincidan con '{$searchTerm}'.",
+                    'error' => "No products found matching '{$searchTerm}'.",
                 ];
             }
 
@@ -85,9 +85,9 @@ final class AdminGetProductStockTool
             $formattedProducts = [];
             foreach ($result['products'] as $product) {
                 $statusText = match ($product['status']) {
-                    'out_of_stock' => 'AGOTADO',
-                    'low_stock' => 'STOCK BAJO',
-                    'in_stock' => 'DISPONIBLE',
+                    'out_of_stock' => 'OUT OF STOCK',
+                    'low_stock' => 'LOW STOCK',
+                    'in_stock' => 'IN STOCK',
                 };
 
                 $formattedProducts[] = [
@@ -106,7 +106,7 @@ final class AdminGetProductStockTool
                 'products' => $formattedProducts,
                 'count' => $result['count'],
                 'search_term' => $searchTerm,
-                'message' => "Se encontraron {$result['count']} producto(s) que coinciden con '{$searchTerm}'.",
+                'message' => "Found {$result['count']} product(s) matching '{$searchTerm}'.",
             ];
         } catch (\InvalidArgumentException $e) {
             return [
@@ -116,7 +116,7 @@ final class AdminGetProductStockTool
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => 'Error al consultar stock: ' . $e->getMessage(),
+                'error' => 'Error checking stock: ' . $e->getMessage(),
             ];
         }
     }

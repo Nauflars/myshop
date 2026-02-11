@@ -50,7 +50,7 @@ final class GetOrderStatusTool
                 'success' => true,
                 'order' => $order,
                 'message' => sprintf(
-                    "El pedido %s está en estado: %s.",
+                    "Order %s status: %s.",
                     $order['orderReference'],
                     $order['status']
                 ),
@@ -59,7 +59,7 @@ final class GetOrderStatusTool
             return [
                 'success' => false,
                 'order' => null,
-                'message' => 'No se pudo consultar el estado del pedido. Por favor intenta de nuevo.',
+                'message' => 'Could not check order status. Please try again.',
             ];
         }
     }

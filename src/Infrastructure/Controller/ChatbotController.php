@@ -116,15 +116,59 @@ class ChatbotController extends AbstractController
             
             // Use Symfony AI Agent to process the message with context
             try {
+                // ==== DEBUG LOGGING START ====
+                error_log('🤖 ========== AI AGENT CALL START ==========');
+                error_log('🤖 User Message: ' . $userMessage);
+                error_log('🤖 Conversation ID: ' . $conversationId);
+                error_log('🤖 User ID: ' . $userId);
+                error_log('🤖 Messages in context: ' . count($messages));
+                error_log('🤖 User Roles: ' . implode(', ', $user->getRoles()));
+                error_log('🤖 Agent Class: ' . get_class($this->agent));
+                error_log('🤖 Calling AI Agent...');
+                // ==== DEBUG LOGGING END ====
+                
                 $messageBag = new MessageBag(...$messages);
+                error_log('🤖 MessageBag created with ' . count($messageBag) . ' messages');
+                
                 $result = $this->agent->call($messageBag);
+                
+                error_log('🤖 AI Agent returned result!');
+                
+                // ==== DEBUG LOGGING START ====
+                error_log('🤖 AI Agent Result Class: ' . get_class($result));
+                
+                // Try to extract all available information from result
+                $resultMethods = get_class_methods($result);
+                error_log('🤖 Available methods: ' . implode(', ', $resultMethods));
+                
+                // Check if result has tool calls or metadata
+                if (method_exists($result, 'getToolCalls')) {
+                    $toolCalls = $result->getToolCalls();
+                    error_log('🔧 Tool Calls Made: ' . json_encode($toolCalls));
+                }
+                
+                if (method_exists($result, 'getMetadata')) {
+                    $metadata = $result->getMetadata();
+                    error_log('📋 Result Metadata: ' . json_encode($metadata));
+                }
+                
+                if (method_exists($result, 'getMessage')) {
+                    try {
+                        $message = $result->getMessage();
+                        error_log('💬 Result Message Object: ' . get_class($message));
+                    } catch (\Exception $e) {
+                        error_log('⚠️  Could not get message: ' . $e->getMessage());
+                    }
+                }
+                // ==== DEBUG LOGGING END ====
                 
                 // Extract response content - handle both string and array responses
                 $content = $result->getContent();
                 
                 // Log for debugging
-                error_log('AI Response type: ' . gettype($content));
-                error_log('AI Response content: ' . json_encode($content));
+                error_log('📝 AI Response type: ' . gettype($content));
+                error_log('📝 AI Response content: ' . json_encode($content));
+                error_log('🤖 ========== AI AGENT CALL END ==========');
                 
                 // Handle different response types from AI Agent
                 if (is_string($content)) {
