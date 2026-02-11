@@ -28,7 +28,7 @@ class CalculateUserEmbedding
     /**
      * Calculate and save user embedding from event
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @param EventType $eventType Type of interaction
      * @param array<float> $eventEmbedding 1536-dimensional event embedding from AI
      * @param DateTimeImmutable $occurredAt When the event occurred
@@ -36,7 +36,7 @@ class CalculateUserEmbedding
      * @throws \InvalidArgumentException If embedding dimensions invalid
      */
     public function execute(
-        int $userId,
+        string $userId,
         EventType $eventType,
         array $eventEmbedding,
         DateTimeImmutable $occurredAt
@@ -101,6 +101,8 @@ class CalculateUserEmbedding
                 'event_type' => $eventType->value,
                 'error' => $e->getMessage(),
                 'exception' => get_class($e),
+                'trace' => $e->getTraceAsString(),
+                'previous' => $e->getPrevious() ? $e->getPrevious()->getMessage() : null,
             ]);
 
             throw $e;

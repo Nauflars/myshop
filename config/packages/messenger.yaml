@@ -7,22 +7,15 @@ framework:
 
         # Transport definitions  
         transports:
-            # TEMPORARY: Using Doctrine (database) as transport instead of RabbitMQ
-            # This works immediately while we debug the RabbitMQ issue
+            # Doctrine (MySQL) transport for user embedding updates
             user_embedding_updates:
                 dsn: 'doctrine://default?queue_name=user_embedding_updates'
                 serializer: 'messenger.transport.symfony_serializer'
 
-            # Failed messages transport (DLQ - uses RabbitMQ)
+            # Failed messages transport (DLQ - uses Doctrine/MySQL)
             failed:
-                dsn: '%env(RABBITMQ_DSN)%'
-                options:
-                    exchange:
-                        name: user_embeddings_failed
-                        type: direct
-                    queues:
-                        user_embedding_updates_failed:
-                            binding_keys: ['user.embedding.failed']
+                dsn: 'doctrine://default?queue_name=failed'
+                serializer: 'messenger.transport.symfony_serializer'
 
         # Message routing - Send UpdateUserEmbeddingMessage to RabbitMQ transport
         routing:

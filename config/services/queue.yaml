@@ -66,6 +66,7 @@ services:
             $calculateUseCase: '@App\Application\UseCase\CalculateUserEmbedding'
             $embeddingRepository: '@App\Domain\Repository\UserEmbeddingRepositoryInterface'
             $productEmbeddingRepository: '@App\Domain\Repository\ProductEmbeddingRepositoryInterface'
+            $embeddingService: '@App\Domain\Repository\EmbeddingServiceInterface'
             $logger: '@logger'
         tags:
             - { name: 'messenger.message_handler', from_transport: 'user_embedding_updates' }

@@ -5,7 +5,6 @@ namespace App\Infrastructure\Controller;
 use App\Application\Message\UpdateUserEmbeddingMessage;
 use App\Application\Service\ErrorMessageTranslator;
 use App\Application\Service\SearchFacade;
-use App\Application\Service\UserProfileUpdateService;
 use App\Application\UseCase\SearchProduct;
 use App\Domain\Entity\Product;
 use App\Domain\Entity\User;
@@ -32,7 +31,6 @@ class ProductController extends AbstractController
         private readonly SearchProduct $searchProduct,
         private readonly SearchFacade $searchFacade,
         private readonly ErrorMessageTranslator $errorTranslator,
-        private readonly UserProfileUpdateService $profileUpdateService,
         private readonly Security $security,
         private readonly SearchHistoryRepository $searchHistoryRepository,
         private readonly RabbitMQPublisher $rabbitMQPublisher
@@ -61,12 +59,9 @@ class ProductController extends AbstractController
                 // Save search history
                 $searchHistory = new SearchHistory($user, $query, 'keyword', $category);
                 $this->searchHistoryRepository->save($searchHistory);
-                
-                // Update profile
-                $this->profileUpdateService->scheduleProfileUpdate($user);
             } catch (\Exception $e) {
-                // Log but don't fail - profile update is non-critical
-                error_log('Profile update after product list search error: ' . $e->getMessage());
+                // Log but don't fail - search history is non-critical
+                error_log('Search history save error: ' . $e->getMessage());
             }
         }
 
@@ -119,9 +114,6 @@ class ProductController extends AbstractController
                     // Save search history
                     $searchHistory = new SearchHistory($user, $query, $mode, $category);
                     $this->searchHistoryRepository->save($searchHistory);
-                    
-                    // Update profile
-                    $this->profileUpdateService->scheduleProfileUpdate($user);
                     
                     // spec-014: Publish search event to queue for user embedding update
                     $message = UpdateUserEmbeddingMessage::fromDomainEvent(

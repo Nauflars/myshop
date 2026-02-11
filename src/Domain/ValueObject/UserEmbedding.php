@@ -19,19 +19,19 @@ final readonly class UserEmbedding
     private const EPSILON = 1e-10; // Prevent division by zero
 
     /**
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @param array<int, float> $vector 1536-dimensional normalized vector
      * @param DateTimeImmutable $lastUpdatedAt Timestamp of most recent update
      * @param int $version Optimistic locking version
      */
     public function __construct(
-        public int $userId,
+        public string $userId,
         public array $vector,
         public DateTimeImmutable $lastUpdatedAt,
         public int $version = 1
     ) {
-        if ($userId <= 0) {
-            throw new InvalidArgumentException('User ID must be positive');
+        if (empty($userId)) {
+            throw new InvalidArgumentException('User ID cannot be empty');
         }
 
         if (count($vector) !== self::DIMENSIONS) {
@@ -48,14 +48,14 @@ final readonly class UserEmbedding
     /**
      * Create initial embedding from first event
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @param array<int, float> $eventEmbedding Raw 1536-dimensional vector
      * @param EventType $eventType Type of event
      * @param DateTimeImmutable $occurredAt Event occurrence time
      * @return self Normalized user embedding
      */
     public static function fromEventEmbedding(
-        int $userId,
+        string $userId,
         array $eventEmbedding,
         EventType $eventType,
         DateTimeImmutable $occurredAt

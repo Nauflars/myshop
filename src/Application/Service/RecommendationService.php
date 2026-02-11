@@ -5,7 +5,7 @@ namespace App\Application\Service;
 use App\Domain\Entity\User;
 use App\Domain\Entity\Product;
 use App\Domain\ValueObject\RecommendationResult;
-use App\Domain\Repository\UserProfileRepositoryInterface;
+use App\Domain\Repository\UserEmbeddingRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -15,26 +15,26 @@ use Symfony\Contracts\Cache\ItemInterface;
  * Service for retrieving personalized product recommendations
  * 
  * Uses MongoDB vector similarity search to find products similar
- * to user's profile embedding
+ * to user's embedding from user_embeddings collection (spec-014)
  */
 class RecommendationService
 {
-    private UserProfileRepositoryInterface $profileRepository;
+    private UserEmbeddingRepositoryInterface $embeddingRepository;
     private EntityManagerInterface $entityManager;
     private CacheInterface $cache;
     private LoggerInterface $logger;
 
     private const RECOMMENDATION_LIMIT = 20;
     private const CACHE_TTL = 1800; // 30 minutes
-    private const MIN_SIMILARITY_SCORE = 0.35; // Lower threshold to show more relevant products
+    private const MIN_SIMILARITY_SCORE = 0.01; // Adjusted threshold for local MongoDB similarity scores
 
     public function __construct(
-        UserProfileRepositoryInterface $profileRepository,
+        UserEmbeddingRepositoryInterface $embeddingRepository,
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
         LoggerInterface $logger
     ) {
-        $this->profileRepository = $profileRepository;
+        $this->embeddingRepository = $embeddingRepository;
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->logger = $logger;
@@ -73,24 +73,28 @@ class RecommendationService
      */
     private function generateRecommendations(User $user, int $limit): RecommendationResult
     {
-        // Get user profile
-        $profile = $this->profileRepository->findByUserId($user->getId());
+        // Use UUID directly - no conversion needed
+        $userId = $user->getId();
+        
+        // Get user embedding
+        $embedding = $this->embeddingRepository->findByUserId($userId);
 
-        if (!$profile) {
-            $this->logger->warning('No profile found, using fallback recommendations', [
-                'userId' => $user->getId(),
+        if (!$embedding) {
+            $this->logger->warning('No embedding found, using fallback recommendations', [
+                'userId' => $userId,
             ]);
             return $this->getFallbackRecommendations($limit);
         }
 
-        $this->logger->info('Profile found for recommendations', [
-            'userId' => $user->getId(),
-            'embeddingLength' => count($profile->getEmbeddingVector()),
+        $this->logger->info('User embedding found for recommendations', [
+            'userId' => $userId,
+            'vectorLength' => count($embedding->vector),
+            'version' => $embedding->version,
         ]);
 
         // Perform vector similarity search
-        $similarProducts = $this->profileRepository->findSimilarProducts(
-            $profile->getEmbeddingVector(),
+        $similarProducts = $this->embeddingRepository->findSimilarProducts(
+            $embedding->vector,
             $limit
         );
 
@@ -138,7 +142,7 @@ class RecommendationService
             }
         }
 
-        $this->logger->info('Recommendations generated', [
+        $this->logger->info('Recommendations generated from user_embeddings', [
             'userId' => $user->getId(),
             'count' => count($orderedProducts),
             'avgScore' => !empty($orderedScores) ? array_sum($orderedScores) / count($orderedScores) : 0,

@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\AI\Tool;
 
+use App\Application\Message\UpdateUserEmbeddingMessage;
 use App\Application\Service\SearchFacade;
 use App\Application\Service\UnifiedCustomerContextManager;
+use App\Domain\Entity\User;
+use App\Domain\ValueObject\EventType;
 use App\Domain\ValueObject\SearchQuery;
+use App\Infrastructure\Queue\RabbitMQPublisher;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 /**
@@ -29,7 +34,9 @@ final class SemanticProductSearchTool
     public function __construct(
         private readonly SearchFacade $searchFacade,
         private readonly UnifiedCustomerContextManager $contextManager,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly Security $security,
+        private readonly RabbitMQPublisher $rabbitMQPublisher
     ) {
     }
 
@@ -93,7 +100,12 @@ final class SemanticProductSearchTool
             }
 
             // T067: Format results for VA consumption
-            return $this->formatResults($result, $enrichedQuery);
+            $formattedResults = $this->formatResults($result, $enrichedQuery);
+            
+            // spec-014: Publish search event for user embedding update
+            $this->publishSearchEvent($query);
+            
+            return $formattedResults;
 
         } catch (\InvalidArgumentException $e) {
             // Invalid query parameters
@@ -225,5 +237,42 @@ final class SemanticProductSearchTool
             'suggestions' => $suggestions,
             'alternative_action' => 'Puedes usar ListProductsTool para ver todos los productos disponibles.',
         ];
+    }
+
+    /**
+     * Publish search event to update user embeddings
+     * 
+     * Publishes SEARCH event when authenticated user performs search via chat assistant
+     */
+    private function publishSearchEvent(string $query): void
+    {
+        try {
+            $user = $this->security->getUser();
+            
+            if (!$user instanceof User || empty($query)) {
+                return;
+            }
+            
+            $message = UpdateUserEmbeddingMessage::fromDomainEvent(
+                userId: $user->getId(),
+                eventType: EventType::SEARCH,
+                searchPhrase: $query,
+                productId: null,
+                occurredAt: new \DateTimeImmutable()
+            );
+            
+            $this->rabbitMQPublisher->publish($message);
+            
+            $this->logger->info('Search event published from SemanticProductSearchTool', [
+                'user_id' => $user->getId(),
+                'query' => $query,
+            ]);
+        } catch (\Exception $e) {
+            // Log but don't fail - event publishing is non-critical
+            $this->logger->error('Failed to publish search event from tool', [
+                'query' => $query,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

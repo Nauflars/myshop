@@ -6,6 +6,7 @@ namespace App\Infrastructure\MessageHandler;
 
 use App\Application\Message\UpdateUserEmbeddingMessage;
 use App\Application\UseCase\CalculateUserEmbedding;
+use App\Domain\Repository\EmbeddingServiceInterface;
 use App\Domain\Repository\ProductEmbeddingRepositoryInterface;
 use App\Domain\Repository\UserEmbeddingRepositoryInterface;
 use Psr\Log\LoggerInterface;
@@ -33,6 +34,7 @@ final class UpdateUserEmbeddingHandler
         private readonly CalculateUserEmbedding $calculateUseCase,
         private readonly UserEmbeddingRepositoryInterface $embeddingRepository,
         private readonly ProductEmbeddingRepositoryInterface $productEmbeddingRepository,
+        private readonly EmbeddingServiceInterface $embeddingService,
         private readonly LoggerInterface $logger
     ) {}
 
@@ -230,16 +232,28 @@ final class UpdateUserEmbeddingHandler
             return $this->getDummyEmbedding();
         }
 
-        // Search events: TODO - integrate with AI service (OpenAI, Ollama, etc.)
+        // Search events: Generate embedding from search phrase using OpenAI
         if ($message->eventType->requiresSearchPhrase() && $message->searchPhrase !== null) {
-            // TODO: Call AI service to generate embedding from search phrase
-            // For now, use dummy embedding
-            $this->logger->info('Search event - using dummy embedding (AI integration pending)', [
-                'search_phrase' => $message->searchPhrase,
-                'event_type' => $message->eventType->value,
-            ]);
-
-            return $this->getDummyEmbedding();
+            try {
+                $searchEmbedding = $this->embeddingService->generateEmbedding($message->searchPhrase);
+                
+                $this->logger->info('Generated embedding from search phrase', [
+                    'search_phrase' => $message->searchPhrase,
+                    'event_type' => $message->eventType->value,
+                    'dimensions' => count($searchEmbedding),
+                ]);
+                
+                return $searchEmbedding;
+                
+            } catch (\Exception $e) {
+                $this->logger->error('Failed to generate search phrase embedding', [
+                    'search_phrase' => $message->searchPhrase,
+                    'error' => $e->getMessage(),
+                ]);
+                
+                // Fallback to dummy if OpenAI fails
+                return $this->getDummyEmbedding();
+            }
         }
 
         // Fallback for unknown event types

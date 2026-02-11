@@ -38,10 +38,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     /**
      * Find user embedding by user ID
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @return UserEmbedding|null Embedding or null if not found
      */
-    public function findByUserId(int $userId): ?UserEmbedding
+    public function findByUserId(string $userId): ?UserEmbedding
     {
         try {
             $document = $this->collection->findOne(['user_id' => $userId]);
@@ -78,9 +78,23 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         try {
             $document = $this->embeddingToDocument($embedding);
 
+            $this->logger->info('Attempting to save user embedding to MongoDB', [
+                'user_id' => $embedding->userId,
+                'version' => $embedding->version,
+                'vector_dimensions' => count($embedding->vector),
+                'is_new' => $embedding->version === 1,
+            ]);
+
             if ($embedding->version === 1) {
                 // New embedding: insert
                 $result = $this->collection->insertOne($document);
+                
+                $this->logger->info('MongoDB insertOne result', [
+                    'user_id' => $embedding->userId,
+                    'inserted_count' => $result->getInsertedCount(),
+                    'inserted_id' => (string) $result->getInsertedId(),
+                ]);
+                
                 return $result->getInsertedCount() === 1;
 
             } else {
@@ -118,10 +132,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     /**
      * Check if embedding exists for user
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @return bool True if embedding exists
      */
-    public function exists(int $userId): bool
+    public function exists(string $userId): bool
     {
         try {
             return $this->collection->countDocuments(['user_id' => $userId]) > 0;
@@ -139,10 +153,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     /**
      * Delete user embedding
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @return bool True if deleted
      */
-    public function delete(int $userId): bool
+    public function delete(string $userId): bool
     {
         try {
             $result = $this->collection->deleteOne(['user_id' => $userId]);
@@ -161,10 +175,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     /**
      * Get current version of user embedding
      * 
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @return int|null Version number, or null if not found
      */
-    public function getVersion(int $userId): ?int
+    public function getVersion(string $userId): ?int
     {
         try {
             $document = $this->collection->findOne(
@@ -268,14 +282,14 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         }
         
         // Convert BSONArray to PHP array
-        $embedding = $document['embedding'];
-        if ($embedding instanceof \MongoDB\Model\BSONArray) {
-            $embedding = $embedding->getArrayCopy();
+        $vector = $document['vector'];
+        if ($vector instanceof \MongoDB\Model\BSONArray) {
+            $vector = $vector->getArrayCopy();
         }
         
         return new UserEmbedding(
-            userId: (int) $document['user_id'],
-            vector: $embedding,
+            userId: (string) $document['user_id'],
+            vector: $vector,
             lastUpdatedAt: $lastUpdatedAt,
             version: (int) $document['version']
         );
@@ -293,7 +307,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         
         $document = [
             'user_id' => $embedding->userId,
-            'embedding' => $embedding->vector,
+            'vector' => $embedding->vector,
             'dimension_count' => count($embedding->vector),
             'last_updated' => new \MongoDB\BSON\UTCDateTime($embedding->lastUpdatedAt->getTimestamp() * 1000),
             'version' => $embedding->version,
@@ -336,5 +350,132 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * Find similar products based on user embedding vector
+     * 
+     * Performs cosine similarity search against product_embeddings collection
+     * 
+     * @param array<float> $embedding User's 1536-dimensional embedding vector
+     * @param int $limit Maximum number of results
+     * @return array<array{productId: string, score: float}> Products with similarity scores
+     */
+    public function findSimilarProducts(array $embedding, int $limit = 20): array
+    {
+        try {
+            $productCollection = $this->mongoClient
+                ->selectDatabase($this->databaseName)
+                ->selectCollection('product_embeddings');
+
+            $this->logger->info('Starting vector search for product recommendations', [
+                'embeddingLength' => count($embedding),
+                'limit' => $limit,
+            ]);
+
+            // Fetch all product embeddings
+            $allEmbeddings = $productCollection->find(
+                [],
+                [
+                    'projection' => [
+                        'product_id' => 1,
+                        'embedding' => 1,
+                        '_id' => 0,
+                    ],
+                ]
+            )->toArray();
+
+            $this->logger->info('Product embeddings fetched from MongoDB', [
+                'count' => count($allEmbeddings),
+            ]);
+
+            $results = [];
+
+            foreach ($allEmbeddings as $doc) {
+                $docArray = $doc instanceof \MongoDB\Model\BSONDocument
+                    ? $doc->getArrayCopy()
+                    : (array) $doc;
+
+                if (!isset($docArray['embedding'])) {
+                    continue;
+                }
+
+                // Convert BSON array to PHP array
+                $productEmbedding = $docArray['embedding'];
+                if ($productEmbedding instanceof \MongoDB\Model\BSONArray) {
+                    $productEmbedding = $productEmbedding->getArrayCopy();
+                } elseif (is_object($productEmbedding) && method_exists($productEmbedding, 'getArrayCopy')) {
+                    $productEmbedding = $productEmbedding->getArrayCopy();
+                } elseif (!is_array($productEmbedding)) {
+                    continue;
+                }
+
+                // Calculate cosine similarity
+                $similarity = $this->calculateCosineSimilarity($embedding, $productEmbedding);
+
+                $results[] = [
+                    'productId' => $docArray['product_id'],
+                    'score' => $similarity,
+                ];
+            }
+
+            // Sort by similarity descending
+            usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+
+            // Limit results
+            $results = array_slice($results, 0, $limit);
+
+            $this->logger->info('Vector search completed', [
+                'resultCount' => count($results),
+                'topScore' => isset($results[0]) ? $results[0]['score'] : 0,
+            ]);
+
+            return $results;
+
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to perform vector search for products', [
+                'error' => $e->getMessage(),
+                'embeddingLength' => count($embedding),
+            ]);
+
+            return [];
+        }
+    }
+
+    /**
+     * Calculate cosine similarity between two vectors
+     * 
+     * @param array<float> $vec1 First vector
+     * @param array<float> $vec2 Second vector
+     * @return float Similarity score (0.0 to 1.0)
+     */
+    private function calculateCosineSimilarity(array $vec1, array $vec2): float
+    {
+        if (count($vec1) !== count($vec2)) {
+            $this->logger->warning('Vector dimension mismatch', [
+                'vec1_length' => count($vec1),
+                'vec2_length' => count($vec2),
+            ]);
+            return 0.0;
+        }
+
+        $dotProduct = 0;
+        $magnitude1 = 0;
+        $magnitude2 = 0;
+
+        for ($i = 0; $i < count($vec1); $i++) {
+            $dotProduct += $vec1[$i] * $vec2[$i];
+            $magnitude1 += $vec1[$i] * $vec1[$i];
+            $magnitude2 += $vec2[$i] * $vec2[$i];
+        }
+
+        $magnitude1 = sqrt($magnitude1);
+        $magnitude2 = sqrt($magnitude2);
+
+        if ($magnitude1 == 0 || $magnitude2 == 0) {
+            return 0.0;
+        }
+
+        return $dotProduct / ($magnitude1 * $magnitude2);
     }
 }

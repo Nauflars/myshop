@@ -39,4 +39,4 @@ RUN echo "memory_limit = 512M" > /usr/local/etc/php/conf.d/worker.ini && \
 WORKDIR /var/www/html
 
 # Default command (overridden in docker-compose.yml)
-CMD ["php", "bin/console", "messenger:consume", "user_embedding_updates", "--bus=command.bus", "--time-limit=3600", "--memory-limit=512M"]
+CMD ["php", "bin/console", "messenger:consume", "user_embedding_updates", "--time-limit=3600", "--memory-limit=512M"]

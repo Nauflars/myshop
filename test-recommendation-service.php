@@ -1,51 +1,72 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 
-$dotenv = new Dotenv();
-$dotenv->bootEnv(__DIR__ . '/.env');
+(new Dotenv())->bootEnv(__DIR__.'/.env');
 
-$kernel = new Kernel($_ENV['APP_ENV'] ?? 'dev', (bool)$_ENV['APP_DEBUG'] ?? false);
+$kernel = new Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
 $kernel->boot();
 $container = $kernel->getContainer();
 
-$userId = 'ab715ae6-7f01-4143-8e53-d5a215553d65';
+// Get services
+$em = $container->get('doctrine.orm.entity_manager');
+$embeddingRepo = $container->get('App\Domain\Repository\UserEmbeddingRepositoryInterface');
+$cache = $container->get('cache.app');
+$logger = $container->get('logger');
 
-echo "=== Testing RecommendationService ===\n\n";
+// Manually create the service
+$recommendationService = new \App\Application\Service\RecommendationService(
+    $embeddingRepo,
+    $em,
+    $cache,
+    $logger
+);
 
-// Get User entity
-$entityManager = $container->get('doctrine.orm.entity_manager');
-$userRepo = $entityManager->getRepository('App\Domain\Entity\User');
+echo "=== TESTING RECOMMENDATION SERVICE ===\n\n";
+
+// Get a user with embedding
+$userRepo = $em->getRepository(App\Domain\Entity\User::class);
+
+// Test with the user we know has an embedding
+$userId = '48e672e1-48ca-44da-81e9-be7ef2c712fc'; // From previous test
 $user = $userRepo->find($userId);
 
 if (!$user) {
-    die("User not found!\n");
-}
-
-echo "User: {$user->getEmail()}\n\n";
-
-// Get RecommendationService
-$recommendationService = $container->get('App\Application\Service\RecommendationService');
-
-echo "Getting recommendations...\n";
-$result = $recommendationService->getRecommendationsForUser($user, 12);
-
-echo "Result class: " . get_class($result) . "\n";
-echo "Count: " . $result->count() . "\n";
-echo "Is empty: " . ($result->isEmpty() ? 'yes' : 'no') . "\n";
-echo "Average score: " . $result->getAverageScore() . "\n\n";
-
-if (!$result->isEmpty()) {
-    echo "Products:\n";
-    foreach ($result->getProducts() as $index => $product) {
-        $score = $result->getScores()[$index] ?? 'N/A';
-        echo "  - {$product->getName()} (stock: {$product->getStock()}) [score: {$score}]\n";
+    echo "User not found: $userId\n";
+    echo "Getting any user...\n";
+    $user = $userRepo->findOneBy([]);
+    if (!$user) {
+        echo "No users in database!\n";
+        exit(1);
     }
-} else {
-    echo "No products returned!\n";
 }
 
-echo "\n=== End Test ===\n";
+echo "Testing recommendations for user: " . $user->getId() . "\n";
+echo "User email: " . $user->getEmail() . "\n\n";
+
+$result = $recommendationService->getRecommendationsForUser($user, 20);
+
+echo "Recommendations generated!\n";
+echo "Total products: " . count($result->products) . "\n";
+echo "Average score: " . number_format($result->averageScore, 4) . "\n";
+echo "Is personalized: " . ($result->isPersonalized ? 'YES' : 'NO (fallback)') . "\n\n";
+
+if (count($result->products) > 0) {
+    echo "TOP RECOMMENDATIONS:\n\n";
+    foreach ($result->products as $i => $product) {
+        $score = $result->scores[$i] ?? 0;
+        echo sprintf("%2d. Score: %.4f - %s (ID: %s)\n",
+            $i + 1,
+            $score,
+            $product->getName(),
+            $product->getId()
+        );
+    }
+    echo "\n✓ SUCCESS: Recommendations are working!\n";
+} else {
+    echo "✗ NO RECOMMENDATIONS RETURNED\n";
+    echo "Check logs for errors.\n";
+}

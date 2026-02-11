@@ -46,7 +46,7 @@ final readonly class PublishUserInteractionEvent
 
             // 2. Create message for queue
             $message = UpdateUserEmbeddingMessage::fromDomainEvent(
-                userId: (int) $interaction->getUserId(), // Convert UUID to int if needed
+                userId: $interaction->getUserId(),
                 eventType: $interaction->getEventType(),
                 searchPhrase: $interaction->getSearchPhrase(),
                 productId: $interaction->getProductId() ? (int) $interaction->getProductId() : null,
@@ -106,7 +106,7 @@ final readonly class PublishUserInteractionEvent
         foreach ($unprocessed as $interaction) {
             try {
                 $message = UpdateUserEmbeddingMessage::fromDomainEvent(
-                    userId: (int) $interaction->getUserId(),
+                    userId: $interaction->getUserId(),
                     eventType: $interaction->getEventType(),
                     searchPhrase: $interaction->getSearchPhrase(),
                     productId: $interaction->getProductId() ? (int) $interaction->getProductId() : null,

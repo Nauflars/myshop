@@ -16,7 +16,7 @@ use DateTimeImmutable;
 final readonly class UpdateUserEmbeddingMessage
 {
     /**
-     * @param int $userId User identifier
+     * @param string $userId User UUID identifier
      * @param EventType $eventType Type of interaction (search, view, click, purchase)
      * @param string|null $searchPhrase Search query text (for search events)
      * @param int|null $productId Product reference (for product events)
@@ -25,7 +25,7 @@ final readonly class UpdateUserEmbeddingMessage
      * @param string $messageId SHA-256 hash for idempotency
      */
     public function __construct(
-        public int $userId,
+        public string $userId,
         public EventType $eventType,
         public ?string $searchPhrase,
         public ?int $productId,
@@ -41,8 +41,8 @@ final readonly class UpdateUserEmbeddingMessage
      */
     private function validate(): void
     {
-        if ($this->userId <= 0) {
-            throw new \InvalidArgumentException('User ID must be positive');
+        if (empty($this->userId)) {
+            throw new \InvalidArgumentException('User ID cannot be empty');
         }
 
         // Search events require search_phrase
@@ -67,7 +67,7 @@ final readonly class UpdateUserEmbeddingMessage
      * Create from domain event
      */
     public static function fromDomainEvent(
-        int $userId,
+        string $userId,
         EventType $eventType,
         ?string $searchPhrase,
         ?int $productId,
@@ -93,7 +93,7 @@ final readonly class UpdateUserEmbeddingMessage
      * SHA-256 hash of: user_id + event_type + reference + occurred_at
      */
     public static function generateMessageId(
-        int $userId,
+        string $userId,
         EventType $eventType,
         ?string $searchPhrase,
         ?int $productId,
