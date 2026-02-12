@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\CollectCheckoutInformation;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -14,7 +15,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 final class CollectCheckoutInformationTool
 {
     public function __construct(
-        private readonly CollectCheckoutInformation $collectCheckoutInformation
+        private readonly CollectCheckoutInformation $collectCheckoutInformation,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
 
@@ -30,6 +32,11 @@ final class CollectCheckoutInformationTool
         string $contactEmail,
         ?string $contactPhone = null
     ): array {
+        $this->aiToolsLogger->info('📋 CollectCheckoutInformationTool called', [
+            'payment_method' => $paymentMethod,
+            'has_phone' => $contactPhone !== null
+        ]);
+        
         try {
             $result = $this->collectCheckoutInformation->execute(
                 $shippingAddress,
@@ -39,6 +46,9 @@ final class CollectCheckoutInformationTool
             );
 
             if (!$result['valid']) {
+                $this->aiToolsLogger->warning('⚠️ Checkout information validation failed', [
+                    'errors' => $result['errors']
+                ]);
                 return [
                     'success' => false,
                     'valid' => false,
@@ -47,6 +57,8 @@ final class CollectCheckoutInformationTool
                 ];
             }
 
+            $this->aiToolsLogger->info('✅ Checkout information validated');
+            
             return [
                 'success' => true,
                 'valid' => true,
@@ -54,6 +66,9 @@ final class CollectCheckoutInformationTool
                 'message' => 'Checkout information validated successfully. Confirm to create the order.',
             ];
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('❌ CollectCheckoutInformationTool failed', [
+                'error' => $e->getMessage()
+            ]);
             return [
                 'success' => false,
                 'valid' => false,

@@ -6,6 +6,7 @@ namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\RemoveProductFromCart;
 use App\Domain\Repository\CartRepositoryInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -18,7 +19,8 @@ final class RemoveProductFromCartTool
     public function __construct(
         private readonly RemoveProductFromCart $removeProductFromCart,
         private readonly CartRepositoryInterface $cartRepository,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
 
@@ -27,6 +29,10 @@ final class RemoveProductFromCartTool
      */
     public function __invoke(string $productName): array
     {
+        $this->aiToolsLogger->info('🗑️ RemoveProductFromCartTool called', [
+            'product_name' => $productName
+        ]);
+        
         try {
             $user = $this->security->getUser();
 
@@ -46,8 +52,17 @@ final class RemoveProductFromCartTool
 
             $result = $this->removeProductFromCart->execute($cart, $productName);
 
+            $this->aiToolsLogger->info('✅ Product removed from cart', [
+                'product_name' => $productName,
+                'success' => $result['success'] ?? false
+            ]);
+            
             return $result;
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('❌ RemoveProductFromCartTool failed', [
+                'error' => $e->getMessage(),
+                'product_name' => $productName
+            ]);
             return [
                 'success' => false,
                 'message' => 'No se pudo eliminar el producto del carrito. Por favor intenta de nuevo.',

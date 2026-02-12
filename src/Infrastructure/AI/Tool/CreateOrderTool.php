@@ -6,6 +6,7 @@ namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\CreateOrder;
 use App\Domain\Repository\CartRepositoryInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -18,7 +19,8 @@ final class CreateOrderTool
     public function __construct(
         private readonly CreateOrder $createOrder,
         private readonly CartRepositoryInterface $cartRepository,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
 
@@ -28,6 +30,11 @@ final class CreateOrderTool
      */
     public function __invoke(array $checkoutInfo, bool $userConfirmed = false): array
     {
+        $this->aiToolsLogger->info('📦 CreateOrderTool called', [
+            'user_confirmed' => $userConfirmed,
+            'has_checkout_info' => !empty($checkoutInfo)
+        ]);
+        
         try {
             $user = $this->security->getUser();
 
@@ -50,6 +57,7 @@ final class CreateOrderTool
             $result = $this->createOrder->execute($cart, $checkoutInfo, $userConfirmed);
 
             if (isset($result['requiresConfirmation']) && $result['requiresConfirmation']) {
+                $this->aiToolsLogger->info('⚠️ Order requires user confirmation');
                 return [
                     'success' => false,
                     'requiresConfirmation' => true,
@@ -57,8 +65,15 @@ final class CreateOrderTool
                 ];
             }
 
+            $this->aiToolsLogger->info('✅ Order created successfully', [
+                'order_id' => $result['orderId'] ?? null
+            ]);
+            
             return $result;
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('❌ CreateOrderTool failed', [
+                'error' => $e->getMessage()
+            ]);
             return [
                 'success' => false,
                 'message' => 'No se pudo crear el pedido. Por favor intenta de nuevo.',

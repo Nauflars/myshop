@@ -36,6 +36,7 @@ security:
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/products, roles: PUBLIC_ACCESS }
+        - { path: ^/test, roles: PUBLIC_ACCESS }  # Rutas de test para Monolog
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/users/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/products, roles: PUBLIC_ACCESS, methods: [GET] }

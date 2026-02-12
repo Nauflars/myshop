@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\ListProducts;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -14,7 +15,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 final class ListProductsTool
 {
     public function __construct(
-        private readonly ListProducts $listProducts
+        private readonly ListProducts $listProducts,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
 
@@ -24,6 +26,11 @@ final class ListProductsTool
      */
     public function __invoke(?string $category = null, bool $availableOnly = true): array
     {
+        $this->aiToolsLogger->info('📋 ListProductsTool called', [
+            'category' => $category,
+            'available_only' => $availableOnly
+        ]);
+        
         try {
             $products = $this->listProducts->execute($category, $availableOnly);
 
@@ -46,6 +53,11 @@ final class ListProductsTool
                 $category ? " en la categoría '{$category}'" : ''
             );
 
+            $this->aiToolsLogger->info('✅ Products listed', [
+                'count' => count($products),
+                'category' => $category
+            ]);
+            
             return [
                 'success' => true,
                 'products' => $products,
@@ -53,6 +65,9 @@ final class ListProductsTool
                 'message' => $message,
             ];
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('❌ ListProductsTool failed', [
+                'error' => $e->getMessage()
+            ]);
             return [
                 'success' => false,
                 'products' => [],

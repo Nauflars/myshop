@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\GetProductDetailsByName;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 
 #[AsTool(
@@ -14,7 +15,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 final class GetProductDetailsTool
 {
     public function __construct(
-        private readonly GetProductDetailsByName $getProductDetailsByName
+        private readonly GetProductDetailsByName $getProductDetailsByName,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
 
@@ -23,10 +25,17 @@ final class GetProductDetailsTool
      */
     public function __invoke(string $productName): array
     {
+        $this->aiToolsLogger->info('🔍 GetProductDetailsTool called', [
+            'product_name' => $productName
+        ]);
+        
         try {
             $product = $this->getProductDetailsByName->execute($productName);
 
             if ($product === null) {
+                $this->aiToolsLogger->warning('⚠️ Product not found', [
+                    'product_name' => $productName
+                ]);
                 return [
                     'success' => false,
                     'product' => null,
@@ -34,12 +43,20 @@ final class GetProductDetailsTool
                 ];
             }
 
+            $this->aiToolsLogger->info('✅ Product details retrieved', [
+                'product_name' => $productName
+            ]);
+            
             return [
                 'success' => true,
                 'product' => $product,
                 'message' => "Detalles del producto '{$productName}' obtenidos correctamente.",
             ];
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('❌ GetProductDetailsTool failed', [
+                'error' => $e->getMessage(),
+                'product_name' => $productName
+            ]);
             return [
                 'success' => false,
                 'product' => null,

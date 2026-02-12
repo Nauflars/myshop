@@ -60,6 +60,7 @@ services:
     App\Infrastructure\Controller\ChatbotController:
         arguments:
             $agent: '@ai.agent.openAiAgent'
+            $aiAgentLogger: '@monolog.logger.ai_agent'
 
     App\Infrastructure\Controller\AdminAssistantController:
         arguments:
@@ -80,10 +81,52 @@ services:
     # AI Tools - Tagged for automatic discovery by AIBundle
     App\Infrastructure\AI\Tool\:
         resource: '../src/Infrastructure/AI/Tool/'
+        exclude: '../src/Infrastructure/AI/Tool/Admin/'
         autowire: true
         autoconfigure: true
         tags: ['ai.tool']
         public: true
+    
+    # Admin AI Tools - Separate configuration
+    App\Infrastructure\AI\Tool\Admin\:
+        resource: '../src/Infrastructure/AI/Tool/Admin/'
+        autowire: true
+        autoconfigure: true
+        tags: ['ai.tool']
+        public: true
+    
+    # Specific tools that use aiToolsLogger
+    App\Infrastructure\AI\Tool\AddToCartTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\SemanticProductSearchTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\GetCartSummaryTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\ListProductsTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\GetProductDetailsTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\RemoveProductFromCartTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\CreateOrderTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
+    
+    App\Infrastructure\AI\Tool\CollectCheckoutInformationTool:
+        arguments:
+            $aiToolsLogger: '@monolog.logger.ai_tools'
 
     # AI Agents (spec-003 will add Conversation persistence)
     # App\Infrastructure\AI\Agent\:

@@ -8,6 +8,7 @@ use App\Domain\Entity\UnansweredQuestion;
 use App\Domain\Entity\User;
 use App\Infrastructure\AI\Service\ConversationManager;
 use App\Infrastructure\AI\Service\RoleAwareAssistant;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
@@ -34,7 +35,8 @@ class ChatbotController extends AbstractController
         private readonly Security $security,
         private readonly UnansweredQuestionCapture $unansweredQuestionCapture,
         private readonly UnifiedCustomerContextManager $unifiedContextManager,
-        private readonly AgentInterface $agent
+        private readonly AgentInterface $agent,
+        private readonly LoggerInterface $aiAgentLogger
     ) {
     }
 
@@ -87,7 +89,11 @@ class ChatbotController extends AbstractController
                     $userMessage
                 );
             } catch (\Exception $e) {
-                error_log('Error loading unified conversation: ' . $e->getMessage());
+                $this->aiAgentLogger->warning('Error loading unified conversation', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $userId,
+                    'conversation_id' => $conversationId
+                ]);
                 // Continue without Redis context - chatbot will work in stateless mode
             }
             
@@ -116,59 +122,60 @@ class ChatbotController extends AbstractController
             
             // Use Symfony AI Agent to process the message with context
             try {
-                // ==== DEBUG LOGGING START ====
-                error_log('🤖 ========== AI AGENT CALL START ==========');
-                error_log('🤖 User Message: ' . $userMessage);
-                error_log('🤖 Conversation ID: ' . $conversationId);
-                error_log('🤖 User ID: ' . $userId);
-                error_log('🤖 Messages in context: ' . count($messages));
-                error_log('🤖 User Roles: ' . implode(', ', $user->getRoles()));
-                error_log('🤖 Agent Class: ' . get_class($this->agent));
-                error_log('🤖 Calling AI Agent...');
-                // ==== DEBUG LOGGING END ====
+                $this->aiAgentLogger->info('🤖 AI AGENT CALL START', [
+                    'user_message' => $userMessage,
+                    'conversation_id' => $conversationId,
+                    'user_id' => $userId,
+                    'messages_in_context' => count($messages),
+                    'user_roles' => $user->getRoles(),
+                    'agent_class' => get_class($this->agent)
+                ]);
                 
                 $messageBag = new MessageBag(...$messages);
-                error_log('🤖 MessageBag created with ' . count($messageBag) . ' messages');
+                $this->aiAgentLogger->debug('MessageBag created', ['message_count' => count($messageBag)]);
                 
                 $result = $this->agent->call($messageBag);
                 
-                error_log('🤖 AI Agent returned result!');
+                $this->aiAgentLogger->info('AI Agent returned result', [
+                    'result_class' => get_class($result)
+                ]);
                 
-                // ==== DEBUG LOGGING START ====
-                error_log('🤖 AI Agent Result Class: ' . get_class($result));
-                
-                // Try to extract all available information from result
-                $resultMethods = get_class_methods($result);
-                error_log('🤖 Available methods: ' . implode(', ', $resultMethods));
-                
-                // Check if result has tool calls or metadata
+                // Log tool calls if available
                 if (method_exists($result, 'getToolCalls')) {
                     $toolCalls = $result->getToolCalls();
-                    error_log('🔧 Tool Calls Made: ' . json_encode($toolCalls));
+                    $this->aiAgentLogger->info('🔧 Tool Calls Made', [
+                        'tool_calls' => $toolCalls
+                    ]);
                 }
                 
+                // Log metadata if available
                 if (method_exists($result, 'getMetadata')) {
                     $metadata = $result->getMetadata();
-                    error_log('📋 Result Metadata: ' . json_encode($metadata));
+                    $this->aiAgentLogger->debug('Result Metadata', [
+                        'metadata' => $metadata
+                    ]);
                 }
                 
                 if (method_exists($result, 'getMessage')) {
                     try {
                         $message = $result->getMessage();
-                        error_log('💬 Result Message Object: ' . get_class($message));
+                        $this->aiAgentLogger->debug('Result Message', [
+                            'message_class' => get_class($message)
+                        ]);
                     } catch (\Exception $e) {
-                        error_log('⚠️  Could not get message: ' . $e->getMessage());
+                        $this->aiAgentLogger->warning('Could not get message from result', [
+                            'error' => $e->getMessage()
+                        ]);
                     }
                 }
-                // ==== DEBUG LOGGING END ====
                 
                 // Extract response content - handle both string and array responses
                 $content = $result->getContent();
                 
-                // Log for debugging
-                error_log('📝 AI Response type: ' . gettype($content));
-                error_log('📝 AI Response content: ' . json_encode($content));
-                error_log('🤖 ========== AI AGENT CALL END ==========');
+                $this->aiAgentLogger->info('🤖 AI AGENT CALL END', [
+                    'response_type' => gettype($content),
+                    'response_content' => is_string($content) ? $content : json_encode($content)
+                ]);
                 
                 // Handle different response types from AI Agent
                 if (is_string($content)) {
@@ -212,13 +219,21 @@ class ChatbotController extends AbstractController
                         $state['turn_count'] = ($state['turn_count'] ?? 0) + 1;
                         $this->unifiedContextManager->updateState($userId, $unifiedConversation['conversationId'], $state);
                     } catch (\Exception $e) {
-                        error_log('Error updating unified conversation: ' . $e->getMessage());
+                        $this->aiAgentLogger->warning('Error updating unified conversation', [
+                            'error' => $e->getMessage(),
+                            'user_id' => $userId,
+                            'conversation_id' => $unifiedConversation['conversationId']
+                        ]);
                     }
                 }
                 // Note: Tool execution context updates will be added in T017
             } catch (\Exception $e) {
-                error_log('Symfony AI Agent Error: ' . $e->getMessage());
-                error_log('Stack trace: ' . $e->getTraceAsString());
+                $this->aiAgentLogger->error('Symfony AI Agent Error', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
                 
                 // Capture as unanswered question for spec-006 (FR-001 to FR-008)
                 try {
@@ -230,7 +245,9 @@ class ChatbotController extends AbstractController
                         conversationId: $conversationId
                     );
                 } catch (\Exception $captureException) {
-                    error_log('Failed to capture unanswered question: ' . $captureException->getMessage());
+                    $this->aiAgentLogger->error('Failed to capture unanswered question', [
+                        'error' => $captureException->getMessage()
+                    ]);
                 }
                 
                 // Use polite fallback message
@@ -246,7 +263,9 @@ class ChatbotController extends AbstractController
             
             if (!$saveAssistantResult['success']) {
                 // Log error but don't fail the request - user already got the response
-                error_log('Error saving assistant message: ' . $saveAssistantResult['message']);
+                $this->aiAgentLogger->warning('Error saving assistant message', [
+                    'message' => $saveAssistantResult['message']
+                ]);
             }
             
             return $this->json([
@@ -256,9 +275,12 @@ class ChatbotController extends AbstractController
             ]);
             
         } catch (\Throwable $e) {
-            error_log('ChatbotController Error: ' . $e->getMessage());
-            error_log('File: ' . $e->getFile() . ':' . $e->getLine());
-            error_log('Trace: ' . $e->getTraceAsString());
+            $this->aiAgentLogger->critical('ChatbotController Error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return $this->json([
                 'error' => 'An error occurred while processing your request',
@@ -362,7 +384,7 @@ class ChatbotController extends AbstractController
             ], Response::HTTP_NOT_FOUND);
             
         } catch (\Exception $e) {
-            error_log('Get History Error: ' . $e->getMessage());
+            $this->aiAgentLogger->error('Get History Error', ['error' => $e->getMessage()]);
             return $this->json([
                 'success' => false,
                 'error' => 'Error al cargar el historial',
@@ -405,7 +427,7 @@ class ChatbotController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
             
         } catch (\Exception $e) {
-            error_log('Clear Chat Error: ' . $e->getMessage());
+            $this->aiAgentLogger->error('Clear Chat Error', ['error' => $e->getMessage()]);
             return $this->json([
                 'error' => 'Error clearing conversation',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -447,7 +469,7 @@ class ChatbotController extends AbstractController
             ]);
             
         } catch (\Exception $e) {
-            error_log('Reset Context Error: ' . $e->getMessage());
+            $this->aiAgentLogger->error('Reset Context Error', ['error' => $e->getMessage()]);
             return $this->json([
                 'error' => 'Error resetting context',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

@@ -37,25 +37,24 @@ ai:
                        Returns AI-powered semantic search results that understand concepts and context.
                     2. ListProductsTool - List available products with details (ONLY when user explicitly wants to browse ALL products)
                     3. GetProductDetailsTool - Get details of a specific product by name (AFTER finding it with SemanticProductSearchTool)
-                    4. GetProductsNameByMaxPriceTool - Search products by maximum price and category
                     
                     **Shopping Cart:**
-                    5. AddToCartTool - Add products to cart (by name)
-                    6. RemoveFromCartTool - Remove products from cart (by name)
-                    7. GetCartSummaryTool - View cart contents
+                    4. AddToCartTool - Add products to cart (by name)
+                    5. RemoveFromCartTool - Remove products from cart (by name)
+                    6. GetCartSummaryTool - View cart contents
                     
                     **Orders:**
-                    8. CollectCheckoutInformationTool - Collect shipping information
-                    9. CreateOrderTool - Create order (requires explicit confirmation)
-                    10. ListPreviousOrdersTool - List previous orders
-                    11. GetOrderStatusTool - Check order status
+                    7. CollectCheckoutInformationTool - Collect shipping information
+                    8. CreateOrderTool - Create order (requires explicit confirmation)
+                    9. ListPreviousOrdersTool - List previous orders
+                    10. GetOrderStatusTool - Check order status
                     
                     **Conversation and User:**
-                    12. GetUserInfoTool - Get current user information (name, email, role)
-                    13. ClearConversation - Clear conversation history (when user requests)
+                    11. GetUserInfoTool - Get current user information (name, email, role)
+                    12. ClearConversation - Clear conversation history (when user requests)
                     
                     **Administration (ROLE_ADMIN only):**
-                    14. GetAdminStatsTool - Business statistics (sales, products, active users)
+                    13. GetAdminStatsTool - Business statistics (sales, products, active users)
                     
                     COMPLETE CONVERSATIONAL FLOW:
                     1. Discovery: Use SemanticProductSearchTool FIRST when user mentions or searches for products. This tool understands natural language and finds relevant products even if the exact name isn't mentioned.

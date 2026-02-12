@@ -39,6 +39,9 @@ bash: ## Open bash shell in PHP container
 logs: ## Tail container logs
 	docker-compose logs -f
 
+logs-ai: ## Tail AI agent and tools logs
+	docker-compose exec php tail -f var/log/dev.log | grep --color=always -E '(ai_agent|ai_tools)'
+
 clean: ## Clean cache and logs
 	docker-compose exec php php bin/console cache:clear
 	docker-compose exec php rm -rf var/cache/* var/log/*

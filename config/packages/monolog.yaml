@@ -1,0 +1,96 @@
+monolog:
+    channels:
+        - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
+        - ai_agent    # Canal dedicado para AI Agent
+        - ai_tools    # Canal dedicado para herramientas del AI
+        - ai_context  # Canal dedicado para contexto de conversación
+
+when@dev:
+    monolog:
+        handlers:
+            # Handler principal - dev.log (capturado por el Profiler)
+            main:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+                channels: ["!event"]
+
+            # Archivos adicionales JSON para AI (SIN filtro de canal para que fluyan libremente)
+            ai_agent_file:
+                type: stream
+                path: "%kernel.logs_dir%/ai_agent.log"
+                level: debug
+                formatter: monolog.formatter.json
+
+            ai_tools_file:
+                type: stream
+                path: "%kernel.logs_dir%/ai_tools.log"
+                level: debug
+                formatter: monolog.formatter.json
+
+            ai_context_file:
+                type: stream
+                path: "%kernel.logs_dir%/ai_context.log"
+                level: debug
+
+            # Console - muestra logs de AI en la terminal
+            console:
+                type: console
+                process_psr_3_messages: false
+                level: info
+                channels: ["!event", "!doctrine"]
+
+when@test:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                channels: ["!event"]
+            nested:
+                type: stream
+                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                level: debug
+
+when@prod:
+    monolog:
+        handlers:
+            main:
+                type: fingers_crossed
+                action_level: error
+                handler: nested
+                excluded_http_codes: [404, 405]
+                buffer_size: 50
+            nested:
+                type: stream
+                path: php://stderr
+                level: debug
+                formatter: monolog.formatter.json
+            
+            # Handler específico para AI Agent en producción
+            ai_agent:
+                type: stream
+                path: php://stderr
+                level: info
+                channels: ["ai_agent"]
+                formatter: monolog.formatter.json
+            
+            # Handler específico para AI Tools en producción
+            ai_tools:
+                type: stream
+                path: php://stderr
+                level: info
+                channels: ["ai_tools"]
+                formatter: monolog.formatter.json
+                
+            console:
+                type: console
+                process_psr_3_messages: false
+                channels: ["!event", "!doctrine"]
+            
+            deprecation:
+                type: stream
+                channels: [deprecation]
+                path: php://stderr

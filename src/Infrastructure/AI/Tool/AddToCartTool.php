@@ -6,6 +6,7 @@ namespace App\Infrastructure\AI\Tool;
 
 use App\Application\UseCase\AI\AddToCartByName;
 use App\Domain\Entity\User;
+use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -25,7 +26,8 @@ final class AddToCartTool
 {
     public function __construct(
         private readonly AddToCartByName $addToCartByName,
-        private readonly Security $security
+        private readonly Security $security,
+        private readonly LoggerInterface $aiToolsLogger
     ) {
     }
     
@@ -46,10 +48,16 @@ final class AddToCartTool
      */
     public function __invoke(string $productName, int $quantity = 1): array
     {
+        $this->aiToolsLogger->info('🛍 AddToCartTool called', [
+            'product_name' => $productName,
+            'quantity' => $quantity
+        ]);
+        
         try {
             // Get authenticated user from Security context
             $user = $this->security->getUser();
             if (!$user instanceof User) {
+                $this->aiToolsLogger->warning('AddToCartTool: User not authenticated');
                 return [
                     'success' => false,
                     'data' => null,
@@ -59,6 +67,7 @@ final class AddToCartTool
             
             // Validate inputs
             if (empty(trim($productName))) {
+                $this->aiToolsLogger->warning('AddToCartTool: Product name is empty');
                 return [
                     'success' => false,
                     'data' => null,
@@ -67,6 +76,7 @@ final class AddToCartTool
             }
             
             if ($quantity <= 0) {
+                $this->aiToolsLogger->warning('AddToCartTool: Invalid quantity', ['quantity' => $quantity]);
                 return [
                     'success' => false,
                     'data' => null,
@@ -86,6 +96,13 @@ final class AddToCartTool
             }
             
             // Format response for AI agent (without internal cart ID)
+            $this->aiToolsLogger->info('AddToCartTool: Successfully added to cart', [
+                'product_name' => $productName,
+                'quantity' => $quantity,
+                'total_items' => $result['totalItems'],
+                'total_amount' => $result['totalAmount']
+            ]);
+            
             return [
                 'success' => true,
                 'data' => [
@@ -96,6 +113,12 @@ final class AddToCartTool
                 'message' => $result['message'],
             ];
         } catch (\Exception $e) {
+            $this->aiToolsLogger->error('AddToCartTool: Exception occurred', [
+                'error' => $e->getMessage(),
+                'product_name' => $productName,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return [
                 'success' => false,
                 'data' => null,

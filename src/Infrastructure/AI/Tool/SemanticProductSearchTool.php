@@ -34,7 +34,7 @@ final class SemanticProductSearchTool
     public function __construct(
         private readonly SearchFacade $searchFacade,
         private readonly UnifiedCustomerContextManager $contextManager,
-        private readonly LoggerInterface $logger,
+        private readonly LoggerInterface $aiToolsLogger,
         private readonly Security $security,
         private readonly RabbitMQPublisher $rabbitMQPublisher
     ) {
@@ -47,7 +47,7 @@ final class SemanticProductSearchTool
      * @param string|null $mode Search mode: "semantic" (AI-powered) or "keyword" (traditional). Default: semantic
      * @param int $limit Maximum number of results to return (1-20). Default: 5
      * @param string|null $category Filter by product category (optional)
-     * @param float $minSimilarity Minimum similarity score (0.0-1.0). Default: 0.6
+     * @param float $minSimilarity DEPRECATED - Tool uses fixed threshold of 0.3 (same as ProductController)
      * @param string|null $userId Customer user ID for context enrichment (optional)
      * @return array Search results with products and metadata
      */
@@ -60,26 +60,21 @@ final class SemanticProductSearchTool
         ?string $userId = null
     ): array {
         try {
-            // T070: Log tool call for debugging
-            error_log('🔍 ========== SEMANTIC SEARCH TOOL CALLED ==========');
-            error_log('🔍 Query: ' . $query);
-            error_log('🔍 Mode: ' . $mode);
-            error_log('🔍 Limit: ' . $limit);
-            error_log('🔍 Min Similarity: ' . $minSimilarity);
-            error_log('🔍 Category: ' . ($category ?? 'null'));
+            // Validate and limit results to prevent overwhelming the VA
+            $limit = max(1, min(20, $limit));
             
-            $this->logger->info('SemanticProductSearchTool invoked', [
+            // IMPORTANT: Use same similarity threshold as ProductController (0.3)
+            // This ensures consistent results between AI chat and web search
+            $minSimilarity = 0.3;
+            
+            $this->aiToolsLogger->info('🔍 SemanticProductSearchTool called', [
                 'query' => $query,
                 'mode' => $mode,
                 'limit' => $limit,
                 'category' => $category,
                 'min_similarity' => $minSimilarity,
-                'user_id' => $userId,
+                'user_id' => $userId
             ]);
-
-            // Validate and limit results to prevent overwhelming the VA
-            $limit = max(1, min(20, $limit));
-            $minSimilarity = max(0.0, min(1.0, $minSimilarity));
 
             // T066: Enrich query with customer context if available
             $enrichedQuery = $this->enrichQueryWithContext($query, $userId);
@@ -95,6 +90,13 @@ final class SemanticProductSearchTool
 
             // Execute search via facade (handles mode selection and fallback)
             $result = $this->searchFacade->search($searchQuery, $mode ?? 'semantic');
+            
+            $this->aiToolsLogger->info('✅ Search completed', [
+                'query' => $enrichedQuery,
+                'mode' => $result->getMode(),
+                'results_count' => $result->count(),
+                'execution_time_ms' => $result->getExecutionTimeMs()
+            ]);
 
             // T071: Track semantic search usage in customer context
             if ($userId !== null) {
@@ -103,11 +105,21 @@ final class SemanticProductSearchTool
 
             // T068: Handle empty results with friendly message
             if ($result->count() === 0) {
+                $this->aiToolsLogger->warning('⚠️ No products found', [
+                    'query' => $enrichedQuery,
+                    'category' => $category,
+                    'mode' => $result->getMode()
+                ]);
                 return $this->formatEmptyResults($query, $category);
             }
 
             // T067: Format results for VA consumption
             $formattedResults = $this->formatResults($result, $enrichedQuery);
+            
+            $this->aiToolsLogger->info('✅ Products found and formatted', [
+                'count' => $result->count(),
+                'product_names' => array_map(fn($p) => $p->getName(), $result->getProducts())
+            ]);
             
             // spec-014: Publish search event for user embedding update
             $this->publishSearchEvent($query);
@@ -116,7 +128,7 @@ final class SemanticProductSearchTool
 
         } catch (\InvalidArgumentException $e) {
             // Invalid query parameters
-            $this->logger->warning('Invalid search parameters', [
+            $this->aiToolsLogger->warning('Invalid search parameters', [
                 'query' => $query,
                 'error' => $e->getMessage(),
             ]);
@@ -131,7 +143,7 @@ final class SemanticProductSearchTool
 
         } catch (\Exception $e) {
             // Search service failure
-            $this->logger->error('Semantic product search failed', [
+            $this->aiToolsLogger->error('Semantic product search failed', [
                 'query' => $query,
                 'error' => $e->getMessage(),
                 'exception' => get_class($e),
@@ -270,13 +282,13 @@ final class SemanticProductSearchTool
             
             $this->rabbitMQPublisher->publish($message);
             
-            $this->logger->info('Search event published from SemanticProductSearchTool', [
+            $this->aiToolsLogger->info('Search event published from SemanticProductSearchTool', [
                 'user_id' => $user->getId(),
                 'query' => $query,
             ]);
         } catch (\Exception $e) {
             // Log but don't fail - event publishing is non-critical
-            $this->logger->error('Failed to publish search event from tool', [
+            $this->aiToolsLogger->error('Failed to publish search event from tool', [
                 'query' => $query,
                 'error' => $e->getMessage(),
             ]);
