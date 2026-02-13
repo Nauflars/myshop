@@ -12,7 +12,7 @@ This guide explains how to use the fully local Docker-based CI/CD pipeline for d
 │                                                                │
 │  ┌────────────┐      ┌─────────────┐      ┌─────────────┐   │
 │  │  Jenkins   │─────▶│ Test (8081) │      │ Prod (8082) │   │
-│  │  (8080)    │      │  Container  │      │  Container  │   │
+│  │  (9090)    │      │  Container  │      │  Container  │   │
 │  └────────────┘      └─────────────┘      └─────────────┘   │
 │        │                    │                     │           │
 │        │              ┌─────┴─────┐         ┌────┴─────┐    │
@@ -197,7 +197,7 @@ git push origin master
 
 ```bash
 # Option 1: Via Jenkins UI
-# 1. Navigate to: http://localhost:8080
+# 1. Navigate to: http://localhost:9090
 # 2. Click: myshop-rollback job
 # 3. Build with Parameters:
 #    - Environment: production
@@ -267,7 +267,7 @@ docker logs myshop-prod --tail 100
 
 ```bash
 # Watch Jenkins pipeline
-open http://localhost:8080/blue
+open http://localhost:9090/blue
 
 # Follow test container logs
 docker logs myshop-test -f

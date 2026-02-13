@@ -26,7 +26,7 @@ docker-compose -f docker-compose.ci.yml ps
 Expected output:
 ```
 NAME                    STATUS              PORTS
-myshop-jenkins          Up (healthy)        0.0.0.0:8080->8080/tcp
+myshop-jenkins          Up (healthy)        0.0.0.0:9090->8080/tcp
 myshop-test             Up (healthy)        0.0.0.0:8081->80/tcp
 myshop-prod             Up (healthy)        0.0.0.0:8082->80/tcp
 myshop-mysql-test       Up (healthy)        3306/tcp
@@ -41,14 +41,14 @@ myshop-mysql-prod       Up (healthy)        3306/tcp
 docker exec myshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 # Open Jenkins
-open http://localhost:8080
+open http://localhost:9090
 ```
 
 Follow setup wizard:
 1. Paste initial admin password
 2. Install suggested plugins
 3. Create admin user
-4. Set Jenkins URL: `http://localhost:8080`
+4. Set Jenkins URL: `http://localhost:9090`
 
 ### 3. Verify Environments
 
@@ -90,7 +90,7 @@ After merge to master:
 
 ## Key URLs
 
-- **Jenkins**: http://localhost:8080
+- **Jenkins**: http://localhost:9090
 - **Test Environment**: http://localhost:8081
 - **Production Environment**: http://localhost:8082
 - **RabbitMQ Test**: http://localhost:15672

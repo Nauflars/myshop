@@ -15,7 +15,7 @@
 ### Morning Checklist
 
 1. **Check overnight builds**:
-   - Review Jenkins dashboard: http://localhost:8080
+   - Review Jenkins dashboard: http://localhost:9090
    - Investigate any failed builds
    - Check Slack #deployments channel
 
@@ -202,7 +202,7 @@ docker system df
 **Steps**:
 
 1. **Monitor deployment**:
-   - Watch Jenkins pipeline: http://localhost:8080/blue
+   - Watch Jenkins pipeline: http://localhost:9090/blue
    - Follow in Slack: #deployments
 
 2. **When prompted for production approval**:

@@ -9,7 +9,7 @@
 This task list implements a complete local Docker-based CI/CD pipeline from PR validation through production deployment. All operations occur locally - no external servers or SSH required. Tasks are organized by user story to enable independent implementation and testing.
 
 **Infrastructure Mode**: Fully local execution using Docker Compose
-- **Jenkins**: Docker container on port 8080
+- **Jenkins**: Docker container on port 9090
 - **Test Environment**: Docker container `myshop-test` on port 8081  
 - **Production Environment**: Docker container `myshop-prod` on port 8082
 - **Deployment**: Ansible with `ansible_connection=local` or Docker exec

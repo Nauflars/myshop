@@ -125,7 +125,7 @@ For automated testing and deployment workflows:
    ```
 
 2. **Access CI/CD tools**:
-   - **Jenkins**: http://localhost:8080
+   - **Jenkins**: http://localhost:9090
    - **Test Environment**: http://localhost:8081
    - **Production Environment**: http://localhost:8082
 
@@ -232,7 +232,7 @@ The project includes a complete local Docker-based CI/CD pipeline with Jenkins a
 docker-compose -f docker-compose.ci.yml up -d
 
 # Access Jenkins
-open http://localhost:8080
+open http://localhost:9090
 
 # Verify environments
 curl http://localhost:8081/health  # Test

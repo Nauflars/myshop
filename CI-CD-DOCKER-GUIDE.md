@@ -12,7 +12,7 @@
 ├─────────────────────────────────────────────────────┤
 │                                                      │
 │  ┌──────────────┐                                   │
-│  │   Jenkins    │  Port: 8080                       │
+│  │   Jenkins    │  Port: 9090                       │
 │  │   CI Server  │  Controls deployments             │
 │  └──────────────┘                                   │
 │         │                                           │
@@ -51,7 +51,7 @@ docker- -f docker-compose.ci.yml ps
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Jenkins | http://localhost:8080 | CI/CD orchestration |
+| Jenkins | http://localhost:9090 | CI/CD orchestration |
 | Test App | http://localhost:8081 | Test environment |
 | Prod App | http://localhost:8082 | Production simulation |
 | RabbitMQ Test | http://localhost:15672 | Message queue admin (test) |
@@ -79,7 +79,7 @@ docker-compose -f docker-compose.ci.yml down -v
 
 **Container**: `myshop-jenkins`
 **Image**: Built from `.jenkins/Dockerfile.jenkins`
-**Ports**: 8080 (UI), 50000 (agent)
+**Ports**: 9090 (UI), 50000 (agent)
 
 **Features**:
 - Docker CLI (for managing other containers)

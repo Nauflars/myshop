@@ -33,7 +33,7 @@ docker-compose -f docker-compose.ci.yml up -d
 watch -n 5 'docker-compose -f docker-compose.ci.yml ps'
 
 # Expected: All containers show "Up (healthy)"
-# - myshop-jenkins (Up healthy) 0.0.0.0:8080->8080/tcp
+# - myshop-jenkins (Up healthy) 0.0.0.0:9090->8080/tcp
 # - myshop-test (Up healthy) 0.0.0.0:8081->80/tcp
 # - myshop-prod (Up healthy) 0.0.0.0:8082->80/tcp
 # - myshop-mysql-test (Up healthy)
@@ -55,7 +55,7 @@ watch -n 5 'docker-compose -f docker-compose.ci.yml ps'
 docker exec myshop-jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 # Open Jenkins
-http://localhost:8080
+http://localhost:9090
 
 # Follow setup wizard:
 # 1. Paste initial admin password
@@ -65,7 +65,7 @@ http://localhost:8080
 #    - Password: admin123
 #    - Full name: CI/CD Admin
 #    - Email: cicd@myshop.local
-# 4. Jenkins URL: http://localhost:8080
+# 4. Jenkins URL: http://localhost:9090
 ```
 
 **Pass Criteria**: Jenkins dashboard loads successfully

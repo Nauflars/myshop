@@ -3,11 +3,3 @@ controllers:
         path: ../src/Infrastructure/Controller/
         namespace: App\Infrastructure\Controller
     type: attribute
-
-# Health check endpoints for CI/CD monitoring
-health_checks:
-    resource:
-        path: ../src/Controller/Api/
-        namespace: App\Controller\Api
-    type: attribute
-    prefix: /

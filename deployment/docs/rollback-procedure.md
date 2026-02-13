@@ -19,7 +19,7 @@ Rollback immediately if:
 ### Method 1: Via Jenkins (Recommended)
 
 #### Step 1: Navigate to Jenkins
-1. Open Jenkins: `http://localhost:8080`
+1. Open Jenkins: `http://localhost:9090`
 2. Navigate to "myshop-rollback" job
 
 #### Step 2: Start Rollback

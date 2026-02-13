@@ -602,7 +602,7 @@ docker-compose -f docker-compose.ci.yml up -d
 watch -n 5 'docker-compose -f docker-compose.ci.yml ps'
 
 # 4. Access Jenkins
-http://localhost:8080
+http://localhost:9090
 
 # 5. Complete Jenkins setup wizard (see VERIFICATION.md)
 # 6. Create 3 pipelines (see VERIFICATION.md)
