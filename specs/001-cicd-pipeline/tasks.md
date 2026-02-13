@@ -332,11 +332,11 @@ This task list implements a complete local Docker-based CI/CD pipeline from PR v
 
 ### Documentation
 
-- [ ] T146 [P] Create comprehensive README in .jenkins/README.md explaining pipeline structure and stages
-- [ ] T147 [P] Create troubleshooting guide in deployment/docs/troubleshooting.md for common deployment issues
-- [ ] T148 [P] Create runbook in deployment/docs/runbook.md for operational procedures (deploy, rollback, emergency procedures)
-- [ ] T149 [P] Update main project README.md with CI/CD pipeline documentation and links
-- [ ] T150 [P] Create docker-compose.ci.yml usage guide explaining how to start/stop CI/CD infrastructure
+- [X] T146 [P] Create comprehensive README in .jenkins/README.md explaining pipeline structure and stages
+- [X] T147 [P] Create troubleshooting guide in deployment/docs/troubleshooting.md for common deployment issues
+- [X] T148 [P] Create runbook in deployment/docs/runbook.md for operational procedures (deploy, rollback, emergency procedures)
+- [X] T149 [P] Update main project README.md with CI/CD pipeline documentation and links
+- [X] T150 [P] Create docker-compose.ci.yml usage guide explaining how to start/stop CI/CD infrastructure
 
 ### Monitoring & Observability
 

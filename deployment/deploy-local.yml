@@ -1,0 +1,59 @@
+---
+# Main Ansistrano deployment playbook for local Docker environments
+- name: Deploy Symfony Application to Local Docker Container
+  hosts: all
+  connection: local
+  vars:
+    ansistrano_deploy_to: "/var/www/myshop"
+    ansistrano_deploy_via: "copy"
+    ansistrano_keep_releases: "{{ ansistrano_keep_releases | default(3) }}"
+    ansistrano_version_dir: "releases"
+    ansistrano_current_dir: "current"
+    ansistrano_current_via: "symlink"
+    
+    # Shared paths (persistent across deployments in Docker volumes)
+    ansistrano_shared_paths:
+      - var/log
+      - var/cache
+      - var/sessions
+      - public/uploads
+    
+    ansistrano_shared_files:
+      - .env.local
+    
+    # Symfony-specific tasks
+    ansistrano_before_symlink_tasks_file: "{{ playbook_dir }}/hooks/before-symlink.yml"
+    ansistrano_after_symlink_tasks_file: "{{ playbook_dir }}/hooks/after-symlink.yml"
+    
+    # Docker execution settings
+    target_container: "{{ container_name | default('myshop-test') }}"
+    
+  pre_tasks:
+    - name: Check if target container is running
+      command: docker ps -q -f name={{ target_container }}
+      register: container_check
+      changed_when: false
+      failed_when: container_check.stdout == ""
+      
+    - name: Display deployment information
+      debug:
+        msg: |
+          Deploying to: {{ target_container }}
+          Environment: {{ app_env }}
+          Deploy path: {{ ansistrano_deploy_to }}
+          Keep releases: {{ ansistrano_keep_releases }}
+    
+  roles:
+    - role: ansistrano.deploy
+  
+  post_tasks:
+    - name: Create deployment audit log entry
+      lineinfile:
+        path: "{{ playbook_dir }}/../var/log/deployments.log"
+        line: "{{ ansible_date_time.iso8601 }} - Deployed to {{ app_env }} - Container: {{ target_container }}"
+        create: yes
+      delegate_to: localhost
+      
+    - name: Deployment completed successfully
+      debug:
+        msg: "Deployment to {{ target_container }} completed successfully!"

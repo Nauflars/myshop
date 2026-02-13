@@ -1,0 +1,227 @@
+version: '3.8'
+
+services:
+  # Jenkins orchestration
+  jenkins:
+    build:
+      context: .jenkins
+      dockerfile: Dockerfile.jenkins
+    container_name: myshop-jenkins
+    ports:
+      - "8080:8080"      # Jenkins UI
+      - "50000:50000"    # Jenkins agent
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker socket access
+      - .:/workspace     # Mount workspace for builds
+    environment:
+      - JENKINS_OPTS=--prefix=/jenkins
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  
+  # Test environment (simulates staging)
+  myshop-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myshop-test
+    ports:
+      - "8081:80"       # Test environment
+    volumes:
+      - test_releases:/var/www/myshop/releases
+      - test_shared:/var/www/myshop/shared
+    environment:
+      - APP_ENV=test
+      - DATABASE_URL=mysql://root:testpass@mysql-test:3306/myshop_test
+      - REDIS_URL=redis://redis-test:6379
+      - MESSENGER_TRANSPORT_DSN=amqp://guest:guest@rabbitmq-test:5672/%2f/messages
+      - MONGODB_URL=mongodb://mongodb-test:27017
+      - MONGODB_DB=myshop_test
+    depends_on:
+      - mysql-test
+      - redis-test
+      - mongodb-test
+      - rabbitmq-test
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  # Production environment (simulates production)
+  myshop-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myshop-prod
+    ports:
+      - "8082:80"       # Production environment
+    volumes:
+      - prod_releases:/var/www/myshop/releases
+      - prod_shared:/var/www/myshop/shared
+    environment:
+      - APP_ENV=prod
+      - DATABASE_URL=mysql://root:prodpass@mysql-prod:3306/myshop_prod
+      - REDIS_URL=redis://redis-prod:6379
+      - MESSENGER_TRANSPORT_DSN=amqp://guest:guest@rabbitmq-prod:5672/%2f/messages
+      - MONGODB_URL=mongodb://mongodb-prod:27017
+      - MONGODB_DB=myshop_prod
+    depends_on:
+      - mysql-prod
+      - redis-prod
+      - mongodb-prod
+      - rabbitmq-prod
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  # Test database
+  mysql-test:
+    image: mysql:8.0
+    container_name: myshop-mysql-test
+    environment:
+      MYSQL_ROOT_PASSWORD: testpass
+      MYSQL_DATABASE: myshop_test
+    volumes:
+      - mysql_test_data:/var/lib/mysql
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ptestpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Production database
+  mysql-prod:
+    image: mysql:8.0
+    container_name: myshop-mysql-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: prodpass
+      MYSQL_DATABASE: myshop_prod
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pprodpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Test MongoDB
+  mongodb-test:
+    image: mongo:7
+    container_name: myshop-mongodb-test
+    volumes:
+      - mongodb_test_data:/data/db
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Production MongoDB
+  mongodb-prod:
+    image: mongo:7
+    container_name: myshop-mongodb-prod
+    volumes:
+      - mongodb_prod_data:/data/db
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Test Redis
+  redis-test:
+    image: redis:7-alpine
+    container_name: myshop-redis-test
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  # Production Redis
+  redis-prod:
+    image: redis:7-alpine
+    container_name: myshop-redis-prod
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  # Test RabbitMQ
+  rabbitmq-test:
+    image: rabbitmq:3-management-alpine
+    container_name: myshop-rabbitmq-test
+    ports:
+      - "15672:15672"  # Management UI for test
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
+  # Production RabbitMQ
+  rabbitmq-prod:
+    image: rabbitmq:3-management-alpine
+    container_name: myshop-rabbitmq-prod
+    ports:
+      - "15673:15672"  # Management UI for prod
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  cicd_network:
+    driver: bridge
+
+volumes:
+  jenkins_home:
+  test_releases:
+  test_shared:
+  prod_releases:
+  prod_shared:
+  mysql_test_data:
+  mysql_prod_data:
+  mongodb_test_data:
+  mongodb_prod_data:

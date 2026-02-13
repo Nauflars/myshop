@@ -1,0 +1,124 @@
+// Jenkinsfile for Pull Request validation
+// This pipeline runs on every PR to validate code quality before merge
+
+pipeline {
+    agent {
+        docker {
+            image 'myshop-jenkins:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+    
+    environment {
+        COMPOSER_HOME = "${WORKSPACE}/.composer"
+        COMPOSER_ALLOW_SUPERUSER = "1"
+    }
+    
+    options {
+        // Build timeout (fail if takes longer than 30 minutes)
+        timeout(time: 30, unit: 'MINUTES')
+        
+        // Keep only last 50 PR builds
+        buildDiscarder(logRotator(numToKeepStr: '50'))
+        
+        // Don't run concurrent builds
+        disableConcurrentBuilds()
+    }
+    
+    stages {
+        stage('Validate') {
+            options {
+                timeout(time: 10, unit: 'MINUTES')
+            }
+            steps {
+                echo '→ Validating composer.json...'
+                sh 'composer validate --strict'
+                
+                echo '→ Checking PHP syntax...'
+                sh 'find src tests -name "*.php" -print0 | xargs -0 -n1 php -l'
+                
+                echo '→ Installing dependencies...'
+                sh 'composer install --no-interaction --no-progress --prefer-dist'
+            }
+        }
+        
+        stage('Test') {
+            options {
+                timeout(time: 15, unit: 'MINUTES')
+            }
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        echo '→ Running unit tests...'
+                        sh '''
+                            mkdir -p var/log/phpunit
+                            php bin/phpunit --testsuite=unit \
+                                --log-junit var/log/phpunit/unit-results.xml \
+                                --coverage-text \
+                                --colors=never
+                        '''
+                    }
+                }
+                
+                stage('Integration Tests') {
+                    steps {
+                        echo '→ Running integration tests...'
+                        sh '''
+                            mkdir -p var/log/phpunit
+                            php bin/phpunit --testsuite=integration \
+                                --log-junit var/log/phpunit/integration-results.xml \
+                                --colors=never
+                        '''
+                    }
+                }
+                
+                stage('Static Analysis') {
+                    steps {
+                        echo '→ Running PHPStan...'
+                        sh 'vendor/bin/phpstan analyse src --level=8 --error-format=junit --no-progress > var/log/phpunit/phpstan-results.xml || true'
+                        
+                        echo '→ Running PHP-CS-Fixer...'
+                        sh 'vendor/bin/php-cs-fixer fix --dry-run --diff --format=junit > var/log/phpunit/php-cs-fixer-results.xml || true'
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Publish JUnit test results
+            junit allowEmptyResults: true, testResults: 'var/log/phpunit/*.xml'
+            
+            // Archive composer.lock for debugging
+            archiveArtifacts artifacts: 'composer.lock', allowEmptyArchive: true
+            
+            // Clean workspace to save disk space
+            cleanWs(
+                deleteDirs: true,
+                patterns: [
+                    [pattern: 'vendor/', type: 'INCLUDE'],
+                    [pattern: 'var/cache/', type: 'INCLUDE']
+                ]
+            )
+        }
+        
+        failure {
+            echo '✗ PR validation failed!'
+            script {
+                if (env.CHANGE_ID) {
+                    // Send notification to Slack if configured
+                    sh '''
+                        if [ -n "$SLACK_WEBHOOK_URL" ]; then
+                            bash .jenkins/scripts/notify-slack.sh "failed" "$BUILD_URL" "PR #${CHANGE_ID}: ${CHANGE_TITLE}"
+                        fi
+                    '''
+                }
+            }
+        }
+        
+        success {
+            echo '✓ PR validation passed!'
+        }
+    }
+}

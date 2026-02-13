@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Laptop Computer",
+    "price": 899.99,
+    "category": "electronics",
+    "description": "High-performance laptop for work and gaming"
+  },
+  {
+    "id": 2,
+    "name": "Wireless Mouse",
+    "price": 29.99,
+    "category": "accessories",
+    "description": "Ergonomic wireless mouse"
+  },
+  {
+    "id": 3,
+    "name": "USB-C Cable",
+    "price": 12.99,
+    "category": "accessories",
+    "description": "Fast charging USB-C cable"
+  }
+]

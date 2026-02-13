@@ -1,0 +1,33 @@
+---
+# Test environment variables
+environment: test
+app_debug: true
+
+# Database configuration
+database_user: root
+database_password: testpass
+database_name: myshop_test
+
+# Redis configuration
+redis_port: 6379
+
+# MongoDB configuration
+mongodb_port: 27017
+mongodb_database: myshop_test
+
+# RabbitMQ configuration
+rabbitmq_user: guest
+rabbitmq_password: guest
+rabbitmq_port: 5672
+
+# Application secrets (for test environment only)
+app_secret: test_secret_key_change_in_production
+openai_api_key: sk-test-key-for-testing-only
+
+# Deployment settings
+composer_no_dev: false
+cache_warmup: true
+run_migrations: true
+
+# Keep fewer releases for test environment
+ansistrano_keep_releases: 3

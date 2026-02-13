@@ -1,0 +1,214 @@
+// Jenkinsfile for Rollback operations
+// This pipeline handles rollback to previous release
+
+pipeline {
+    agent {
+        docker {
+            image 'myshop-jenkins:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+    
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['test', 'production'],
+            description: 'Target environment for rollback'
+        )
+        string(
+            name: 'RELEASE_VERSION',
+            defaultValue: 'previous',
+            description: 'Release version to rollback to (timestamp or "previous")'
+        )
+        text(
+            name: 'ROLLBACK_REASON',
+            defaultValue: '',
+            description: 'Reason for rollback (required)'
+        )
+    }
+    
+    environment {
+        ANSIBLE_VAULT_PASSWORD_FILE = credentials('ansible-vault-password')
+    }
+    
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '100'))
+        timestamps()
+    }
+    
+    stages {
+        stage('Validate Rollback Request') {
+            steps {
+                script {
+                    echo "======================================"
+                    echo "Rollback Request"
+                    echo "======================================"
+                    echo "Environment: ${params.ENVIRONMENT}"
+                    echo "Release: ${params.RELEASE_VERSION}"
+                    echo "Reason: ${params.ROLLBACK_REASON}"
+                    echo "======================================"
+                    
+                    // Validate rollback reason
+                    if (!params.ROLLBACK_REASON?.trim()) {
+                        error('Rollback reason is required')
+                    }
+                    
+                    // Verify container is running
+                    def containerName = "myshop-${params.ENVIRONMENT}"
+                    def containerRunning = sh(
+                        script: "docker ps -q -f name=${containerName}",
+                        returnStdout: true
+                    ).trim()
+                    
+                    if (!containerRunning) {
+                        error("Container ${containerName} is not running")
+                    }
+                    
+                    // Check if release exists (if specific version provided)
+                    if (params.RELEASE_VERSION != 'previous') {
+                        echo "→ Verifying release ${params.RELEASE_VERSION} exists..."
+                        sh """
+                            docker exec ${containerName} test -d /var/www/myshop/releases/${params.RELEASE_VERSION} || {
+                                echo "Error: Release ${params.RELEASE_VERSION} not found"
+                                exit 1
+                            }
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Confirm Rollback') {
+            steps {
+                script {
+                    def confirmMessage = """
+                        ⚠️  ROLLBACK CONFIRMATION REQUIRED
+                        
+                        Environment: ${params.ENVIRONMENT}
+                        Release: ${params.RELEASE_VERSION}
+                        Reason: ${params.ROLLBACK_REASON}
+                        
+                        This action will rollback the application to a previous release.
+                        
+                        Are you sure you want to proceed?
+                    """.stripIndent()
+                    
+                    def userInput = input(
+                        id: 'RollbackConfirmation',
+                        message: confirmMessage,
+                        parameters: [
+                            booleanParam(
+                                defaultValue: false,
+                                description: 'I understand the implications and want to proceed',
+                                name: 'CONFIRM'
+                            )
+                        ],
+                        submitter: 'devops-team,admin',
+                        submitterParameter: 'APPROVED_BY'
+                    )
+                    
+                    if (!userInput.CONFIRM) {
+                        error('Rollback was not confirmed')
+                    }
+                    
+                    echo "✓ Rollback confirmed by: ${userInput.APPROVED_BY}"
+                    env.APPROVED_BY = userInput.APPROVED_BY
+                }
+            }
+        }
+        
+        stage('Execute Rollback') {
+            steps {
+                script {
+                    echo '→ Executing rollback...'
+                    
+                    def inventoryPath = "deployment/inventories/local-${params.ENVIRONMENT}/hosts"
+                    def extraVars = "-e rollback_reason='${params.ROLLBACK_REASON}' -e rollback_by='${env.APPROVED_BY}'"
+                    
+                    if (params.RELEASE_VERSION != 'previous') {
+                        extraVars += " -e ansistrano_release_version='${params.RELEASE_VERSION}'"
+                    }
+                    
+                    sh """
+                        ansible-playbook deployment/rollback-local.yml \
+                            -i ${inventoryPath} \
+                            ${extraVars} \
+                            --vault-password-file=\${ANSIBLE_VAULT_PASSWORD_FILE}
+                    """
+                }
+            }
+        }
+        
+        stage('Verify Rollback') {
+            steps {
+                script {
+                    echo '→ Verifying rollback...'
+                    sh "bash scripts/deploy/rollback-verify.sh ${params.ENVIRONMENT}"
+                }
+            }
+        }
+        
+        stage('Health Checks') {
+            steps {
+                script {
+                    echo '→ Running health checks...'
+                    sh "bash scripts/deploy/smoke-test.sh ${params.ENVIRONMENT}"
+                }
+            }
+        }
+        
+        stage('Clear Caches') {
+            steps {
+                script {
+                    echo '→ Clearing application caches...'
+                    def containerName = "myshop-${params.ENVIRONMENT}"
+                    
+                    sh """
+                        docker exec ${containerName} php /var/www/myshop/current/bin/console cache:clear --env=${params.ENVIRONMENT} --no-interaction || true
+                    """
+                    
+                    sh """
+                        docker exec ${containerName} php /var/www/myshop/current/bin/console cache:pool:clear cache.global_clearer || true
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            script {
+                echo '✓ Rollback completed successfully!'
+                
+                // Log rollback
+                sh """
+                    echo "\$(date -u +"%Y-%m-%d %H:%M:%S UTC") - Rollback ${params.ENVIRONMENT} to ${params.RELEASE_VERSION} - By: ${env.APPROVED_BY} - Reason: ${params.ROLLBACK_REASON}" >> var/log/rollbacks.log
+                """
+                
+                // Send Slack notification
+                sh """
+                    bash .jenkins/scripts/notify-slack.sh "success" "$BUILD_URL" \
+                    "Rollback completed: ${params.ENVIRONMENT} to ${params.RELEASE_VERSION} - By: ${env.APPROVED_BY} - Reason: ${params.ROLLBACK_REASON}"
+                """
+            }
+        }
+        
+        failure {
+            script {
+                echo '✗ Rollback failed!'
+                
+                // Send urgent Slack notification
+                sh """
+                    bash .jenkins/scripts/notify-slack.sh "failed" "$BUILD_URL" \
+                    "URGENT: Rollback failed on ${params.ENVIRONMENT} - Manual intervention required"
+                """
+            }
+        }
+        
+        always {
+            // Archive rollback logs
+            archiveArtifacts artifacts: 'var/log/rollbacks.log', allowEmptyArchive: true
+        }
+    }
+}

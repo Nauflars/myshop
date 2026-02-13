@@ -1,0 +1,23 @@
+[
+  {
+    "type": "credit-card",
+    "cardNumber": "4242424242424242",
+    "expiry": "12/27",
+    "cvc": "123",
+    "expectedResult": "success"
+  },
+  {
+    "type": "credit-card",
+    "cardNumber": "4000000000000002",
+    "expiry": "12/27",
+    "cvc": "123",
+    "expectedResult": "declined"
+  },
+  {
+    "type": "credit-card",
+    "cardNumber": "4000000000009995",
+    "expiry": "12/27",
+    "cvc": "123",
+    "expectedResult": "insufficient_funds"
+  }
+]

@@ -1,0 +1,47 @@
+---
+# Ansistrano rollback playbook
+- name: Rollback Symfony Application
+  hosts: all
+  connection: local
+  vars:
+    ansistrano_deploy_to: "/var/www/myshop"
+    target_container: "{{ container_name | default('myshop-test') }}"
+    
+  pre_tasks:
+    - name: Check if target container is running
+      command: docker ps -q -f name={{ target_container }}
+      register: container_check
+      changed_when: false
+      failed_when: container_check.stdout == ""
+      
+    - name: Display rollback information
+      debug:
+        msg: |
+          Rolling back: {{ target_container }}
+          Environment: {{ app_env }}
+          Deploy path: {{ ansistrano_deploy_to }}
+  
+  roles:
+    - role: ansistrano.rollback
+    
+  post_tasks:
+    - name: Reload PHP-FPM after rollback
+      command: docker exec {{ target_container }} service php8.3-fpm reload
+      changed_when: true
+      ignore_errors: yes
+      
+    - name: Clear OPcache after rollback
+      command: docker exec {{ target_container }} php /var/www/myshop/current/bin/console cache:pool:clear cache.global_clearer
+      changed_when: true
+      ignore_errors: yes
+      
+    - name: Create rollback audit log entry
+      lineinfile:
+        path: "{{ playbook_dir }}/../var/log/rollbacks.log"
+        line: "{{ ansible_date_time.iso8601 }} - Rolled back {{ app_env }} - Container: {{ target_container }} - Reason: {{ rollback_reason | default('Manual rollback') }}"
+        create: yes
+      delegate_to: localhost
+      
+    - name: Rollback completed successfully
+      debug:
+        msg: "Rollback of {{ target_container }} completed successfully!"
