@@ -1,68 +1,34 @@
-// Simplified CI/CD Pipeline - Tests disabled temporarily
+﻿// Ultra-simplified CI/CD Pipeline
 pipeline {
     agent any
-    
-    environment {
-        WORKSPACE_DIR = "/workspace"
-    }
     
     options {
         skipDefaultCheckout()
         timeout(time: 30, unit: 'MINUTES')
-        disableConcurrentBuilds()
     }
     
     stages {
         stage('Info') {
             steps {
                 echo "========== Myshop CI/CD Pipeline =========="
-                echo "Environment: ${params.ENVIRONMENT}"
-                echo "Branch: ${params.GIT_BRANCH}"
                 echo "Build: ${BUILD_NUMBER}"
-                echo "Workspace: ${WORKSPACE_DIR}"
             }
         }
         
-        stage('Checkout') {
+        stage('Test Commands') {
             steps {
-                dir('/workspace') {
-                    echo '-> Using existing workspace...'
-                    sh 'pwd'
-                    sh 'git branch'
-                    sh 'ls -la'
-                }
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                dir('/workspace') {
-                    echo '-> Installing Composer dependencies...'
-                    sh 'composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist || echo "Composer install skipped"'
-                }
-            }
-        }
-        
-        stage('Deploy') {
-            steps {
-                dir('/workspace') {
-                    echo '-> Deployment simulation...'
-                    echo "Would deploy to: ${params.ENVIRONMENT}"
-                    sh 'echo "Deployment completed"'
-                }
+                echo 'Testing basic commands...'
+                sh 'echo "Shell works!"'
+                sh 'pwd'
+                sh 'whoami'
+                sh 'ls -la /workspace | head -n 10'
             }
         }
     }
     
     post {
         always {
-            echo "Build completed: ${currentBuild.result}"
-        }
-        success {
-            echo 'Pipeline SUCCESS!'
-        }
-        failure {
-            echo 'Pipeline FAILED!'
+            echo "Build: ${currentBuild.result}"
         }
     }
 }
