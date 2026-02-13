@@ -3,44 +3,34 @@ pipeline {
     
     options {
         skipDefaultCheckout()
+        timeout(time: 30, unit: "MINUTES")
     }
     
     parameters {
-        choice(name: 'ENVIRONMENT', choices: ['test', 'prod'], description: 'Target environment')
-        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch to deploy')
+        choice(name: "ENVIRONMENT", choices: ["test", "prod"], description: "Target environment")
+        string(name: "GIT_BRANCH", defaultValue: "master", description: "Git branch to deploy")
     }
     
     environment {
-        WORKSPACE_DIR = '/workspace'
+        WORKSPACE_DIR = "/workspace"
         CONTAINER_NAME = "${params.ENVIRONMENT == 'test' ? 'myshop-test-php' : 'myshop-prod-php'}"
         APP_ENV = "${params.ENVIRONMENT}"
     }
     
     stages {
-        stage('Info') {
+        stage("Info") {
             steps {
-                echo '=========================================='
+                echo "=========================================="
                 echo "Myshop Deployment - ${params.ENVIRONMENT.toUpperCase()}"
                 echo "Branch: ${params.GIT_BRANCH}"
-                echo '=========================================='
+                echo "=========================================="
+                sh "ls -la /workspace | head -10"
             }
         }
         
-        stage('Git Checkout') {
+        stage("Install Dependencies") {
             steps {
-                echo "Checking out branch ${params.GIT_BRANCH}..."
-                dir('/workspace') {
-                    sh 'git fetch origin'
-                    sh "git checkout ${params.GIT_BRANCH}"
-                    sh 'git pull origin ' + params.GIT_BRANCH
-                    sh 'git log -1 --oneline'
-                }
-            }
-        }
-        
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing PHP dependencies...'
+                echo "Installing PHP dependencies..."
                 sh """
                     docker exec ${CONTAINER_NAME} composer install \
                         --working-dir=/var/www/html \
@@ -51,9 +41,9 @@ pipeline {
             }
         }
         
-        stage('Database Migration') {
+        stage("Database Migration") {
             steps {
-                echo 'Running database migrations...'
+                echo "Running database migrations..."
                 sh """
                     docker exec ${CONTAINER_NAME} php /var/www/html/bin/console \
                         doctrine:migrations:migrate \
@@ -63,9 +53,9 @@ pipeline {
             }
         }
         
-        stage('Clear Cache') {
+        stage("Clear Cache") {
             steps {
-                echo 'Clearing Symfony cache...'
+                echo "Clearing Symfony cache..."
                 sh """
                     docker exec ${CONTAINER_NAME} php /var/www/html/bin/console cache:clear \
                         --no-interaction
@@ -77,13 +67,13 @@ pipeline {
             }
         }
         
-        stage('Health Check') {
+        stage("Health Check") {
             steps {
-                echo 'Performing health check...'
+                echo "Performing health check..."
                 script {
-                    def port = params.ENVIRONMENT == 'test' ? '8081' : '8082'
+                    def port = params.ENVIRONMENT == "test" ? "8081" : "8082"
                     sh """
-                        timeout 30 sh -c 'until curl -f http://localhost:${port}/health; do sleep 2; done' || true
+                        timeout 30 sh -c 'until curl -f http://localhost:${port}/health 2>/dev/null; do echo "Waiting for app..."; sleep 2; done' || echo "Health check timed out"
                     """
                 }
             }
@@ -95,10 +85,10 @@ pipeline {
             echo "Deployment to ${params.ENVIRONMENT} finished"
         }
         success {
-            echo "✓ SUCCESS! Application deployed to ${params.ENVIRONMENT}"
+            echo "? SUCCESS! Application deployed to ${params.ENVIRONMENT}"
         }
         failure {
-            echo "✗ FAILED! Deployment to ${params.ENVIRONMENT} failed"
+            echo "? FAILED! Deployment to ${params.ENVIRONMENT} failed"
         }
     }
 }

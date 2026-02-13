@@ -7,13 +7,14 @@ services:
       context: .jenkins
       dockerfile: Dockerfile.jenkins
     container_name: myshop-jenkins
+    user: root
     ports:
       - "9090:8080"      # Jenkins UI (changed from 8080 to avoid conflict with local dev)
       - "50000:50000"    # Jenkins agent
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock  # Docker socket access
-      - .:/workspace     # Mount workspace for builds
+      - .:/workspace:rw     # Mount workspace for builds with read-write permissions
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
       - JAVA_OPTS=-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
