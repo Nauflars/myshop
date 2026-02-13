@@ -1,34 +1,44 @@
-﻿// Ultra-simplified CI/CD Pipeline
 pipeline {
     agent any
     
     options {
         skipDefaultCheckout()
-        timeout(time: 30, unit: 'MINUTES')
     }
     
     stages {
         stage('Info') {
             steps {
-                echo "========== Myshop CI/CD Pipeline =========="
-                echo "Build: ${BUILD_NUMBER}"
+                echo '=========================================='
+                echo 'Myshop CI/CD Pipeline'
+                echo '=========================================='
             }
         }
         
-        stage('Test Commands') {
+        stage('Workspace Check') {
             steps {
-                echo 'Testing basic commands...'
-                sh 'echo "Shell works!"'
-                sh 'pwd'
-                sh 'whoami'
-                sh 'ls -la /workspace | head -n 10'
+                sh 'echo "Current user: $(whoami)"'
+                sh 'echo "Current dir: $(pwd)"'
+                sh 'ls -la /workspace | head -20'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'cd /workspace && composer --version'
+                sh 'cd /workspace && echo "Build stage completed"'
             }
         }
     }
     
     post {
         always {
-            echo "Build: ${currentBuild.result}"
+            echo "Pipeline finished"
+        }
+        success {
+            echo 'SUCCESS!'
+        }
+        failure {
+            echo 'FAILED!'
         }
     }
 }
