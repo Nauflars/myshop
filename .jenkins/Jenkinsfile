@@ -5,40 +5,100 @@ pipeline {
         skipDefaultCheckout()
     }
     
+    parameters {
+        choice(name: 'ENVIRONMENT', choices: ['test', 'prod'], description: 'Target environment')
+        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch to deploy')
+    }
+    
+    environment {
+        WORKSPACE_DIR = '/workspace'
+        CONTAINER_NAME = "${params.ENVIRONMENT == 'test' ? 'myshop-test-php' : 'myshop-prod-php'}"
+        APP_ENV = "${params.ENVIRONMENT}"
+    }
+    
     stages {
         stage('Info') {
             steps {
                 echo '=========================================='
-                echo 'Myshop CI/CD Pipeline'
+                echo "Myshop Deployment - ${params.ENVIRONMENT.toUpperCase()}"
+                echo "Branch: ${params.GIT_BRANCH}"
                 echo '=========================================='
             }
         }
         
-        stage('Workspace Check') {
+        stage('Git Checkout') {
             steps {
-                sh 'echo "Current user: $(whoami)"'
-                sh 'echo "Current dir: $(pwd)"'
-                sh 'ls -la /workspace | head -20'
+                echo "Checking out branch ${params.GIT_BRANCH}..."
+                dir('/workspace') {
+                    sh 'git fetch origin'
+                    sh "git checkout ${params.GIT_BRANCH}"
+                    sh 'git pull origin ' + params.GIT_BRANCH
+                    sh 'git log -1 --oneline'
+                }
             }
         }
         
-        stage('Build') {
+        stage('Install Dependencies') {
             steps {
-                sh 'cd /workspace && composer --version'
-                sh 'cd /workspace && echo "Build stage completed"'
+                echo 'Installing PHP dependencies...'
+                sh """
+                    docker exec ${CONTAINER_NAME} composer install \
+                        --working-dir=/var/www/html \
+                        --no-interaction \
+                        --optimize-autoloader \
+                        --no-dev
+                """
+            }
+        }
+        
+        stage('Database Migration') {
+            steps {
+                echo 'Running database migrations...'
+                sh """
+                    docker exec ${CONTAINER_NAME} php /var/www/html/bin/console \
+                        doctrine:migrations:migrate \
+                        --no-interaction \
+                        --allow-no-migration
+                """
+            }
+        }
+        
+        stage('Clear Cache') {
+            steps {
+                echo 'Clearing Symfony cache...'
+                sh """
+                    docker exec ${CONTAINER_NAME} php /var/www/html/bin/console cache:clear \
+                        --no-interaction
+                """
+                sh """
+                    docker exec ${CONTAINER_NAME} php /var/www/html/bin/console cache:warmup \
+                        --no-interaction
+                """
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                echo 'Performing health check...'
+                script {
+                    def port = params.ENVIRONMENT == 'test' ? '8081' : '8082'
+                    sh """
+                        timeout 30 sh -c 'until curl -f http://localhost:${port}/health; do sleep 2; done' || true
+                    """
+                }
             }
         }
     }
     
     post {
         always {
-            echo "Pipeline finished"
+            echo "Deployment to ${params.ENVIRONMENT} finished"
         }
         success {
-            echo 'SUCCESS!'
+            echo "✓ SUCCESS! Application deployed to ${params.ENVIRONMENT}"
         }
         failure {
-            echo 'FAILED!'
+            echo "✗ FAILED! Deployment to ${params.ENVIRONMENT} failed"
         }
     }
 }

@@ -26,17 +26,14 @@ services:
       timeout: 10s
       retries: 5
   
-  # Test environment (simulates staging)
-  myshop-test:
+  # Test environment - PHP-FPM
+  myshop-test-php:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: myshop-test
-    ports:
-      - "8081:80"       # Test environment
+    container_name: myshop-test-php
     volumes:
-      - test_releases:/var/www/myshop/releases
-      - test_shared:/var/www/myshop/shared
+      - .:/var/www/html
     environment:
       - APP_ENV=test
       - DATABASE_URL=mysql://root:testpass@mysql-test:3306/myshop_test
@@ -53,22 +50,39 @@ services:
       - cicd_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Test environment - Nginx
+  myshop-test-nginx:
+    image: nginx:alpine
+    container_name: myshop-test-nginx
+    ports:
+      - "8081:80"       # Test environment
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/test.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - myshop-test-php
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
   
-  # Production environment (simulates production)
-  myshop-prod:
+  # Production environment - PHP-FPM
+  myshop-prod-php:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: myshop-prod
-    ports:
-      - "8082:80"       # Production environment
+    container_name: myshop-prod-php
     volumes:
-      - prod_releases:/var/www/myshop/releases
-      - prod_shared:/var/www/myshop/shared
+      - .:/var/www/html
     environment:
       - APP_ENV=prod
       - DATABASE_URL=mysql://root:prodpass@mysql-prod:3306/myshop_prod
@@ -85,7 +99,27 @@ services:
       - cicd_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD-SHELL", "php-fpm -t || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Production environment - Nginx
+  myshop-prod-nginx:
+    image: nginx:alpine
+    container_name: myshop-prod-nginx
+    ports:
+      - "8082:80"       # Production environment
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - myshop-prod-php
+    networks:
+      - cicd_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
