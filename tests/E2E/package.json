@@ -1,0 +1,23 @@
+{
+  "name": "myshop-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for MyShop using Playwright",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:test-env": "BASE_URL=http://localhost:8081 playwright test",
+    "test:prod-env": "BASE_URL=http://localhost:8082 playwright test",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen"
+  },
+  "keywords": ["playwright", "e2e", "testing"],
+  "author": "MyShop DevOps Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,48 @@
+---
+# Before symlink hook - runs before the symlink is switched to the new release
+# This ensures all dependencies and preparations are complete before going live
+
+- name: Install Composer dependencies in container
+  command: docker exec {{ target_container }} composer install {% if composer_no_dev %}--no-dev{% endif %} --optimize-autoloader --no-interaction --working-dir={{ ansistrano_release_path.stdout }}
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  environment:
+    COMPOSER_ALLOW_SUPERUSER: "1"
+
+- name: Check for pending database migrations
+  command: docker exec {{ target_container }} php bin/console doctrine:migrations:status --no-interaction
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  register: migration_status
+  changed_when: false
+  failed_when: false
+
+- name: Run database migrations
+  command: docker exec {{ target_container }} php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  environment:
+    APP_ENV: "{{ app_env }}"
+  when: run_migrations | default(true)
+
+- name: Warm up Symfony cache
+  command: docker exec {{ target_container }} php bin/console cache:warmup --env={{ app_env }} --no-interaction
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  when: cache_warmup | default(true)
+
+- name: Install assets
+  command: docker exec {{ target_container }} php bin/console assets:install public --symlink --relative --no-interaction
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  failed_when: false
+
+- name: Clear Doctrine cache
+  command: docker exec {{ target_container }} php bin/console doctrine:cache:clear-metadata --env={{ app_env }} --no-interaction
+  args:
+    chdir: "{{ ansistrano_release_path.stdout }}"
+  failed_when: false
+
+- name: Display pre-deployment checks completed
+  debug:
+    msg: "Pre-deployment tasks completed successfully"

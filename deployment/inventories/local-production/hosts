@@ -1,0 +1,13 @@
+[production]
+localhost ansible_connection=local container_name=myshop-prod
+
+[production:vars]
+ansible_python_interpreter=/usr/bin/python3
+app_env=prod
+deploy_via=copy
+ansistrano_deploy_to=/var/www/myshop
+execute_in_container=true
+database_host=mysql-prod
+redis_host=redis-prod
+mongodb_host=mongodb-prod
+rabbitmq_host=rabbitmq-prod

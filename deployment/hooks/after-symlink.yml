@@ -1,0 +1,29 @@
+---
+# After symlink hook - runs after the symlink is switched to the new release
+# This ensures services are reloaded and caches are cleared
+
+- name: Reload PHP-FPM to pick up new code
+  command: docker exec {{ target_container }} service php8.3-fpm reload
+  changed_when: true
+  failed_when: false
+  ignore_errors: yes
+
+- name: Clear OPcache
+  command: docker exec {{ target_container }} php {{ ansistrano_deploy_to }}/current/bin/console cache:pool:clear cache.global_clearer
+  changed_when: true
+  failed_when: false
+
+- name: Clear application cache
+  command: docker exec {{ target_container }} php {{ ansistrano_deploy_to }}/current/bin/console cache:clear --env={{ app_env }} --no-interaction
+  changed_when: true
+  failed_when: false
+
+- name: Restart Messenger consumers (if running)
+  command: docker exec {{ target_container }} php {{ ansistrano_deploy_to }}/current/bin/console messenger:stop-workers
+  changed_when: true
+  failed_when: false
+  ignore_errors: yes
+
+- name: Display post-deployment tasks completed
+  debug:
+    msg: "Post-deployment tasks completed successfully"

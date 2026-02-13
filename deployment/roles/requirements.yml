@@ -1,0 +1,7 @@
+---
+# Ansistrano roles for zero-downtime deployment
+- src: ansistrano.deploy
+  version: 3.13.0
+
+- src: ansistrano.rollback
+  version: 3.5.0

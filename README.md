@@ -14,6 +14,12 @@ A Symfony 7 e-commerce application built with Domain-Driven Design (DDD) archite
   - Admin Virtual Assistant for operational support
 - **RESTful API**: JSON API for all operations
 - **Docker Support**: Complete containerized environment with MongoDB and Redis
+- **CI/CD Pipeline** 🚀 NEW: Fully automated Jenkins-based CI/CD with local Docker deployment
+  - Pull request validation with parallel testing
+  - Automated test environment deployment
+  - E2E testing with Playwright
+  - Manual production approvals
+  - One-click rollback capability
 - **Responsive Design**: Fully responsive UI for desktop, tablet, and mobile devices
 - **Comprehensive Tests**: Unit, integration, and performance tests
 - **Custom Brand Colors**: Professional color scheme with #06038D primary and #E87722 secondary colors
@@ -63,6 +69,8 @@ Technical implementations:
 
 ## Quick Start
 
+### Development Environment
+
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
@@ -106,6 +114,28 @@ Technical implementations:
    - **phpMyAdmin** (MySQL): http://localhost:8081
    - **Mongo Express** (MongoDB): http://localhost:8082 (user: `admin`, pass: `admin`)
    - **Redis Commander** (Redis): http://localhost:8083
+
+### CI/CD Environment (Local Jenkins Pipeline) 🚀
+
+For automated testing and deployment workflows:
+
+1. **Start CI/CD infrastructure**:
+   ```bash
+   docker-compose -f docker-compose.ci.yml up -d
+   ```
+
+2. **Access CI/CD tools**:
+   - **Jenkins**: http://localhost:9090
+   - **Test Environment**: http://localhost:8081
+   - **Production Environment**: http://localhost:8082
+
+3. **Verify health**:
+   ```bash
+   curl http://localhost:8081/health
+   curl http://localhost:8082/health
+   ```
+
+📖 **Full CI/CD Guide**: See [deployment/docs/quickstart-cicd.md](deployment/docs/quickstart-cicd.md) for complete setup, workflow, and usage instructions.
 
 ## Default Users
 
@@ -180,6 +210,106 @@ make logs        # Tail container logs
 make clean       # Clean cache and logs
 make db-reset    # Reset database (drop, create, migrate, fixtures)
 ```
+
+## CI/CD Pipeline 🚀
+
+The project includes a complete local Docker-based CI/CD pipeline with Jenkins and Ansistrano for automated testing and deployment.
+
+### Key Features
+
+- **🔍 Pull Request Validation**: Automated testing on every PR (unit, integration, static analysis)
+- **🚀 Automated Deployment**: Push to master deploys to test environment automatically
+- **🎭 E2E Testing**: Playwright browser tests validate critical user journeys
+- **✅ Manual Approvals**: Production deployments require manual approval
+- **⏪ One-Click Rollback**: Instant rollback to any previous release
+- **📊 Health Monitoring**: Comprehensive health checks for all services
+- **🔔 Notifications**: Slack integration for deployment events
+
+### Quick Start
+
+```bash
+# Start CI/CD infrastructure
+docker-compose -f docker-compose.ci.yml up -d
+
+# Access Jenkins
+open http://localhost:9090
+
+# Verify environments
+curl http://localhost:8081/health  # Test
+curl http://localhost:8082/health  # Production
+```
+
+### Development Workflow
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/my-feature
+
+# 2. Make changes and push
+git push origin feature/my-feature
+
+# 3. Open PR → Jenkins validates automatically
+
+# 4. Merge to master → Deploys to test automatically
+
+# 5. Approve in Jenkins → Deploys to production
+```
+
+### Pipeline Architecture
+
+```
+PR → Validation (8-12 min)
+     ├─ Unit Tests (parallel)
+     ├─ Integration Tests (parallel)
+     └─ Static Analysis (parallel)
+
+Master → Test Deployment (15-20 min)
+         ├─ Build Assets
+         ├─ Run Tests
+         ├─ Deploy to Test (Ansible)
+         ├─ Health Checks
+         └─ E2E Tests (Playwright)
+
+Approved → Production (10-15 min)
+           ├─ Manual Approval
+           ├─ Pre-deploy Checks
+           ├─ Deploy to Prod (Ansible)
+           ├─ Smoke Tests
+           └─ Tag Release
+```
+
+### Documentation
+
+- **📖 Quick Start**: [deployment/docs/quickstart-cicd.md](deployment/docs/quickstart-cicd.md)
+- **📘 Usage Guide**: [docker-compose.ci.yml.usage.md](docker-compose.ci.yml.usage.md)
+- **🔧 Jenkins Pipelines**: [.jenkins/README.md](.jenkins/README.md)
+- **🔄 Rollback Procedure**: [deployment/docs/rollback-procedure.md](deployment/docs/rollback-procedure.md)
+- **📗 Operations Runbook**: [deployment/docs/runbook.md](deployment/docs/runbook.md)
+- **❗ Troubleshooting**: [deployment/docs/troubleshooting.md](deployment/docs/troubleshooting.md)
+
+### Key Scripts
+
+```bash
+# Deployment scripts
+scripts/deploy/smoke-test.sh        # Post-deployment verification
+scripts/deploy/pre-deploy.sh        # Pre-deployment checks
+scripts/deploy/post-deploy.sh       # Post-deployment cleanup
+scripts/deploy/rollback-verify.sh   # Verify rollback success
+
+# CI scripts
+scripts/ci/run-tests.sh             # Execute test suites
+scripts/ci/check-migrations.sh      # Check pending migrations
+scripts/ci/build-assets.sh          # Compile frontend assets
+```
+
+### Environments
+
+| Environment | URL | Purpose | Deployment |
+|-------------|-----|---------|------------|
+| Test | http://localhost:8081 | Integration testing, E2E validation | Automatic on master merge |
+| Production | http://localhost:8082 | Production simulation | Manual approval required |
+
+
 
 ## Development
 
@@ -459,11 +589,36 @@ The chatbot uses symfony/AI with custom tools that integrate with the applicatio
 ## Project Structure
 
 ```
-myshopmyshop/
-├── bin/                    # Symfony console
-├── config/                 # Configuration files
-│   ├── packages/          # Bundle configurations
-│   └── routes.yaml        # Route definitions
+myshop/
+├── .jenkins/              # CI/CD Pipeline Configuration 🚀
+│   ├── Dockerfile.jenkins # Custom Jenkins image
+│   ├── Jenkinsfile       # Main deployment pipeline
+│   ├── Jenkinsfile.pr    # PR validation pipeline
+│   ├── Jenkinsfile.rollback # Rollback pipeline
+│   ├── stages/           # Reusable pipeline stages
+│   ├── scripts/          # Helper scripts
+│   └── README.md         # Pipeline documentation
+├── bin/                   # Symfony console
+├── config/                # Configuration files
+│   ├── packages/         # Bundle configurations
+│   └── routes.yaml       # Route definitions
+├── deployment/            # Ansible Deployment 🚀
+│   ├── ansible.cfg       # Ansible configuration
+│   ├── deploy-local.yml  # Main deployment playbook
+│   ├── rollback-local.yml # Rollback playbook
+│   ├── inventories/      # Environment inventories
+│   │   ├── local-test/   # Test environment
+│   │   └── local-production/ # Production environment
+│   ├── hooks/            # Deployment hooks
+│   │   ├── before-symlink.yml # Pre-deployment
+│   │   └── after-symlink.yml  # Post-deployment
+│   ├── library/          # Custom Ansible modules
+│   ├── roles/            # Ansible roles
+│   └── docs/             # Deployment documentation
+│       ├── quickstart-cicd.md
+│       ├── troubleshooting.md
+│       ├── runbook.md
+│       └── rollback-procedure.md
 ├── docker/                # Docker configuration
 │   ├── mysql/            # MySQL init scripts
 │   └── nginx/            # Nginx configuration
@@ -471,6 +626,17 @@ myshopmyshop/
 ├── public/                # Web root
 │   ├── css/              # Stylesheets
 │   └── js/               # JavaScript files
+├── scripts/               # Helper scripts
+│   ├── ci/               # CI/CD scripts 🚀
+│   │   ├── run-tests.sh
+│   │   ├── check-migrations.sh
+│   │   ├── build-assets.sh
+│   │   └── archive-vendor.sh
+│   └── deploy/           # Deployment scripts 🚀
+│       ├── smoke-test.sh
+│       ├── pre-deploy.sh
+│       ├── post-deploy.sh
+│       └── rollback-verify.sh
 ├── src/                   # Source code
 │   ├── Application/      # Use cases & DTOs
 │   ├── Domain/           # Entities & business logic
@@ -479,11 +645,17 @@ myshopmyshop/
 ├── templates/             # Twig templates
 ├── tests/                 # PHPUnit tests
 │   ├── Unit/             # Unit tests
-│   └── Integration/      # Integration tests
+│   ├── Integration/      # Integration tests
+│   └── E2E/              # End-to-End tests 🚀
+│       ├── playwright.config.ts
+│       ├── configs/      # Environment configs
+│       ├── tests/        # Test specs
+│       └── fixtures/     # Page objects & test data
 ├── var/                   # Cache & logs
 ├── .env                   # Environment configuration
 ├── composer.json          # PHP dependencies
-├── docker-compose.yml     # Docker services
+├── docker-compose.yml     # Development environment
+├── docker-compose.ci.yml  # CI/CD environment 🚀
 ├── Dockerfile             # PHP container definition
 └── Makefile               # Common commands
 ```
