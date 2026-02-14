@@ -1,0 +1,83 @@
+# Symfony Messenger Configuration - RabbitMQ Async Transport
+
+framework:
+    messenger:
+        # Failure transport (Dead Letter Queue)
+        failure_transport: failed
+
+        # Transport definitions - All async via RabbitMQ
+        transports:
+            # RabbitMQ transport for user embedding updates
+            user_embedding_updates:
+                dsn: '%env(RABBITMQ_DSN)%'
+                serializer: 'messenger.transport.symfony_serializer'
+                options:
+                    exchange:
+                        name: 'user_embedding_updates'
+                        type: direct
+                        durable: true
+                    queues:
+                        user_embedding_updates:
+                            binding_keys: ['user.embedding.update']
+                            durable: true
+                    auto_setup: true
+                retry_strategy:
+                    max_retries: 5
+                    delay: 5000
+                    multiplier: 2
+                    max_delay: 30000
+
+            # RabbitMQ transport for embedding sync operations
+            embedding_sync:
+                dsn: '%env(RABBITMQ_DSN)%'
+                serializer: 'messenger.transport.symfony_serializer'
+                options:
+                    exchange:
+                        name: 'embedding_sync'
+                        type: direct
+                        durable: true
+                    queues:
+                        embedding_sync:
+                            binding_keys: ['embedding.sync']
+                            durable: true
+                    auto_setup: true
+                retry_strategy:
+                    max_retries: 3
+                    delay: 3000
+                    multiplier: 2
+
+            # Failed messages transport (Dead Letter Queue - RabbitMQ)
+            failed:
+                dsn: '%env(RABBITMQ_DSN)%'
+                serializer: 'messenger.transport.symfony_serializer'
+                options:
+                    exchange:
+                        name: 'failed'
+                        type: direct
+                        durable: true
+                    queues:
+                        failed:
+                            binding_keys: ['failed']
+                            durable: true
+                    auto_setup: true
+
+        # Message routing - Send all messages to RabbitMQ transports
+        routing:
+            'App\Application\Message\UpdateUserEmbeddingMessage':
+                senders: ['user_embedding_updates']
+            'App\Application\Message\SyncEmbeddingMessage':
+                senders: ['embedding_sync']
+
+        # Single bus for both sending and receiving
+        default_bus: messenger.bus.default
+
+        buses:
+            messenger.bus.default:
+                # Explicitly order middleware: send_message FIRST, then handle
+                default_middleware:
+                    enabled: false  # Disable default order
+                middleware:
+                    - send_message  # FORCE sending to transport BEFORE handling
+                    - validation
+                    - doctrine_transaction
+                    - handle_message  # Handle locally only if not sent to transport

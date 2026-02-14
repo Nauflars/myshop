@@ -13,9 +13,15 @@ services:
     _defaults:
         autowire: true
         autoconfigure: true
+        public: false  # Explicitly set default
         bind:
             $defaultLowStockThreshold: '%app.stock.low_threshold%'
             $databaseName: '%env(MONGODB_DB)%'
+
+    # Make Messenger bus public
+    Symfony\Component\Messenger\MessageBusInterface:
+        alias: 'messenger.bus.default'
+        public: true
 
     App\:
         resource: '../src/'
@@ -50,6 +56,10 @@ services:
     # Application Port Interfaces -> Infrastructure Implementations
     App\Application\Port\MessagePublisherInterface:
         class: App\Infrastructure\Queue\RabbitMQPublisher
+
+    # Make RabbitMQPublisher public for testing scripts
+    App\Infrastructure\Queue\RabbitMQPublisher:
+        public: true
 
     # Embedding Configuration (spec-014)
     App\Domain\ValueObject\EmbeddingWeights:

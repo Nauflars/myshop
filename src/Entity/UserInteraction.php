@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Domain\ValueObject\EventType;
 use App\Repository\UserInteractionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM_Entity(repositoryClass: UserInteractionRepository::class)]
+#[ORM\Entity(repositoryClass: UserInteractionRepository::class)]
 #[ORM\Table(name: 'user_interactions')]
 class UserInteraction
 {
     #[ORM\Id]
-    #[ORM_GeneratedValue]
+    #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
@@ -28,13 +29,13 @@ class UserInteraction
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $searchPhrase = null;
 
-    #[ORM_Column(type: 'integer', nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $productId = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    #[ORM_Column(type: 'string', length: 36, unique: true)]
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
     private string $messageId;
 
     public function __construct(
@@ -53,14 +54,19 @@ class UserInteraction
         $this->messageId = \Symfony\Component\Uid\Uuid::v4()->toRfc4122();
     }
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
     public function getUserId(): int
     {
         return $this->userId;
     }
 
-    public function getEventType(): string
+    public function getEventType(): EventType
     {
-        return $this->eventType;
+        return EventType::from($this->eventType);
     }
 
     public function getMessageId(): string
@@ -81,5 +87,15 @@ class UserInteraction
     public function getProductId(): ?int
     {
         return $this->productId;
+    }
+
+    public function getMetadata(): ?array
+    {
+        return [];
+    }
+
+    public function markAsProcessedToQueue(): void
+    {
+        // Marker method - can be used to track if event was published
     }
 }

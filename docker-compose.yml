@@ -137,7 +137,7 @@ services:
       REDIS_URL: redis://redis:6379
       MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME:-root}:${MONGO_ROOT_PASSWORD:-rootpassword}@mongodb:27017
       MONGODB_DATABASE: ${MONGO_DATABASE:-myshop}
-      RABBITMQ_DSN: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672/${RABBITMQ_VHOST:-%2F}
+      RABBITMQ_DSN: ${RABBITMQ_DSN}
       APP_ENV: ${APP_ENV:-dev}
       APP_SECRET: ${APP_SECRET:-8ce516593a3682d05d249ef72edac2e5}
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
@@ -156,7 +156,7 @@ services:
     networks:
       - myshop_network
     restart: on-failure
-    command: ["php", "bin/console", "messenger:consume", "user_embedding_updates", "--time-limit=3600", "--memory-limit=512M"]
+    command: ["php", "bin/console", "messenger:consume", "user_embedding_updates", "embedding_sync", "--time-limit=3600", "--memory-limit=512M"]
 
   # phpMyAdmin - MySQL Web Interface
   phpmyadmin:

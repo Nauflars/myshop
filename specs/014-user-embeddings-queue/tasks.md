@@ -95,7 +95,7 @@
 **Story Tasks**:
 
 - [X] T037 [US4] Configure retry_strategy in config/packages/messenger.yaml with max_retries=5, delay=5000ms, exponential backoff multiplier=2
-- [X] T038 [US4] Configure failed transport pointing to doctrine://default?queue_name=messenger_failed_messages
+- [X] T038 [US4] Configure failed transport using RabbitMQ with exchange 'failed' and queue 'failed' for dead letter processing
 - [X] T039 [US4] Add idempotency check in UpdateUserEmbeddingHandler using message_id  and MongoDB $max operator for last_updated
 - [X] T040 [US4] Add comprehensive error handling in UpdateUserEmbeddingHandler with try-catch for MongoException, OpenAIException
 - [X] T041 [US4] Add structured logging for all errors with context (user_id, message_id, retry_count, error_message)

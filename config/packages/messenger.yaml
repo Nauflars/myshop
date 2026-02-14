@@ -1,37 +1,82 @@
-# Symfony Messenger Configuration for User Embeddings Queue
-
 framework:
-    messenger:
-        # Failure transport (Dead Letter Queue)
-        failure_transport: failed
+  messenger:
+    # Enviar mensajes fallidos a un failure transport (DLQ)
+    failure_transport: failed
 
-        # Transport definitions  
-        transports:
-            # Doctrine (MySQL) transport for user embedding updates
+    # ====== TRANSPORTS (RabbitMQ) ======
+    transports:
+      # 1) Actualizaciones de embeddings de usuario
+      user_embedding_updates:
+        dsn: '%env(RABBITMQ_DSN)%'
+        serializer: 'messenger.transport.symfony_serializer'
+        options:
+          auto_setup: true
+          exchange:
+            name: 'user_embedding_updates'
+            type: direct
+            # CLAVE: si usas direct + binding_keys, publica con routing key por defecto
+            default_publish_routing_key: 'user.embedding.update'
+          queues:
             user_embedding_updates:
-                dsn: 'doctrine://default?queue_name=user_embedding_updates'
-                serializer: 'messenger.transport.symfony_serializer'
+              binding_keys: [ 'user.embedding.update' ]
+        retry_strategy:
+          max_retries: 5
+          delay: 5000
+          multiplier: 2
+          max_delay: 30000
 
-            # Failed messages transport (DLQ - uses Doctrine/MySQL)
+      # 2) Sincronización de embeddings
+      embedding_sync:
+        dsn: '%env(RABBITMQ_DSN)%'
+        serializer: 'messenger.transport.symfony_serializer'
+        options:
+          auto_setup: true
+          exchange:
+            name: 'embedding_sync'
+            type: direct
+            default_publish_routing_key: 'embedding.sync'
+          queues:
+            embedding_sync:
+              binding_keys: [ 'embedding.sync' ]
+        retry_strategy:
+          max_retries: 3
+          delay: 3000
+          multiplier: 2
+          max_delay: 30000
+
+      # 3) Failure transport (DLQ) en RabbitMQ
+      failed:
+        dsn: '%env(RABBITMQ_DSN)%'
+        serializer: 'messenger.transport.symfony_serializer'
+        options:
+          auto_setup: true
+          exchange:
+            name: 'failed'
+            type: direct
+            default_publish_routing_key: 'failed'
+          queues:
             failed:
-                dsn: 'doctrine://default?queue_name=failed'
-                serializer: 'messenger.transport.symfony_serializer'
+              binding_keys: [ 'failed' ]
 
-        # Message routing - Send UpdateUserEmbeddingMessage to RabbitMQ transport
-        routing:
-            'App\Application\Message\UpdateUserEmbeddingMessage':
-                senders: ['user_embedding_updates']
+    # ====== ROUTING ======
+    # Cualquier mensaje que matchee aquí se manda a RabbitMQ (asíncrono)
+    routing:
+      'App\Application\Message\UpdateUserEmbeddingMessage': user_embedding_updates
+      'App\Application\Message\SyncEmbeddingMessage': embedding_sync
 
-        # Single bus for both sending and receiving
-        default_bus: messenger.bus.default
+    # ====== BUS ======
+    default_bus: messenger.bus.default
 
-        buses:
-            messenger.bus.default:
-                # Explicitly order middleware: send_message FIRST, then handle
-                default_middleware:
-                    enabled: false  # Disable default order
-                middleware:
-                    - send_message  # FORCE sending to transport BEFORE handling
-                    - validation
-                    - doctrine_transaction
-                    - handle_message  # Handle locally only if not sent to transport
+    buses:
+      messenger.bus.default:
+        # Mantén el default middleware ENABLED para que existan send_message/handle_message
+        # y además fuerza error si un mensaje no tiene sender o handler (como querías).
+        default_middleware:
+          enabled: true
+          allow_no_senders: false
+          allow_no_handlers: false
+
+        # Middleware extra (se ejecutan dentro del bus)
+        middleware:
+          - validation
+          - doctrine_transaction

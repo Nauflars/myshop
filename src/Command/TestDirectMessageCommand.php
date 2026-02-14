@@ -30,7 +30,7 @@ final class TestDirectMessageCommand extends Command
         $output->writeln('Creating test message...');
 
         $message = UpdateUserEmbeddingMessage::fromDomainEvent(
-            userId: 999,
+            userId: '999',
             eventType: EventType::SEARCH,
             searchPhrase: 'test search query',
             productId: null,

@@ -61,7 +61,6 @@ services:
 
     # Message Handler (processes messages ONLY from RabbitMQ transport - NEVER synchronously)
     App\Infrastructure\MessageHandler\UpdateUserEmbeddingHandler:
-        autoconfigure: false
         arguments:
             $calculateUseCase: '@App\Application\UseCase\CalculateUserEmbedding'
             $embeddingRepository: '@App\Domain\Repository\UserEmbeddingRepositoryInterface'

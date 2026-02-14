@@ -264,7 +264,15 @@ Examples:
 **Implementation Notes**:
 - Configure Symfony Messenger failed transport:
   ```yaml
-  failed: 'doctrine://default?queue_name=failed'
+  failed:
+      dsn: '%env(RABBITMQ_DSN)%'
+      options:
+          exchange:
+              name: 'failed'
+              type: direct
+          queues:
+              failed:
+                  binding_keys: ['failed']
   ```
 - Create console command: `bin/console messenger:failed:retry --force`
 - Set up monitoring alert: `rabbitmq_queue_messages{queue="failed"} > 10`

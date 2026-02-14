@@ -23,7 +23,7 @@
         "symfony/ai-open-ai-platform": "*",
         "symfony/ai-platform": "^0.1",
         "symfony/ai-store": "^0.1",
-        "symfony/amqp-messenger": "^7.3",
+        "symfony/amqp-messenger": "7.*",
         "symfony/asset": "^7.3",
         "symfony/clock": "^7.3",
         "symfony/console": "^7.3",

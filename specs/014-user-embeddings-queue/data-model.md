@@ -518,8 +518,15 @@ framework:
                     delay: 5000
                     multiplier: 2
                     max_delay: 60000
-                failed:
-                    dsn: 'doctrine://default?queue_name=messenger_failed_messages'
+            failed:
+                dsn: '%env(RABBITMQ_DSN)%'
+                options:
+                    exchange:
+                        name: 'failed'
+                        type: direct
+                    queues:
+                        failed:
+                            binding_keys: ['failed']
 ```
 
 ---
