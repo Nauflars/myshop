@@ -13,13 +13,13 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 /**
- * UpdateUserEmbeddingHandler - RabbitMQ message consumer with idempotency and fault tolerance
- * 
+ * UpdateUserEmbeddingHandler - RabbitMQ message consumer with idempotency and fault tolerance.
+ *
  * Implements spec-014 US4: Fault-tolerant message processing
  * - Idempotency check using message_id
  * - Comprehensive error handling
  * - Structured logging with context
- * 
+ *
  * Note: Registered ONLY to command.bus with from_transport='user_embedding_updates' in services/queue.yaml
  * This ensures the handler ONLY processes messages from RabbitMQ, not during message dispatch
  * The AsMessageHandler attribute has been removed to prevent auto-registration to all buses
@@ -35,15 +35,17 @@ final class UpdateUserEmbeddingHandler
         private readonly UserEmbeddingRepositoryInterface $embeddingRepository,
         private readonly ProductEmbeddingRepositoryInterface $productEmbeddingRepository,
         private readonly EmbeddingServiceInterface $embeddingService,
-        private readonly LoggerInterface $logger
-    ) {}
+        private readonly LoggerInterface $logger,
+    ) {
+    }
 
     /**
-     * Handle UpdateUserEmbeddingMessage from RabbitMQ queue
-     * 
+     * Handle UpdateUserEmbeddingMessage from RabbitMQ queue.
+     *
      * @param UpdateUserEmbeddingMessage $message Message from queue
+     *
      * @throws UnrecoverableMessageHandlingException For irrecoverable errors
-     * @throws \Exception For retryable errors
+     * @throws \Exception                            For retryable errors
      */
     public function __invoke(UpdateUserEmbeddingMessage $message): void
     {
@@ -64,23 +66,24 @@ final class UpdateUserEmbeddingHandler
                     'message_id' => $message->messageId,
                     'user_id' => $message->userId,
                 ]);
+
                 return;
             }
 
             // 2. Check for timestamp-based idempotency
             // If user embedding exists and was updated after this event, skip
             $existingEmbedding = $this->embeddingRepository->findByUserId($message->userId);
-            if ($existingEmbedding !== null && 
-                $existingEmbedding->lastUpdatedAt > $message->occurredAt) {
-                
+            if (null !== $existingEmbedding
+                && $existingEmbedding->lastUpdatedAt > $message->occurredAt) {
                 $this->logger->info('User embedding already up-to-date (newer than event), skipping', [
                     'message_id' => $message->messageId,
                     'user_id' => $message->userId,
                     'event_occurred_at' => $message->occurredAt->format('c'),
                     'embedding_updated_at' => $existingEmbedding->lastUpdatedAt->format('c'),
                 ]);
-                
+
                 $this->markAsProcessed($message->messageId);
+
                 return;
             }
 
@@ -108,7 +111,6 @@ final class UpdateUserEmbeddingHandler
                 'last_updated_at' => $userEmbedding->lastUpdatedAt->format('c'),
                 'processing_time_ms' => round($duration, 2),
             ]);
-
         } catch (\InvalidArgumentException $e) {
             // Irrecoverable error: invalid message data
             $this->logger->error('Invalid message data (irrecoverable)', [
@@ -118,12 +120,7 @@ final class UpdateUserEmbeddingHandler
                 'exception' => get_class($e),
             ]);
 
-            throw new UnrecoverableMessageHandlingException(
-                'Invalid message data: ' . $e->getMessage(),
-                0,
-                $e
-            );
-
+            throw new UnrecoverableMessageHandlingException('Invalid message data: '.$e->getMessage(), 0, $e);
         } catch (\MongoDB\Driver\Exception\ConnectionException $e) {
             // Retryable error: MongoDB connection failed
             $this->logger->warning('MongoDB connection failed (retryable)', [
@@ -134,7 +131,6 @@ final class UpdateUserEmbeddingHandler
             ]);
 
             throw $e; // Re-throw for retry
-
         } catch (\RuntimeException $e) {
             // Potentially retryable error: Repository save failed (optimistic locking)
             if (str_contains($e->getMessage(), 'optimistic locking')) {
@@ -156,7 +152,6 @@ final class UpdateUserEmbeddingHandler
             ]);
 
             throw $e;
-
         } catch (\Throwable $e) {
             // Generic error handling
             $this->logger->error('Failed to process user embedding update', [
@@ -174,7 +169,7 @@ final class UpdateUserEmbeddingHandler
     }
 
     /**
-     * Check if message has already been processed (idempotency)
+     * Check if message has already been processed (idempotency).
      */
     private function isAlreadyProcessed(string $messageId): bool
     {
@@ -182,7 +177,7 @@ final class UpdateUserEmbeddingHandler
     }
 
     /**
-     * Mark message as processed (idempotency cache)
+     * Mark message as processed (idempotency cache).
      */
     private function markAsProcessed(string $messageId): void
     {
@@ -199,21 +194,22 @@ final class UpdateUserEmbeddingHandler
     }
 
     /**
-     * Retrieve event embedding based on event type
-     * 
+     * Retrieve event embedding based on event type.
+     *
      * For product events: fetch from MongoDB product_embeddings collection
      * For search events: TODO - call AI service to generate from search phrase
-     * 
+     *
      * @param UpdateUserEmbeddingMessage $message Message containing event data
+     *
      * @return array<float> 1536-dimensional embedding vector
      */
     private function retrieveEventEmbedding(UpdateUserEmbeddingMessage $message): array
     {
         // Product events: retrieve from product_embeddings collection
-        if ($message->eventType->requiresProduct() && $message->productId !== null) {
+        if ($message->eventType->requiresProduct() && null !== $message->productId) {
             $productEmbedding = $this->productEmbeddingRepository->findEmbeddingByProductId($message->productId);
 
-            if ($productEmbedding !== null) {
+            if (null !== $productEmbedding) {
                 $this->logger->info('Retrieved product embedding from MongoDB', [
                     'product_id' => $message->productId,
                     'event_type' => $message->eventType->value,
@@ -233,24 +229,23 @@ final class UpdateUserEmbeddingHandler
         }
 
         // Search events: Generate embedding from search phrase using OpenAI
-        if ($message->eventType->requiresSearchPhrase() && $message->searchPhrase !== null) {
+        if ($message->eventType->requiresSearchPhrase() && null !== $message->searchPhrase) {
             try {
                 $searchEmbedding = $this->embeddingService->generateEmbedding($message->searchPhrase);
-                
+
                 $this->logger->info('Generated embedding from search phrase', [
                     'search_phrase' => $message->searchPhrase,
                     'event_type' => $message->eventType->value,
                     'dimensions' => count($searchEmbedding),
                 ]);
-                
+
                 return $searchEmbedding;
-                
             } catch (\Exception $e) {
                 $this->logger->error('Failed to generate search phrase embedding', [
                     'search_phrase' => $message->searchPhrase,
                     'error' => $e->getMessage(),
                 ]);
-                
+
                 // Fallback to dummy if OpenAI fails
                 return $this->getDummyEmbedding();
             }
@@ -266,8 +261,8 @@ final class UpdateUserEmbeddingHandler
 
     /**
      * Get dummy embedding for testing
-     * Used as fallback when product embedding not found or AI service not integrated
-     * 
+     * Used as fallback when product embedding not found or AI service not integrated.
+     *
      * @return array<float> 1536-dimensional normalized vector
      */
     private function getDummyEmbedding(): array
@@ -276,7 +271,7 @@ final class UpdateUserEmbeddingHandler
         $embedding = [];
         $sumSquares = 0.0;
 
-        for ($i = 0; $i < 1536; $i++) {
+        for ($i = 0; $i < 1536; ++$i) {
             $value = (mt_rand() / mt_getrandmax()) * 2 - 1; // Random -1 to 1
             $embedding[] = $value;
             $sumSquares += $value * $value;
@@ -285,7 +280,7 @@ final class UpdateUserEmbeddingHandler
         // Normalize to unit vector
         $magnitude = sqrt($sumSquares);
         if ($magnitude > 0) {
-            $embedding = array_map(fn($v) => $v / $magnitude, $embedding);
+            $embedding = array_map(fn ($v) => $v / $magnitude, $embedding);
         }
 
         return $embedding;

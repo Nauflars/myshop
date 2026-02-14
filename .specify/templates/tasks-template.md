@@ -8,7 +8,7 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: Tests are MANDATORY per Constitution Principle I (TDD). All features must have tests written FIRST before implementation.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -79,23 +79,28 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (TDD - MANDATORY) 🔴
 
-> **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
+> **TDD REQUIREMENT: Write these tests FIRST, ensure they FAIL (Red), then implement to make them pass (Green)**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Unit tests for domain entities in tests/Unit/Domain/[EntityTest].php
+- [ ] T011 [P] [US1] Unit tests for use cases in tests/Unit/Application/[UseCaseTest].php
+- [ ] T012 [P] [US1] Integration test for repository in tests/Integration/Infrastructure/[RepositoryTest].php
+- [ ] T013 [US1] Integration test for API endpoint in tests/Integration/Infrastructure/[ControllerTest].php
+- [ ] T014 [US1] E2E test for complete user journey (if critical path) in tests/E2E/[JourneyTest].php
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T015 [P] [US1] Create [Entity] in src/Domain/Entity/[Entity].php
+- [ ] T016 [P] [US1] Create [ValueObject] in src/Domain/ValueObject/[ValueObject].php
+- [ ] T017 [P] [US1] Define [Repository] interface in src/Domain/Repository/[Repository].php
+- [ ] T018 [US1] Implement [UseCase] in src/Application/UseCase/[UseCase].php
+- [ ] T019 [US1] Implement [Repository] in src/Infrastructure/Persistence/[DoctrineRepository].php
+- [ ] T020 [US1] Implement [Controller] in src/Infrastructure/Controller/[Controller].php
+- [ ] T021 [US1] Add validation and error handling
+- [ ] T022 [US1] Generate coverage report and verify no decrease
 
-**Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
+**Checkpoint**: User Story 1 fully functional, all tests passing (Green), coverage maintained/increased
 
 ---
 

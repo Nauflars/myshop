@@ -12,14 +12,14 @@ use App\Domain\ValueObject\EventType;
 use App\Domain\ValueObject\SearchQuery;
 use App\Infrastructure\Queue\RabbitMQPublisher;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * AI Tool for semantic product search in Virtual Assistant conversations
- * 
+ * AI Tool for semantic product search in Virtual Assistant conversations.
+ *
  * Implements spec-010 T063-T068: VA integration with semantic search
- * 
+ *
  * Enables customers to search products using natural language:
  * - "show me gear for streaming"
  * - "I need something for home office"
@@ -36,19 +36,20 @@ final class SemanticProductSearchTool
         private readonly UnifiedCustomerContextManager $contextManager,
         private readonly LoggerInterface $aiToolsLogger,
         private readonly Security $security,
-        private readonly RabbitMQPublisher $rabbitMQPublisher
+        private readonly RabbitMQPublisher $rabbitMQPublisher,
     ) {
     }
 
     /**
-     * Search products using natural language or keywords
-     * 
-     * @param string $query Natural language query (e.g., "laptop for gaming", "streaming gear")
-     * @param string|null $mode Search mode: "semantic" (AI-powered) or "keyword" (traditional). Default: semantic
-     * @param int $limit Maximum number of results to return (1-20). Default: 5
-     * @param string|null $category Filter by product category (optional)
-     * @param float $minSimilarity DEPRECATED - Tool uses fixed threshold of 0.3 (same as ProductController)
-     * @param string|null $userId Customer user ID for context enrichment (optional)
+     * Search products using natural language or keywords.
+     *
+     * @param string      $query         Natural language query (e.g., "laptop for gaming", "streaming gear")
+     * @param string|null $mode          Search mode: "semantic" (AI-powered) or "keyword" (traditional). Default: semantic
+     * @param int         $limit         Maximum number of results to return (1-20). Default: 5
+     * @param string|null $category      Filter by product category (optional)
+     * @param float       $minSimilarity DEPRECATED - Tool uses fixed threshold of 0.3 (same as ProductController)
+     * @param string|null $userId        Customer user ID for context enrichment (optional)
+     *
      * @return array Search results with products and metadata
      */
     public function __invoke(
@@ -57,23 +58,23 @@ final class SemanticProductSearchTool
         int $limit = 5,
         ?string $category = null,
         float $minSimilarity = 0.3,
-        ?string $userId = null
+        ?string $userId = null,
     ): array {
         try {
             // Validate and limit results to prevent overwhelming the VA
             $limit = max(1, min(20, $limit));
-            
+
             // IMPORTANT: Use same similarity threshold as ProductController (0.3)
             // This ensures consistent results between AI chat and web search
             $minSimilarity = 0.3;
-            
+
             $this->aiToolsLogger->info('🔍 SemanticProductSearchTool called', [
                 'query' => $query,
                 'mode' => $mode,
                 'limit' => $limit,
                 'category' => $category,
                 'min_similarity' => $minSimilarity,
-                'user_id' => $userId
+                'user_id' => $userId,
             ]);
 
             // T066: Enrich query with customer context if available
@@ -90,42 +91,42 @@ final class SemanticProductSearchTool
 
             // Execute search via facade (handles mode selection and fallback)
             $result = $this->searchFacade->search($searchQuery, $mode ?? 'semantic');
-            
+
             $this->aiToolsLogger->info('✅ Search completed', [
                 'query' => $enrichedQuery,
                 'mode' => $result->getMode(),
                 'results_count' => $result->count(),
-                'execution_time_ms' => $result->getExecutionTimeMs()
+                'execution_time_ms' => $result->getExecutionTimeMs(),
             ]);
 
             // T071: Track semantic search usage in customer context
-            if ($userId !== null) {
+            if (null !== $userId) {
                 $this->trackSearchInContext($userId, $query, $result->count());
             }
 
             // T068: Handle empty results with friendly message
-            if ($result->count() === 0) {
+            if (0 === $result->count()) {
                 $this->aiToolsLogger->warning('⚠️ No products found', [
                     'query' => $enrichedQuery,
                     'category' => $category,
-                    'mode' => $result->getMode()
+                    'mode' => $result->getMode(),
                 ]);
+
                 return $this->formatEmptyResults($query, $category);
             }
 
             // T067: Format results for VA consumption
             $formattedResults = $this->formatResults($result, $enrichedQuery);
-            
+
             $this->aiToolsLogger->info('✅ Products found and formatted', [
                 'count' => $result->count(),
-                'product_names' => array_map(fn($p) => $p->getName(), $result->getProducts())
+                'product_names' => array_map(fn ($p) => $p->getName(), $result->getProducts()),
             ]);
-            
+
             // spec-014: Publish search event for user embedding update
             $this->publishSearchEvent($query);
-            
-            return $formattedResults;
 
+            return $formattedResults;
         } catch (\InvalidArgumentException $e) {
             // Invalid query parameters
             $this->aiToolsLogger->warning('Invalid search parameters', [
@@ -140,7 +141,6 @@ final class SemanticProductSearchTool
                 'message' => 'Search parameters are invalid. Please try with a different query.',
                 'error' => $e->getMessage(),
             ];
-
         } catch (\Exception $e) {
             // Search service failure
             $this->aiToolsLogger->error('Semantic product search failed', [
@@ -160,10 +160,10 @@ final class SemanticProductSearchTool
     }
 
     /**
-     * T066: Enrich query with customer context
-     * 
+     * T066: Enrich query with customer context.
+     *
      * Adds contextual information from previous conversation to improve search relevance
-     * 
+     *
      * NOTE: Context enrichment temporarily disabled pending spec-012 full integration.
      * UnifiedCustomerContextManager requires conversationId which is not available in tool context.
      */
@@ -174,8 +174,8 @@ final class SemanticProductSearchTool
     }
 
     /**
-     * T071: Track semantic search usage in customer context
-     * 
+     * T071: Track semantic search usage in customer context.
+     *
      * NOTE: Context tracking temporarily disabled pending spec-012 full integration.
      * UnifiedCustomerContextManager requires conversationId which is not available in tool context.
      */
@@ -183,11 +183,10 @@ final class SemanticProductSearchTool
     {
         // TODO: Re-enable after implementing conversationId propagation to tools
         // Context updates should happen at the controller level, not in individual tools
-        return;
     }
 
     /**
-     * T067: Format search results for VA consumption
+     * T067: Format search results for VA consumption.
      */
     private function formatResults(object $result, string $query): array
     {
@@ -212,7 +211,7 @@ final class SemanticProductSearchTool
         }
 
         $mode = $result->getMode();
-        $modeLabel = $mode === 'semantic' ? 'AI-powered semantic search' : 'keyword search';
+        $modeLabel = 'semantic' === $mode ? 'AI-powered semantic search' : 'keyword search';
 
         return [
             'success' => true,
@@ -231,7 +230,7 @@ final class SemanticProductSearchTool
     }
 
     /**
-     * T068: Format empty results with friendly message
+     * T068: Format empty results with friendly message.
      */
     private function formatEmptyResults(string $query, ?string $category): array
     {
@@ -259,19 +258,19 @@ final class SemanticProductSearchTool
     }
 
     /**
-     * Publish search event to update user embeddings
-     * 
+     * Publish search event to update user embeddings.
+     *
      * Publishes SEARCH event when authenticated user performs search via chat assistant
      */
     private function publishSearchEvent(string $query): void
     {
         try {
             $user = $this->security->getUser();
-            
+
             if (!$user instanceof User || empty($query)) {
                 return;
             }
-            
+
             $message = UpdateUserEmbeddingMessage::fromDomainEvent(
                 userId: $user->getId(),
                 eventType: EventType::SEARCH,
@@ -279,9 +278,9 @@ final class SemanticProductSearchTool
                 productId: null,
                 occurredAt: new \DateTimeImmutable()
             );
-            
+
             $this->rabbitMQPublisher->publish($message);
-            
+
             $this->aiToolsLogger->info('Search event published from SemanticProductSearchTool', [
                 'user_id' => $user->getId(),
                 'query' => $query,

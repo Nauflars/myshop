@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class TestUserEmbeddingCommand extends Command
 {
     public function __construct(
-        private readonly RabbitMQPublisher $rabbitMQPublisher
+        private readonly RabbitMQPublisher $rabbitMQPublisher,
     ) {
         parent::__construct();
     }
@@ -28,13 +28,13 @@ class TestUserEmbeddingCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $userId = 'c15e880a-c359-41a9-8fa9-ec844543433b';
         $query = 'laptop para gaming';
-        
+
         $io->info("Publishing search event for user: {$userId}");
         $io->info("Search phrase: {$query}");
-        
+
         try {
             $message = UpdateUserEmbeddingMessage::fromDomainEvent(
                 userId: $userId,
@@ -43,22 +43,24 @@ class TestUserEmbeddingCommand extends Command
                 productId: null,
                 occurredAt: new \DateTimeImmutable()
             );
-            
+
             $published = $this->rabbitMQPublisher->publish($message);
-            
+
             if ($published) {
                 $io->success('Message published successfully to queue!');
                 $io->note("Message ID: {$message->messageId}");
                 $io->note("User ID: {$userId}");
-                $io->note("Event Type: SEARCH");
+                $io->note('Event Type: SEARCH');
                 $io->note("Search Phrase: {$query}");
+
                 return Command::SUCCESS;
-            } else {
-                $io->error('Failed to publish message to queue');
-                return Command::FAILURE;
             }
+            $io->error('Failed to publish message to queue');
+
+            return Command::FAILURE;
         } catch (\Exception $e) {
-            $io->error('Error publishing message: ' . $e->getMessage());
+            $io->error('Error publishing message: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

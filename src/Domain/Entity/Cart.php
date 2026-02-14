@@ -59,23 +59,18 @@ class Cart
             $firstItem = $this->items->first();
             $cartCurrency = $firstItem->getPriceSnapshot()->getCurrency();
             $productCurrency = $product->getPrice()->getCurrency();
-            
+
             if ($cartCurrency !== $productCurrency) {
-                throw new \InvalidArgumentException(
-                    sprintf(
-                        'Cannot add product with currency %s to cart with currency %s',
-                        $productCurrency,
-                        $cartCurrency
-                    )
-                );
+                throw new \InvalidArgumentException(sprintf('Cannot add product with currency %s to cart with currency %s', $productCurrency, $cartCurrency));
             }
         }
-        
+
         // Check if product already exists in cart
         $existingItem = $this->findItemByProduct($product);
-        if ($existingItem !== null) {
+        if (null !== $existingItem) {
             $existingItem->incrementQuantity($quantity);
             $this->touch();
+
             return;
         }
 
@@ -102,6 +97,7 @@ class Cart
             if ($item->getProduct()->getId() === $product->getId()) {
                 $this->items->removeElement($item);
                 $this->touch();
+
                 return;
             }
         }
@@ -114,6 +110,7 @@ class Cart
                 return $item;
             }
         }
+
         return null;
     }
 
@@ -126,7 +123,7 @@ class Cart
         // Use the currency of the first item to ensure consistency
         $firstItem = $this->items->first();
         $currency = $firstItem->getPriceSnapshot()->getCurrency();
-        
+
         // Validate all items have the same currency
         foreach ($this->items as $item) {
             $itemCurrency = $item->getPriceSnapshot()->getCurrency();
@@ -136,7 +133,7 @@ class Cart
                 continue;
             }
         }
-        
+
         $total = new Money(0, $currency);
         foreach ($this->items as $item) {
             $itemCurrency = $item->getPriceSnapshot()->getCurrency();
@@ -164,6 +161,7 @@ class Cart
         foreach ($this->items as $item) {
             $total += $item->getQuantity();
         }
+
         return $total;
     }
 

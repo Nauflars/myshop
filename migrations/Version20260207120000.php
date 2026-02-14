@@ -8,8 +8,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * T085: Add database indexes on Product.updated_at for sync queries
- * 
+ * T085: Add database indexes on Product.updated_at for sync queries.
+ *
  * Optimizes ProductEmbedding sync performance by adding indexes
  * for efficient query of recently updated products
  */
@@ -24,10 +24,10 @@ final class Version20260207120000 extends AbstractMigration
     {
         // Add index on Product.updated_at for efficient "recently updated" queries
         $this->addSql('CREATE INDEX idx_product_updated_at ON product (updated_at)');
-        
+
         // Add composite index on category + updated_at for filtered sync
         $this->addSql('CREATE INDEX idx_product_category_updated_at ON product (category, updated_at)');
-        
+
         // Add index on created_at for initial sync operations
         $this->addSql('CREATE INDEX idx_product_created_at ON product (created_at)');
     }

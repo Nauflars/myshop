@@ -9,8 +9,8 @@ use App\Domain\ValueObject\SearchResult;
 use Psr\Log\LoggerInterface;
 
 /**
- * SearchFacade - Route between semantic and keyword search modes
- * 
+ * SearchFacade - Route between semantic and keyword search modes.
+ *
  * Implements spec-010 T042-T047: Mode switching and error handling with fallbacks
  */
 class SearchFacade
@@ -22,12 +22,12 @@ class SearchFacade
     public function __construct(
         private readonly SemanticSearchService $semanticSearchService,
         private readonly KeywordSearchService $keywordSearchService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Execute search with specified mode and automatic fallback
+     * Execute search with specified mode and automatic fallback.
      */
     public function search(SearchQuery $searchQuery, string $mode = self::MODE_SEMANTIC): SearchResult
     {
@@ -39,7 +39,7 @@ class SearchFacade
             'limit' => $searchQuery->getLimit(),
         ]);
 
-        if ($validatedMode === self::MODE_SEMANTIC) {
+        if (self::MODE_SEMANTIC === $validatedMode) {
             return $this->executeSemanticSearch($searchQuery);
         }
 
@@ -47,13 +47,12 @@ class SearchFacade
     }
 
     /**
-     * Execute semantic search with fallback to keyword on failure
+     * Execute semantic search with fallback to keyword on failure.
      */
     private function executeSemanticSearch(SearchQuery $searchQuery): SearchResult
     {
         try {
             return $this->semanticSearchService->search($searchQuery);
-
         } catch (\Exception $e) {
             $this->logger->warning('Semantic search failed, falling back to keyword search', [
                 'query' => $searchQuery->getQuery(),
@@ -66,13 +65,12 @@ class SearchFacade
     }
 
     /**
-     * Execute keyword search
+     * Execute keyword search.
      */
     private function executeKeywordSearch(SearchQuery $searchQuery): SearchResult
     {
         try {
             return $this->keywordSearchService->search($searchQuery);
-
         } catch (\Exception $e) {
             $this->logger->error('Keyword search failed', [
                 'query' => $searchQuery->getQuery(),
@@ -91,7 +89,7 @@ class SearchFacade
     }
 
     /**
-     * Validate and normalize search mode
+     * Validate and normalize search mode.
      */
     private function validateMode(string $mode): string
     {
@@ -110,8 +108,8 @@ class SearchFacade
     }
 
     /**
-     * Get available search modes
-     * 
+     * Get available search modes.
+     *
      * @return array<string>
      */
     public function getAvailableModes(): array
@@ -120,7 +118,7 @@ class SearchFacade
     }
 
     /**
-     * Check if semantic search is available
+     * Check if semantic search is available.
      */
     public function isSemanticSearchAvailable(): bool
     {

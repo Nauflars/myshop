@@ -8,7 +8,7 @@ use App\Domain\Repository\ProductRepositoryInterface;
 final class SearchProduct
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
@@ -19,7 +19,7 @@ final class SearchProduct
         ?string $query = null,
         ?string $category = null,
         ?int $minPrice = null,
-        ?int $maxPrice = null
+        ?int $maxPrice = null,
     ): array {
         return $this->productRepository->search($query, $category, $minPrice, $maxPrice);
     }

@@ -14,7 +14,7 @@ use App\Domain\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests for RemoveProductFromCart use case
+ * Unit tests for RemoveProductFromCart use case.
  */
 class RemoveProductFromCartTest extends TestCase
 {
@@ -36,13 +36,13 @@ class RemoveProductFromCartTest extends TestCase
     {
         $product = new Product('Laptop', 'Gaming laptop', new Money(150000, 'USD'), 5, 'Electronics');
         $this->cart->addProduct($product, 1);
-        
+
         $this->productRepository->expects($this->once())
             ->method('findAll')
             ->willReturn([$product]);
-        
+
         $result = $this->useCase->execute($this->cart, 'Laptop');
-        
+
         $this->assertTrue($result['success']);
         $this->assertStringContainsString('eliminó', $result['message']);
         $this->assertTrue($this->cart->isEmpty());
@@ -51,13 +51,13 @@ class RemoveProductFromCartTest extends TestCase
     public function testExecuteFailsWhenProductNotInCart(): void
     {
         $product = new Product('Mouse', 'Gaming mouse', new Money(5000, 'USD'), 10, 'Electronics');
-        
+
         $this->productRepository->expects($this->once())
             ->method('findAll')
             ->willReturn([$product]);
-        
+
         $result = $this->useCase->execute($this->cart, 'Mouse');
-        
+
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('no estaba', $result['message']);
     }
@@ -67,9 +67,9 @@ class RemoveProductFromCartTest extends TestCase
         $this->productRepository->expects($this->once())
             ->method('findAll')
             ->willReturn([]);
-        
+
         $result = $this->useCase->execute($this->cart, 'NonExistent');
-        
+
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('No se encontró', $result['message']);
     }

@@ -10,8 +10,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * GetUserInfoTool - AI Tool for getting current user information
- * 
+ * GetUserInfoTool - AI Tool for getting current user information.
+ *
  * Returns information about the authenticated user including name, email, role, and conversation count.
  * Useful for personalized responses and admin detection.
  */
@@ -23,7 +23,7 @@ final class GetUserInfoTool
 {
     public function __construct(
         private readonly ListUserConversations $listUserConversations,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
@@ -34,7 +34,7 @@ final class GetUserInfoTool
     {
         try {
             $user = $this->security->getUser();
-            
+
             if (!$user instanceof User) {
                 return [
                     'success' => false,

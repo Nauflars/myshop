@@ -17,11 +17,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * AIAssistantController - Handles AI-powered conversational shopping assistant endpoints
- * 
+ * AIAssistantController - Handles AI-powered conversational shopping assistant endpoints.
+ *
  * This controller provides the REST API for AI chat interactions,
  * integrating Symfony AI Agent with tools, conversation memory, and role-based access.
- * 
+ *
  * Architecture: Infrastructure layer (HTTP/API adapter)
  * DDD Role: Presentation layer - marshals requests to AI services
  */
@@ -32,16 +32,16 @@ class AIAssistantController extends AbstractController
         private readonly ConversationManager $conversationManager,
         private readonly RoleAwareAssistant $roleAwareAssistant,
         #[Autowire(service: 'ai.agent.openAiAgent')]
-        private readonly AgentInterface $agent
+        private readonly AgentInterface $agent,
     ) {
     }
-    
+
     /**
-     * POST /api/ai/chat - Main chat endpoint for AI conversations
-     * 
+     * POST /api/ai/chat - Main chat endpoint for AI conversations.
+     *
      * Accepts user messages and returns AI assistant responses.
      * Maintains conversation context across multiple exchanges.
-     * 
+     *
      * Request body: {"message": "Show me products under $50"}
      * Response: {"response": "...", "role": "customer", "conversationId": "..."}
      */
@@ -51,61 +51,60 @@ class AIAssistantController extends AbstractController
         try {
             // Parse request
             $data = json_decode($request->getContent(), true);
-            
+
             if (!isset($data['message']) || empty(trim($data['message']))) {
                 return $this->json([
                     'error' => 'Message is required',
                 ], Response::HTTP_BAD_REQUEST);
             }
-            
+
             $userMessage = trim($data['message']);
-            
+
             // Get user context
             $userRole = $this->roleAwareAssistant->getCurrentUserRole();
             $userId = $this->roleAwareAssistant->getCurrentUserId();
-            
+
             // Add user message to conversation history
             $this->conversationManager->addMessage('user', $userMessage, [
                 'role' => $userRole,
                 'userId' => $userId,
             ]);
-            
+
             // Use Symfony AI Agent to process the message
             try {
-                // Create MessageBag with user message  
+                // Create MessageBag with user message
                 $messageBag = new MessageBag(
                     Message::ofUser($userMessage)
                 );
-                
+
                 // Call agent with MessageBag
                 $result = $this->agent->call($messageBag);
                 $assistantResponse = $result->getContent();
             } catch (\Exception $e) {
-                error_log('Symfony AI Agent Error: ' . $e->getMessage());
-                error_log('Stack trace: ' . $e->getTraceAsString());
-                
+                error_log('Symfony AI Agent Error: '.$e->getMessage());
+                error_log('Stack trace: '.$e->getTraceAsString());
+
                 // Return detailed error in dev environment
                 return $this->json([
                     'error' => 'AI Agent Error',
                     'message' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
-                    'file' => $e->getFile() . ':' . $e->getLine(),
+                    'file' => $e->getFile().':'.$e->getLine(),
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            
+
             // Add assistant response to history
             $this->conversationManager->addMessage('assistant', $assistantResponse, [
                 'toolsUsed' => [],
                 'tokensUsed' => 0,
             ]);
-            
+
             return $this->json([
                 'response' => $assistantResponse,
                 'role' => $this->roleAwareAssistant->getRoleDisplayName(),
                 'conversationId' => $this->conversationManager->getConversationId(),
                 'messageCount' => $this->conversationManager->getMessageCount(),
             ]);
-            
         } catch (\Exception $e) {
             return $this->json([
                 'error' => 'An error occurred processing your request',
@@ -113,42 +112,42 @@ class AIAssistantController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
-     * GET /api/ai/history - Retrieve conversation history
-     * 
+     * GET /api/ai/history - Retrieve conversation history.
+     *
      * Returns the current conversation context for debugging or review.
      */
     #[Route('/history', name: 'history', methods: ['GET'])]
     public function history(): JsonResponse
     {
         $history = $this->conversationManager->getFormattedHistory();
-        
+
         return $this->json([
             'history' => $history,
             'messageCount' => $this->conversationManager->getMessageCount(),
             'conversationId' => $this->conversationManager->getConversationId(),
         ]);
     }
-    
+
     /**
-     * DELETE /api/ai/history - Clear conversation history
-     * 
+     * DELETE /api/ai/history - Clear conversation history.
+     *
      * Resets the conversation context, starting fresh.
      */
     #[Route('/history', name: 'history_clear', methods: ['DELETE'])]
     public function clearHistory(): JsonResponse
     {
         $this->conversationManager->clearHistory();
-        
+
         return $this->json([
             'message' => 'Conversation history cleared',
         ]);
     }
-    
+
     /**
-     * GET /api/ai/status - Get AI assistant status and capabilities
-     * 
+     * GET /api/ai/status - Get AI assistant status and capabilities.
+     *
      * Returns information about available tools, user role, and system status.
      */
     #[Route('/status', name: 'status', methods: ['GET'])]

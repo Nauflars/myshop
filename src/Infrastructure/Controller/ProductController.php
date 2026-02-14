@@ -33,7 +33,7 @@ class ProductController extends AbstractController
         private readonly ErrorMessageTranslator $errorTranslator,
         private readonly Security $security,
         private readonly SearchHistoryRepository $searchHistoryRepository,
-        private readonly RabbitMQPublisher $rabbitMQPublisher
+        private readonly RabbitMQPublisher $rabbitMQPublisher,
     ) {
     }
 
@@ -51,7 +51,7 @@ class ProductController extends AbstractController
             minPrice: $minPrice ? (int) ($minPrice * 100) : null,
             maxPrice: $maxPrice ? (int) ($maxPrice * 100) : null
         );
-        
+
         // Update user profile automatically after search (spec-013 auto-update)
         $user = $this->security->getUser();
         if ($user instanceof User && !empty($query)) {
@@ -61,7 +61,7 @@ class ProductController extends AbstractController
                 $this->searchHistoryRepository->save($searchHistory);
             } catch (\Exception $e) {
                 // Log but don't fail - search history is non-critical
-                error_log('Search history save error: ' . $e->getMessage());
+                error_log('Search history save error: '.$e->getMessage());
             }
         }
 
@@ -69,10 +69,10 @@ class ProductController extends AbstractController
     }
 
     /**
-     * Semantic/Keyword search endpoint
-     * 
+     * Semantic/Keyword search endpoint.
+     *
      * Implements spec-010 T044-T047: Search with mode parameter and fallback handling
-     * 
+     *
      * @example GET /api/products/search?q=laptop for gaming&mode=semantic&limit=10
      * @example GET /api/products/search?q=phone&mode=keyword& category=Electronics
      */
@@ -85,7 +85,7 @@ class ProductController extends AbstractController
         $offset = (int) $request->query->get('offset', 0);
         $minSimilarity = (float) $request->query->get('min_similarity', 0.3);
         $category = $request->query->get('category');
-        
+
         // DEBUG: Force explicit response for testing
         $debug = $request->query->get('debug', false);
 
@@ -106,7 +106,7 @@ class ProductController extends AbstractController
             );
 
             $result = $this->searchFacade->search($searchQuery, $mode);
-            
+
             // Update user profile automatically after search (spec-013 auto-update)
             $user = $this->security->getUser();
             if ($user instanceof User && !empty($query)) {
@@ -114,7 +114,7 @@ class ProductController extends AbstractController
                     // Save search history
                     $searchHistory = new SearchHistory($user, $query, $mode, $category);
                     $this->searchHistoryRepository->save($searchHistory);
-                    
+
                     // spec-014: Publish search event to queue for user embedding update
                     $message = UpdateUserEmbeddingMessage::fromDomainEvent(
                         userId: $user->getId(),
@@ -126,22 +126,22 @@ class ProductController extends AbstractController
                     $this->rabbitMQPublisher->publish($message);
                 } catch (\Exception $e) {
                     // Log but don't fail - profile update is non-critical
-                    error_log('Profile update after product search error: ' . $e->getMessage());
+                    error_log('Profile update after product search error: '.$e->getMessage());
                 }
             }
 
             return $this->json($result->toArray());
-
         } catch (\InvalidArgumentException $e) {
             // T094: User-friendly validation errors (expose message as it's user-facing)
             $errorData = $this->errorTranslator->translateWithStatus($e, 'search');
+
             return $this->json([
                 'error' => $errorData['message'],
             ], $errorData['status_code']);
-
         } catch (\Exception $e) {
             // T094: User-friendly error messages (hide technical details)
             $errorData = $this->errorTranslator->translateWithStatus($e, 'search');
+
             return $this->json([
                 'error' => $errorData['message'],
             ], $errorData['status_code']);
@@ -156,7 +156,7 @@ class ProductController extends AbstractController
         if (!$product) {
             return $this->json(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
         }
-        
+
         // spec-014: Publish product view event for authenticated users
         $user = $this->security->getUser();
         if ($user instanceof User) {
@@ -171,7 +171,7 @@ class ProductController extends AbstractController
                 $this->rabbitMQPublisher->publish($message);
             } catch (\Exception $e) {
                 // Log but don't fail - event publishing is non-critical for user experience
-                error_log('Failed to publish product view event: ' . $e->getMessage());
+                error_log('Failed to publish product view event: '.$e->getMessage());
             }
         }
 
@@ -250,6 +250,7 @@ class ProductController extends AbstractController
 
         try {
             $this->productRepository->delete($product);
+
             return $this->json(['message' => 'Product deleted successfully']);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);

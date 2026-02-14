@@ -1,0 +1,2665 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Application\\DTO\\StatsDTO\:\:__construct\(\) has parameter \$topProducts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/DTO/StatsDTO.php
+
+		-
+			message: '#^Method App\\Application\\DTO\\UserDTO\:\:__construct\(\) has parameter \$roles with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/DTO/UserDTO.php
+
+		-
+			message: '#^Method App\\Application\\Message\\UpdateUserEmbeddingMessage\:\:fromDomainEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Message/UpdateUserEmbeddingMessage.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:find\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/MessageHandler/SyncEmbeddingHandler.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminAssistantLogger\:\:logFailedAction\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminAssistantLogger.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminAssistantLogger\:\:logProductCreation\(\) has parameter \$productData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminAssistantLogger.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminAssistantLogger\:\:logProductStatsQuery\(\) has parameter \$queryResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminAssistantLogger.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminAssistantLogger\:\:logProductUpdate\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminAssistantLogger.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminAssistantLogger\:\:logSalesQuery\(\) has parameter \$queryResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminAssistantLogger.php
+
+		-
+			message: '#^Method App\\Application\\Service\\AdminContextManager\:\:updateAfterToolExecution\(\) has parameter \$toolResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/AdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\CustomerContextManager\:\:updateAfterToolExecution\(\) has parameter \$toolResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/CustomerContextManager.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Contracts\\Cache\\CacheInterface\:\:clear\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\EmbeddingCacheService\:\:deserialize\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\EmbeddingCacheService\:\:get\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\EmbeddingCacheService\:\:serialize\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\EmbeddingCacheService\:\:set\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between null and null will always evaluate to false\.$#'
+			identifier: notIdentical.alwaysFalse
+			count: 1
+			path: src/Application/Service/EmbeddingCacheService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\ErrorMessageTranslator\:\:translateWithStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/ErrorMessageTranslator.php
+
+		-
+			message: '#^Method App\\Application\\Service\\FailedJobRegistry\:\:getJobsReadyForRetry\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/FailedJobRegistry.php
+
+		-
+			message: '#^Method App\\Application\\Service\\FailedJobRegistry\:\:getStatistics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/FailedJobRegistry.php
+
+		-
+			message: '#^Method App\\Application\\Service\\FailureRateMonitor\:\:getStatistics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/FailureRateMonitor.php
+
+		-
+			message: '#^Method App\\Application\\Service\\FailureRateMonitor\:\:triggerAlert\(\) has parameter \$stats with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/FailureRateMonitor.php
+
+		-
+			message: '#^Constant App\\Application\\Service\\ProductEmbeddingSyncService\:\:MAX_TOKENS_PER_REQUEST is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: src/Application/Service/ProductEmbeddingSyncService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\ProductEmbeddingSyncService\:\:generateEmbedding\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/ProductEmbeddingSyncService.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/Service/ProductEmbeddingSyncService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Exception\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Application/Service/ProductEmbeddingSyncService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\ProfileAggregationService\:\:getUserMetadata\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/ProfileAggregationService.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Application/Service/ProfileAggregationService.php
+
+		-
+			message: '#^Parameter \#1 \$ageInDays of method App\\Application\\Service\\ProfileAggregationService\:\:calculateRecencyWeight\(\) expects int, int\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/Service/ProfileAggregationService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\RecommendationService\:\:filterByMinScore\(\) has parameter \$productIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/RecommendationService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\RecommendationService\:\:filterByMinScore\(\) has parameter \$scores with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/RecommendationService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\RecommendationService\:\:filterByMinScore\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/RecommendationService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SearchMetricsCollector\:\:getMetricsSummary\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SearchMetricsCollector.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SearchMetricsCollector\:\:percentile\(\) has parameter \$sortedValues with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SearchMetricsCollector.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:deduplicateResults\(\) has parameter \$results with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:deduplicateResults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:enrichResults\(\) has parameter \$mongoResults with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:enrichResults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:filterByCategory\(\) has parameter \$results with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:filterByCategory\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Method App\\Application\\Service\\SemanticSearchService\:\:generateQueryEmbedding\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Parameter \#2 \$category of method App\\Application\\Service\\SemanticSearchService\:\:filterByCategory\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/Service/SemanticSearchService.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/Service/UnansweredQuestionCapture.php
+
+		-
+			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|null given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Application/Service/UnansweredQuestionCapture.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:buildMessageBagContext\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:formatStateForPrompt\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:getDefaultState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:getHistory\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:getOrCreateConversation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:getPendingConfirmation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:getState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:setPendingConfirmation\(\) has parameter \$params with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:updateAfterToolExecution\(\) has parameter \$toolResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedAdminContextManager\:\:updateState\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedAdminContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:buildMessageBagContext\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:formatStateForPrompt\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:getDefaultState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:getHistory\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:getOrCreateConversation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:getState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:updateAfterToolExecution\(\) has parameter \$toolResult with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UnifiedCustomerContextManager\:\:updateState\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UnifiedCustomerContextManager.php
+
+		-
+			message: '#^Method App\\Application\\Service\\UserProfileService\:\:getStatistics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/Service/UserProfileService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Application/Service/UserProfileUpdateService.php
+
+		-
+			message: '#^Binary operation "\*" between App\\Domain\\ValueObject\\Money and int results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Application/UseCase/AI/AddToCart.php
+
+		-
+			message: '#^Cannot call method getPriceSnapshot\(\) on App\\Domain\\Entity\\CartItem\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Application/UseCase/AI/AddToCartByName.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\CollectCheckoutInformation\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/CollectCheckoutInformation.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\Conversation\\ListUserConversations\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/Conversation/ListUserConversations.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\Conversation\\LoadConversation\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 2
+			path: src/Application/UseCase/AI/Conversation/LoadConversation.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\Conversation\\SaveConversation\:\:execute\(\) has parameter \$toolCalls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/Conversation/SaveConversation.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\CreateOrder\:\:execute\(\) has parameter \$checkoutInfo with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/CreateOrder.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\CreateOrder\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/CreateOrder.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetAdminStats\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/GetAdminStats.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetAdminStats\:\:getTopProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/GetAdminStats.php
+
+		-
+			message: '#^Binary operation "\*" between App\\Domain\\ValueObject\\Money and int results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Application/UseCase/AI/GetCartItems.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetCartItems\:\:execute\(\) should return array\{found\: bool, cartId\: string\|null, items\: array\<int, array\{productId\: string, productName\: string, quantity\: int, unitPrice\: float, totalPrice\: float, currency\: string\}\>, totalAmount\: float, currency\: string, itemCount\: int\} but returns array\{found\: true, cartId\: string, items\: list\<array\{productId\: string, productName\: string, quantity\: int, unitPrice\: App\\Domain\\ValueObject\\Money, totalPrice\: mixed, currency\: ''USD''\}\>, totalAmount\: float, currency\: ''USD'', itemCount\: int\<0, max\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Application/UseCase/AI/GetCartItems.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetCartSummary\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/GetCartSummary.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetOrderStatus\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/GetOrderStatus.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\GetProductDetailsByName\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/GetProductDetailsByName.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\ListPreviousOrders\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/ListPreviousOrders.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\ListProducts\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/ListProducts.php
+
+		-
+			message: '#^Binary operation "\*" between App\\Domain\\ValueObject\\Money and int results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Application/UseCase/AI/ProcessCheckout.php
+
+		-
+			message: '#^Binary operation "\*" between App\\Domain\\ValueObject\\Money and int results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Application/UseCase/AI/RemoveFromCart.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\AI\\RemoveProductFromCart\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/AI/RemoveProductFromCart.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\CreateProduct\:\:execute\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/CreateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\CreateProduct\:\:getMissingFields\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/CreateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\CreateProduct\:\:getMissingFields\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/CreateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\CreateProduct\:\:validateData\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/CreateProduct.php
+
+		-
+			message: '#^Parameter \#1 \$amountInCents of class App\\Domain\\ValueObject\\Money constructor expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/Admin/CreateProduct.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\OrderRepositoryInterface\:\:countByProduct\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/Admin/DeleteProduct.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findByName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/Admin/DeleteProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\DeleteProduct\:\:getProductDetails\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/DeleteProduct.php
+
+		-
+			message: '#^Parameter \#1 \$message of class RuntimeException constructor expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/Admin/DeleteProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\GetLowStockProducts\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/GetLowStockProducts.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\GetProductStock\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/GetProductStock.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\GetProductStock\:\:searchByName\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/GetProductStock.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findByName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:execute\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:getCurrentValues\(\) has parameter \$fields with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:getCurrentValues\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:validateChanges\(\) has parameter \$changes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Parameter \#1 \$amountInCents of class App\\Domain\\ValueObject\\Money constructor expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProduct.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 2
+			path: src/Application/UseCase/Admin/UpdateProductStock.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProductStock\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Application/UseCase/Admin/UpdateProductStock.php
+
+		-
+			message: '#^Parameter \#1 \$userId of method App\\Domain\\Repository\\UserEmbeddingRepositoryInterface\:\:findByUserId\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/CalculateUserEmbedding.php
+
+		-
+			message: '#^Parameter \$userId of method App\\Application\\UseCase\\CalculateUserEmbedding\:\:execute\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/CalculateUserEmbedding.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\UserInteraction\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\UserInteraction\:\:getMetadata\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\UserInteraction\:\:markAsProcessedToQueue\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\UserInteractionRepository\:\:findUnprocessedEvents\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Parameter \$eventType of static method App\\Application\\Message\\UpdateUserEmbeddingMessage\:\:fromDomainEvent\(\) expects App\\Domain\\ValueObject\\EventType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Parameter \$userId of static method App\\Application\\Message\\UpdateUserEmbeddingMessage\:\:fromDomainEvent\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/PublishUserInteractionEvent.php
+
+		-
+			message: '#^Parameter \#1 \$query of method App\\Domain\\Repository\\ProductRepositoryInterface\:\:search\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Application/UseCase/SearchProduct.php
+
+		-
+			message: '#^Parameter \#2 \$length of function array_chunk expects int\<1, max\>, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/BatchSyncEmbeddingsCommand.php
+
+		-
+			message: '#^Parameter \#4 \$default of method Symfony\\Component\\Console\\Command\\Command\:\:addArgument\(\) expects string\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/BatchSyncEmbeddingsCommand.php
+
+		-
+			message: '#^Property App\\Command\\ConsumeUserEmbeddingQueueCommand\:\:\$messageBus is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Command/ConsumeUserEmbeddingQueueCommand.php
+
+		-
+			message: '#^Method App\\Command\\DemoUserEmbeddingUpdatesCommand\:\:getRandomProducts\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Method App\\Command\\DemoUserEmbeddingUpdatesCommand\:\:getRandomProducts\(\) should return array\<array\{id\: string, name\: string\}\> but returns list\<array\<string, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Method App\\Command\\DemoUserEmbeddingUpdatesCommand\:\:getRandomUsers\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Method App\\Command\\DemoUserEmbeddingUpdatesCommand\:\:getRandomUsers\(\) should return array\<array\{id\: string, email\: string\}\> but returns list\<array\<string, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Method App\\Command\\DemoUserEmbeddingUpdatesCommand\:\:publishEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Parameter \#1 \$userId of method App\\Domain\\Repository\\UserEmbeddingRepositoryInterface\:\:findByUserId\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Parameter \#2 \$data of function hash expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Parameter \$userId of class App\\Application\\Message\\UpdateUserEmbeddingMessage constructor expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/DemoUserEmbeddingUpdatesCommand.php
+
+		-
+			message: '#^Parameter \$userId of static method App\\Application\\Message\\UpdateUserEmbeddingMessage\:\:fromDomainEvent\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Command/GenerateTestEventsCommand.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\UserInteractionRepository\:\:findRecent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Command/ReplayUserEventsCommand.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\UserInteractionRepository\:\:findUnprocessedEvents\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Command/ReplayUserEventsCommand.php
+
+		-
+			message: '#^Method App\\Command\\SetupMongoDBEmbeddingsCommand\:\:getValidationSchema\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Command/SetupMongoDBEmbeddingsCommand.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:find\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Command/SyncAllEmbeddingsCommand.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: src/Command/TestContextCommand.php
+
+		-
+			message: '#^Method App\\Command\\TestConversationContext\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Command/TestContextCommand.php
+
+		-
+			message: '#^Method App\\Command\\TestConversationContext\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Command/TestContextCommand.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: src/Command/TestContextCommand.php
+
+		-
+			message: '#^Parameter \$userId of static method App\\Application\\Message\\UpdateUserEmbeddingMessage\:\:fromDomainEvent\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/TestDirectMessageCommand.php
+
+		-
+			message: '#^Parameter \#1 \$productId of method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:findByProductId\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/TestEmbeddingCommand.php
+
+		-
+			message: '#^Parameter \$productId of class App\\Domain\\Entity\\ProductEmbedding constructor expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Command/TestEmbeddingCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Domain\\ValueObject\\RecommendationResult\:\:\$averageScore\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Command/TestRecommendationsCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Domain\\ValueObject\\RecommendationResult\:\:\$isPersonalized\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Command/TestRecommendationsCommand.php
+
+		-
+			message: '#^Access to an undefined property App\\Domain\\ValueObject\\RecommendationResult\:\:\$scores\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Command/TestRecommendationsCommand.php
+
+		-
+			message: '#^Access to private property App\\Domain\\ValueObject\\RecommendationResult\:\:\$products\.$#'
+			identifier: property.private
+			count: 3
+			path: src/Command/TestRecommendationsCommand.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:getActionParameters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:getActionResult\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:getAffectedEntities\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:setActionParameters\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:setActionResult\(\) has parameter \$result with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantAction\:\:setAffectedEntities\(\) has parameter \$entities with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantAction\:\:\$actionParameters type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantAction\:\:\$actionResult type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantAction\:\:\$affectedEntities type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantAction.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantConversation\:\:getContextState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantConversation.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantConversation\:\:\$contextState type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantConversation.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantMessage\:\:addToolInvocation\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantMessage\:\:getErrorInfo\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantMessage\:\:getToolInvocations\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\AdminAssistantMessage\:\:setErrorInfo\(\) has parameter \$context with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantMessage\:\:\$errorInfo type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\AdminAssistantMessage\:\:\$toolInvocations type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/AdminAssistantMessage.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Cart\:\:\$items type mapping mismatch\: property can contain Doctrine\\Common\\Collections\\Collection but database expects Doctrine\\Common\\Collections\\Collection&iterable\<App\\Domain\\Entity\\CartItem\>\.$#'
+			identifier: doctrine.associationType
+			count: 1
+			path: src/Domain/Entity/Cart.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Cart\:\:\$items with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Domain/Entity/Cart.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Conversation\:\:\$messages type mapping mismatch\: property can contain Doctrine\\Common\\Collections\\Collection but database expects Doctrine\\Common\\Collections\\Collection&iterable\<App\\Domain\\Entity\\ConversationMessage\>\.$#'
+			identifier: doctrine.associationType
+			count: 1
+			path: src/Domain/Entity/Conversation.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Conversation\:\:\$messages with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Domain/Entity/Conversation.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ConversationMessage\:\:__construct\(\) has parameter \$toolCalls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ConversationMessage.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ConversationMessage\:\:getToolCalls\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ConversationMessage.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ConversationMessage\:\:setToolCalls\(\) has parameter \$toolCalls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ConversationMessage.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\ConversationMessage\:\:\$toolCalls type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ConversationMessage.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Order\:\:\$items type mapping mismatch\: property can contain Doctrine\\Common\\Collections\\Collection but database expects Doctrine\\Common\\Collections\\Collection&iterable\<App\\Domain\\Entity\\OrderItem\>\.$#'
+			identifier: doctrine.associationType
+			count: 1
+			path: src/Domain/Entity/Order.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\Order\:\:\$items with generic interface Doctrine\\Common\\Collections\\Collection does not specify its types\: TKey, T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Domain/Entity/Order.php
+
+		-
+			message: '#^Cannot call method format\(\) on DateTimeImmutable\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:__construct\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:__construct\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:getEmbedding\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:getMetadata\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:getUpdatedAt\(\) should return DateTimeImmutable but returns DateTimeImmutable\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:setEmbedding\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\ProductEmbedding\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/ProductEmbedding.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UnansweredQuestion\:\:getValidReasons\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UnansweredQuestion.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UnansweredQuestion\:\:getValidStatuses\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UnansweredQuestion.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\User\:\:getUserIdentifier\(\) should return non\-empty\-string but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Domain/Entity/User.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\User\:\:setRoles\(\) has parameter \$roles with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/User.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\User\:\:\$roles type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/User.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:__construct\(\) has parameter \$embeddingVector with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:__construct\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\|MongoDB\\Model\\BSONDocument\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:getEmbeddingVector\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:getMetadata\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:updateProfile\(\) has parameter \$embeddingVector with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:updateProfile\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Entity\\UserProfile\:\:validateEmbeddingVector\(\) has parameter \$vector with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\UserProfile\:\:\$embeddingVector type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Property App\\Domain\\Entity\\UserProfile\:\:\$metadata type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Entity/UserProfile.php
+
+		-
+			message: '#^Method App\\Domain\\Event\\UserInteractionEvent\:\:createProductClickEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Event/UserInteractionEvent.php
+
+		-
+			message: '#^Method App\\Domain\\Event\\UserInteractionEvent\:\:createProductPurchaseEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Event/UserInteractionEvent.php
+
+		-
+			message: '#^Method App\\Domain\\Event\\UserInteractionEvent\:\:createProductViewEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Event/UserInteractionEvent.php
+
+		-
+			message: '#^Method App\\Domain\\Event\\UserInteractionEvent\:\:createSearchEvent\(\) has parameter \$metadata with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Event/UserInteractionEvent.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\EmbeddingServiceInterface\:\:generateBatchEmbeddings\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/EmbeddingServiceInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\EmbeddingServiceInterface\:\:generateEmbedding\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/EmbeddingServiceInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\OrderRepositoryInterface\:\:findAll\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/OrderRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\OrderRepositoryInterface\:\:findByStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/OrderRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\OrderRepositoryInterface\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/OrderRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findAll\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/ProductRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findByCategory\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/ProductRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findLowStock\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/ProductRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\ProductRepositoryInterface\:\:findTopProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/ProductRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\ProductRepositoryInterface\:\:search\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/ProductRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\UserProfileRepositoryInterface\:\:findSimilarProducts\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/UserProfileRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\UserProfileRepositoryInterface\:\:findSimilarProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/UserProfileRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\UserRepositoryInterface\:\:findAll\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/UserRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\Repository\\UserRepositoryInterface\:\:findByRole\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/Repository/UserRepositoryInterface.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:__construct\(\) has parameter \$activeEntities with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:__construct\(\) has parameter \$pendingActions with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:addPendingAction\(\) has parameter \$actionData with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:getActiveEntities\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:getPendingAction\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:getPendingActions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:setActiveEntities\(\) has parameter \$entities with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\AdminConversationContext\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/AdminConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ConversationContext\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ConversationContext\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:__construct\(\) has parameter \$cartSnapshot with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:__construct\(\) has parameter \$selectedProducts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:fromArray\(\) has parameter \$data with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:getCartSnapshot\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:getSelectedProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:setCartSnapshot\(\) has parameter \$cart with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:setSelectedProducts\(\) has parameter \$productIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\CustomerConversationContext\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/CustomerConversationContext.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:__construct\(\) has parameter \$dominantCategories with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:__construct\(\) has parameter \$recentPurchases with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:__construct\(\) has parameter \$recentSearches with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:getDominantCategories\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:getRecentPurchases\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\ProfileSnapshot\:\:getRecentSearches\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Property App\\Domain\\ValueObject\\ProfileSnapshot\:\:\$dominantCategories type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Property App\\Domain\\ValueObject\\ProfileSnapshot\:\:\$recentPurchases type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Property App\\Domain\\ValueObject\\ProfileSnapshot\:\:\$recentSearches type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/ProfileSnapshot.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\RecommendationResult\:\:getProductWithScore\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/RecommendationResult.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\RecommendationResult\:\:getProductsWithScores\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/RecommendationResult.php
+
+		-
+			message: '#^Property App\\Domain\\ValueObject\\RecommendationResult\:\:\$products type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/RecommendationResult.php
+
+		-
+			message: '#^Property App\\Domain\\ValueObject\\RecommendationResult\:\:\$similarityScores type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/RecommendationResult.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\SearchQuery\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/SearchQuery.php
+
+		-
+			message: '#^Method App\\Domain\\ValueObject\\SearchResult\:\:toArray\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Domain/ValueObject/SearchResult.php
+
+		-
+			message: '#^Access to an undefined property App\\Domain\\ValueObject\\UserEmbedding\:\:\$lastUpdated\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Domain/ValueObject/UserEmbedding.php
+
+		-
+			message: '#^Parameter \#1 \$daysSinceLastUpdate of method App\\Domain\\ValueObject\\EmbeddingWeights\:\:calculateDecayFactor\(\) expects int, int\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Domain/ValueObject/UserEmbedding.php
+
+		-
+			message: '#^Attribute class App\\Entity\\ORM_Column does not exist\.$#'
+			identifier: attribute.notFound
+			count: 2
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Attribute class App\\Entity\\ORM_Entity does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Attribute class App\\Entity\\ORM_GeneratedValue does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Property App\\Entity\\UserInteraction\:\:\$createdAt is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Property App\\Entity\\UserInteraction\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Property App\\Entity\\UserInteraction\:\:\$id is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Entity/UserInteraction.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\AdminConversationManager\:\:saveAssistantMessage\(\) has parameter \$toolInvocations with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/AdminConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:clearConversation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:formatMessagesForAI\(\) has parameter \$messages with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:formatMessagesForAI\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:loadConversation\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:saveAssistantMessage\(\) has parameter \$toolCalls with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:saveAssistantMessage\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:saveUserMessage\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/ConversationManager.php
+
+		-
+			message: '#^Constant App\\Infrastructure\\AI\\Service\\OpenAIEmbeddingService\:\:RATE_LIMIT_WARNING_THRESHOLD is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\OpenAIEmbeddingService\:\:generateBatchEmbeddings\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\OpenAIEmbeddingService\:\:generateEmbedding\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\OpenAIEmbeddingService\:\:monitorRateLimits\(\) has parameter \$result with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Service\\OpenAIEmbeddingService\:\:monitorRateLimits\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Parameter \#1 \$model of method Symfony\\AI\\Platform\\PlatformInterface\:\:invoke\(\) expects non\-empty\-string, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Exception\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: src/Infrastructure/AI/Service/OpenAIEmbeddingService.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminCreateProductTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminCreateProductTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminDeleteProductTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminDeleteProductTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminGetLowStockProductsTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminGetLowStockProductsTool.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminGetProductStockTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
+
+		-
+			message: '#^Offset ''threshold'' does not exist on array\{success\: bool, product\: array, stock\: int, status\: string, is_low_stock\: bool\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminGetProductStockTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminUpdateProductStockTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductStockTool.php
+
+		-
+			message: '#^Method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:execute\(\) invoked with 3 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\Admin\\AdminUpdateProductTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Parameter \#1 \$product of method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:execute\(\) expects App\\Domain\\Entity\\Product, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Parameter \#2 \$changes of method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:execute\(\) expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Parameter \#2 \$fields of method App\\Application\\UseCase\\Admin\\UpdateProduct\:\:getCurrentValues\(\) expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Parameter \#4 \$conversation of method App\\Application\\Service\\AdminAssistantLogger\:\:logProductUpdate\(\) expects App\\Domain\\Entity\\AdminAssistantConversation\|null, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/Admin/AdminUpdateProductTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\CollectCheckoutInformationTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/CollectCheckoutInformationTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\CreateOrderTool\:\:__invoke\(\) has parameter \$checkoutInfo with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/CreateOrderTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\CreateOrderTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/CreateOrderTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Domain\\Repository\\CartRepositoryInterface\:\:findByUser\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/CreateOrderTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetAdminStatsTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetAdminStatsTool\:\:formatTopProducts\(\) has parameter \$products with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''activeUsers'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''averageOrderValue'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''monthlySales'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''pendingOrders'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''topProducts'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Offset ''totalRevenue'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetAdminStatsTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetCartSummaryTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetCartSummaryTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of class App\\Domain\\Entity\\Cart constructor expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetCartSummaryTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Domain\\Repository\\CartRepositoryInterface\:\:findByUser\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetCartSummaryTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetOrderStatusTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetOrderStatusTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Application\\UseCase\\AI\\GetOrderStatus\:\:execute\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetOrderStatusTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetProductDetailsTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetProductDetailsTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\GetUserInfoTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetUserInfoTool.php
+
+		-
+			message: '#^Offset ''count'' on array\{success\: bool, conversations\: array, count\: int, message\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Infrastructure/AI/Tool/GetUserInfoTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\ListPreviousOrdersTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/ListPreviousOrdersTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Application\\UseCase\\AI\\ListPreviousOrders\:\:execute\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/ListPreviousOrdersTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\ListProductsTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/ListProductsTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\RemoveProductFromCartTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/RemoveProductFromCartTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of class App\\Domain\\Entity\\Cart constructor expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/RemoveProductFromCartTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Domain\\Repository\\CartRepositoryInterface\:\:findByUser\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/AI/Tool/RemoveProductFromCartTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:count\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getExecutionTimeMs\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getMode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getProducts\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getScores\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getTotalResults\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\SemanticProductSearchTool\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\SemanticProductSearchTool\:\:formatEmptyResults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\SemanticProductSearchTool\:\:formatResults\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Method App\\Infrastructure\\AI\\Tool\\SemanticProductSearchTool\:\:trackSearchInContext\(\) returns void but does not have any side effects\.$#'
+			identifier: void.pure
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Property App\\Infrastructure\\AI\\Tool\\SemanticProductSearchTool\:\:\$contextManager is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Infrastructure/AI/Tool/SemanticProductSearchTool.php
+
+		-
+			message: '#^Parameter \#1 \$messages of method Symfony\\Component\\Console\\Style\\SymfonyStyle\:\:writeln\(\) expects iterable\<string\>\|string, string\|false\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Command/SimulateSearchCommand.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, string\|false\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Infrastructure/Command/SimulateSearchCommand.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\ValueObject\\RecommendationResult\:\:getScores\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Command/TestProfileFlowCommand.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Infrastructure/Command/TestProfileFlowCommand.php
+
+		-
+			message: '#^Variable \$recommendations might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: src/Infrastructure/Command/TestProfileFlowCommand.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:addMessage\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:clearHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:getConversationId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:getFormattedHistory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:getMessageCount\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Call to an undefined method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:hasContext\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AIAssistantController.php
+
+		-
+			message: '#^Cannot cast object\|null to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Infrastructure/Controller/AdminAssistantController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\AdminAssistantController\:\:extractMessageFromArray\(\) has parameter \$content with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/AdminAssistantController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\AdminAssistantController\:\:extractMessageFromArray\(\) should return string but returns string\|false\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Controller/AdminAssistantController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\AdminAssistantController\:\:isEmptyArrayResponse\(\) has parameter \$content with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/AdminAssistantController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setCategory\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setDescription\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setPrice\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setStock\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Parameter \#1 \$string of function trim expects string, bool\|float\|int\|string given\.$#'
+			identifier: argument.type
+			count: 6
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Parameter \#2 \$token of method Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController\:\:isCsrfTokenValid\(\) expects string\|null, bool\|float\|int\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/AdminProductController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setAdminNotes\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminUnansweredQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:setStatus\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Infrastructure/Controller/AdminUnansweredQuestionsController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Infrastructure/Controller/AdminUnansweredQuestionsController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getStatus\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminUserController.php
+
+		-
+			message: '#^Call to an undefined method object\:\:getTotal\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/AdminUserController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\CartController\:\:serializeCart\(\) has parameter \$cart with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/Controller/CartController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\CartController\:\:serializeCart\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/CartController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Domain\\Repository\\CartRepositoryInterface\:\:findByUser\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 4
+			path: src/Infrastructure/Controller/CartController.php
+
+		-
+			message: '#^Parameter \$user of method App\\Application\\UseCase\\AddProductToCart\:\:execute\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/CartController.php
+
+		-
+			message: '#^Property App\\Infrastructure\\Controller\\CartController\:\:\$userRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Infrastructure/Controller/CartController.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Symfony\\AI\\Platform\\Result\\ResultInterface and ''getMetadata'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Infrastructure/Controller/ChatbotController.php
+
+		-
+			message: '#^Cannot cast object\|null to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Infrastructure/Controller/ChatbotController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\ChatbotController\:\:extractMessageFromArray\(\) has parameter \$content with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/ChatbotController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\ChatbotController\:\:extractMessageFromArray\(\) should return string but returns string\|false\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Controller/ChatbotController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\ChatbotController\:\:isEmptyArrayResponse\(\) has parameter \$content with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/ChatbotController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/Controller/DebugController.php
+
+		-
+			message: '#^Parameter \#1 \$string of function substr expects string, iterable\|object\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/DebugController.php
+
+		-
+			message: '#^Parameter \#2 \$conversationId of method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:saveUserMessage\(\) expects string\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/DebugController.php
+
+		-
+			message: '#^Parameter \#3 \$content of method App\\Infrastructure\\AI\\Service\\ConversationManager\:\:saveAssistantMessage\(\) expects string, iterable\|object\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/DebugController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\HealthController\:\:checkMongoDB\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/HealthController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\HealthController\:\:checkMySQL\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/HealthController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\HealthController\:\:checkOpenAI\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/HealthController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\HealthController\:\:checkRedis\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/HealthController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Infrastructure/Controller/HomeController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Application\\Service\\RecommendationService\:\:getRecommendationsForUser\(\) expects App\\Domain\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Controller/HomeController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\OrderController\:\:checkout\(\) has parameter \$user with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/Controller/OrderController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\OrderController\:\:list\(\) has parameter \$user with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/Controller/OrderController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\OrderController\:\:serializeOrder\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/OrderController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\OrderController\:\:show\(\) has parameter \$user with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/Controller/OrderController.php
+
+		-
+			message: '#^Binary operation "\*" between non\-falsy\-string and 100 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 2
+			path: src/Infrastructure/Controller/ProductController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\ProductController\:\:serializeProduct\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Controller/ProductController.php
+
+		-
+			message: '#^Variable \$query in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: src/Infrastructure/Controller/ProductController.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Controller\\UserController\:\:me\(\) has parameter \$user with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Infrastructure/Controller/UserController.php
+
+		-
+			message: '#^Property App\\Infrastructure\\Controller\\UserController\:\:\$userRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Infrastructure/Controller/UserController.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\UserInteraction\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Infrastructure/EventListener/UserInteractionEventListener.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: src/Infrastructure/EventListener/UserInteractionEventListener.php
+
+		-
+			message: '#^Property App\\Infrastructure\\MessageHandler\\UpdateUserEmbeddingHandler\:\:\$processedMessages type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/MessageHandler/UpdateUserEmbeddingHandler.php
+
+		-
+			message: '#^Parameter \$userId of class App\\Application\\Message\\UpdateUserEmbeddingMessage constructor expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Infrastructure/Queue/MessageSerializer.php
+
+		-
+			message: '#^Class App\\Infrastructure\\Repository\\DoctrineCartRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineCartRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineCartRepository\:\:findById\(\) should return App\\Domain\\Entity\\Cart\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineCartRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineCartRepository\:\:findByUser\(\) should return App\\Domain\\Entity\\Cart\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineCartRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineConversationRepository\:\:findActiveForUser\(\) should return App\\Domain\\Entity\\Conversation\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineConversationRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineConversationRepository\:\:findById\(\) should return App\\Domain\\Entity\\Conversation\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineConversationRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineConversationRepository\:\:findByUser\(\) should return array\<App\\Domain\\Entity\\Conversation\> but returns list\<object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineConversationRepository.php
+
+		-
+			message: '#^Property App\\Infrastructure\\Repository\\DoctrineConversationRepository\:\:\$repository with generic class Doctrine\\ORM\\EntityRepository does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineConversationRepository.php
+
+		-
+			message: '#^Class App\\Infrastructure\\Repository\\DoctrineOrderRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineOrderRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineOrderRepository\:\:findById\(\) should return App\\Domain\\Entity\\Order\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineOrderRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineOrderRepository\:\:findByOrderNumber\(\) should return App\\Domain\\Entity\\Order\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineOrderRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineOrderRepository\:\:findByStatus\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineOrderRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineOrderRepository\:\:findByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineOrderRepository.php
+
+		-
+			message: '#^Class App\\Infrastructure\\Repository\\DoctrineProductRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineProductRepository\:\:findByCategory\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineProductRepository\:\:findById\(\) should return App\\Domain\\Entity\\Product\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineProductRepository\:\:findLowStock\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineProductRepository\:\:findTopProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineProductRepository\:\:search\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineProductRepository.php
+
+		-
+			message: '#^Class App\\Infrastructure\\Repository\\DoctrineUserRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineUserRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineUserRepository\:\:findByEmail\(\) should return App\\Domain\\Entity\\User\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineUserRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineUserRepository\:\:findById\(\) should return App\\Domain\\Entity\\User\|null but returns object\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineUserRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\DoctrineUserRepository\:\:findByRole\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/DoctrineUserRepository.php
+
+		-
+			message: '#^Constant App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:QUERY_TIMEOUT_MS is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:calculateCosineSimilarity\(\) has parameter \$vectorA with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:calculateCosineSimilarity\(\) has parameter \$vectorB with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:saveBatch\(\) has parameter \$productEmbeddings with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:searchSimilar\(\) has parameter \$queryEmbedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBEmbeddingRepository\:\:searchSimilar\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBEmbeddingRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBUserProfileRepository\:\:calculateCosineSimilarity\(\) has parameter \$vec1 with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBUserProfileRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBUserProfileRepository\:\:calculateCosineSimilarity\(\) has parameter \$vec2 with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBUserProfileRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBUserProfileRepository\:\:findSimilarProducts\(\) has parameter \$embedding with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBUserProfileRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\MongoDBUserProfileRepository\:\:findSimilarProducts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/MongoDBUserProfileRepository.php
+
+		-
+			message: '#^Cannot access offset ''embedding'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: src/Infrastructure/Repository/ProductEmbeddingRepository.php
+
+		-
+			message: '#^Cannot access offset ''product_id'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Infrastructure/Repository/ProductEmbeddingRepository.php
+
+		-
+			message: '#^Class App\\Infrastructure\\Repository\\UnansweredQuestionRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Infrastructure/Repository/UnansweredQuestionRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnansweredQuestionRepository\:\:findRecent\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnansweredQuestionRepository.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnifiedConversationStorage\:\:getAllKeys\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnifiedConversationStorage.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnifiedConversationStorage\:\:getMeta\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnifiedConversationStorage.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnifiedConversationStorage\:\:getState\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnifiedConversationStorage.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnifiedConversationStorage\:\:setMeta\(\) has parameter \$meta with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnifiedConversationStorage.php
+
+		-
+			message: '#^Method App\\Infrastructure\\Repository\\UnifiedConversationStorage\:\:setState\(\) has parameter \$state with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Infrastructure/Repository/UnifiedConversationStorage.php
+
+		-
+			message: '#^Class App\\Repository\\SearchHistoryRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/SearchHistoryRepository.php
+
+		-
+			message: '#^Method App\\Repository\\SearchHistoryRepository\:\:countByUser\(\) should return int but returns bool\|float\|int\|string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/SearchHistoryRepository.php
+
+		-
+			message: '#^Method App\\Repository\\SearchHistoryRepository\:\:findRecentByUser\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Repository/SearchHistoryRepository.php
+
+		-
+			message: '#^Class App\\Repository\\UserInteractionRepository extends generic class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository but does not specify its types\: TEntityClass$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/UserInteractionRepository.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\CartRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Application/UseCase/AI/AddToCartByNameTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Application/UseCase/AI/AddToCartByNameTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: tests/Application/UseCase/AI/GetProductsNameTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsArray\(\) with array\<int, array\{id\: string, name\: string, description\: string, price\: float, currency\: string, stock\: int, inStock\: bool, category\: string\}\> will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Application/UseCase/AI/GetProductsNameTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Application/UseCase/AI/RemoveProductFromCartTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\CartRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: tests/Application/UseCase/AddProductToCartTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\ProductRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: tests/Application/UseCase/AddProductToCartTest.php
+
+		-
+			message: '#^Return type of call to method PHPUnit\\Framework\\TestCase\:\:createMock\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 5
+			path: tests/Application/UseCase/CheckoutTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\UserRepositoryInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: tests/Application/UseCase/CreateUserTest.php
+
+		-
+			message: '#^Call to an undefined method App\\Domain\\Repository\\UserRepositoryInterface\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: tests/Application/UseCase/CreateUserTest.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\PasswordHasher\\Hasher\\UserPasswordHasherInterface\:\:expects\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: tests/Application/UseCase/CreateUserTest.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\PasswordHasher\\Hasher\\UserPasswordHasherInterface\:\:method\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/Application/UseCase/CreateUserTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertIsArray\(\) with array\<App\\Domain\\Entity\\Product\> will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Application/UseCase/SearchProductTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertTrue\(\) with true will always evaluate to true\.$#'
+			identifier: method.alreadyNarrowedType
+			count: 1
+			path: tests/Domain/Entity/UserTest.php
+
+		-
+			message: '#^Method App\\Tests\\Domain\\ValueObject\\EmailTest\:\:invalidEmailProvider\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/Domain/ValueObject/EmailTest.php
+
+		-
+			message: '#^Method App\\Tests\\Domain\\ValueObject\\EmailTest\:\:validEmailProvider\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/Domain/ValueObject/EmailTest.php
+
+		-
+			message: '#^Offset ''product'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: tests/Domain/ValueObject/RecommendationResultTest.php
+
+		-
+			message: '#^Offset ''score'' might not exist on array\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: tests/Domain/ValueObject/RecommendationResultTest.php

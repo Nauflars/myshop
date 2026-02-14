@@ -118,20 +118,20 @@ class Conversation
     {
         $firstUserMessage = null;
         foreach ($this->messages as $message) {
-            if ($message->getRole() === 'user') {
+            if ('user' === $message->getRole()) {
                 $firstUserMessage = $message;
                 break;
             }
         }
 
-        if ($firstUserMessage === null) {
+        if (null === $firstUserMessage) {
             return 'Nueva conversación';
         }
 
         $content = $firstUserMessage->getContent();
         // Truncate to 50 characters and add ellipsis if needed
         if (mb_strlen($content) > 50) {
-            return mb_substr($content, 0, 47) . '...';
+            return mb_substr($content, 0, 47).'...';
         }
 
         return $content;

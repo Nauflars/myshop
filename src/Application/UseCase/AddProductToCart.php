@@ -11,7 +11,7 @@ final class AddProductToCart
 {
     public function __construct(
         private readonly CartRepositoryInterface $cartRepository,
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
@@ -23,13 +23,13 @@ final class AddProductToCart
 
         // Find or create cart for user
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null) {
+        if (null === $cart) {
             $cart = new Cart($user);
         }
 
         // Find product
         $product = $this->productRepository->findById($productId);
-        if ($product === null) {
+        if (null === $product) {
             throw new \InvalidArgumentException('Product not found');
         }
 
@@ -39,9 +39,7 @@ final class AddProductToCart
         }
 
         if ($product->getStock() < $quantity) {
-            throw new \InvalidArgumentException(
-                sprintf('Insufficient stock. Available: %d', $product->getStock())
-            );
+            throw new \InvalidArgumentException(sprintf('Insufficient stock. Available: %d', $product->getStock()));
         }
 
         // Add product to cart

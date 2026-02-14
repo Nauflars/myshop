@@ -20,7 +20,7 @@ final class RemoveProductFromCartTool
         private readonly RemoveProductFromCart $removeProductFromCart,
         private readonly CartRepositoryInterface $cartRepository,
         private readonly Security $security,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
@@ -30,13 +30,13 @@ final class RemoveProductFromCartTool
     public function __invoke(string $productName): array
     {
         $this->aiToolsLogger->info('🗑️ RemoveProductFromCartTool called', [
-            'product_name' => $productName
+            'product_name' => $productName,
         ]);
-        
+
         try {
             $user = $this->security->getUser();
 
-            if ($user === null) {
+            if (null === $user) {
                 return [
                     'success' => false,
                     'message' => 'You must log in to manage your cart.',
@@ -45,7 +45,7 @@ final class RemoveProductFromCartTool
 
             $cart = $this->cartRepository->findByUser($user);
 
-            if ($cart === null) {
+            if (null === $cart) {
                 $cart = new \App\Domain\Entity\Cart($user);
                 $this->cartRepository->save($cart);
             }
@@ -54,15 +54,16 @@ final class RemoveProductFromCartTool
 
             $this->aiToolsLogger->info('✅ Product removed from cart', [
                 'product_name' => $productName,
-                'success' => $result['success'] ?? false
+                'success' => $result['success'] ?? false,
             ]);
-            
+
             return $result;
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ RemoveProductFromCartTool failed', [
                 'error' => $e->getMessage(),
-                'product_name' => $productName
+                'product_name' => $productName,
             ]);
+
             return [
                 'success' => false,
                 'message' => 'No se pudo eliminar el producto del carrito. Por favor intenta de nuevo.',

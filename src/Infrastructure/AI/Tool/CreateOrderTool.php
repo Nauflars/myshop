@@ -20,25 +20,25 @@ final class CreateOrderTool
         private readonly CreateOrder $createOrder,
         private readonly CartRepositoryInterface $cartRepository,
         private readonly Security $security,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
     /**
-     * @param array $checkoutInfo Información de checkout validada
-     * @param bool $userConfirmed El usuario ha confirmado explícitamente la creación del pedido
+     * @param array $checkoutInfo  Información de checkout validada
+     * @param bool  $userConfirmed El usuario ha confirmado explícitamente la creación del pedido
      */
     public function __invoke(array $checkoutInfo, bool $userConfirmed = false): array
     {
         $this->aiToolsLogger->info('📦 CreateOrderTool called', [
             'user_confirmed' => $userConfirmed,
-            'has_checkout_info' => !empty($checkoutInfo)
+            'has_checkout_info' => !empty($checkoutInfo),
         ]);
-        
+
         try {
             $user = $this->security->getUser();
 
-            if ($user === null) {
+            if (null === $user) {
                 return [
                     'success' => false,
                     'message' => 'You must log in to create an order.',
@@ -47,7 +47,7 @@ final class CreateOrderTool
 
             $cart = $this->cartRepository->findByUser($user);
 
-            if ($cart === null || $cart->getItems()->count() === 0) {
+            if (null === $cart || 0 === $cart->getItems()->count()) {
                 return [
                     'success' => false,
                     'message' => 'Your cart is empty. Add products before creating an order.',
@@ -58,6 +58,7 @@ final class CreateOrderTool
 
             if (isset($result['requiresConfirmation']) && $result['requiresConfirmation']) {
                 $this->aiToolsLogger->info('⚠️ Order requires user confirmation');
+
                 return [
                     'success' => false,
                     'requiresConfirmation' => true,
@@ -66,14 +67,15 @@ final class CreateOrderTool
             }
 
             $this->aiToolsLogger->info('✅ Order created successfully', [
-                'order_id' => $result['orderId'] ?? null
+                'order_id' => $result['orderId'] ?? null,
             ]);
-            
+
             return $result;
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ CreateOrderTool failed', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [
                 'success' => false,
                 'message' => 'No se pudo crear el pedido. Por favor intenta de nuevo.',

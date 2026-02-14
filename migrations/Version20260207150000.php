@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Normalize all product currencies to USD
+ * Normalize all product currencies to USD.
  */
 final class Version20260207150000 extends AbstractMigration
 {
@@ -26,6 +26,6 @@ final class Version20260207150000 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // This migration is not reversible as we lose the original currency information
-        $this->addSql("SELECT 1");
+        $this->addSql('SELECT 1');
     }
 }

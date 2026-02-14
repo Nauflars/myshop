@@ -12,8 +12,8 @@ use Doctrine\ORM\Events;
 use Psr\Log\LoggerInterface;
 
 /**
- * UserInteractionEventListener - Doctrine listener for UserInteraction entity
- * 
+ * UserInteractionEventListener - Doctrine listener for UserInteraction entity.
+ *
  * Implements spec-014 US1: Automatically publish events to RabbitMQ after persisting
  * Triggers on PostPersist event to ensure MySQL commit succeeded first
  */
@@ -22,12 +22,13 @@ final readonly class UserInteractionEventListener
 {
     public function __construct(
         private PublishUserInteractionEvent $publishUseCase,
-        private LoggerInterface $logger
-    ) {}
+        private LoggerInterface $logger,
+    ) {
+    }
 
     /**
-     * Handle PostPersist event for UserInteraction entities
-     * 
+     * Handle PostPersist event for UserInteraction entities.
+     *
      * @param PostPersistEventArgs $args Event arguments
      */
     public function postPersist(PostPersistEventArgs $args): void
@@ -42,7 +43,6 @@ final readonly class UserInteractionEventListener
         try {
             // Publish event to RabbitMQ queue
             $this->publishUseCase->execute($entity);
-
         } catch (\Throwable $e) {
             // Log error but don't fail the HTTP request
             // Event will be replayed later via manual command

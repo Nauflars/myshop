@@ -24,7 +24,7 @@ class AddProductToCartTest extends TestCase
     {
         $this->cartRepository = $this->createMock(CartRepositoryInterface::class);
         $this->productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $this->useCase = new AddProductToCart(
             $this->cartRepository,
             $this->productRepository
@@ -48,19 +48,19 @@ class AddProductToCartTest extends TestCase
     public function testExecuteAddsProductToExistingCart(): void
     {
         $cart = new Cart($this->user);
-        
+
         $this->cartRepository
             ->expects($this->once())
             ->method('findByUser')
             ->with($this->user)
             ->willReturn($cart);
-        
+
         $this->productRepository
             ->expects($this->once())
             ->method('findById')
             ->with($this->product->getId())
             ->willReturn($this->product);
-        
+
         $this->cartRepository
             ->expects($this->once())
             ->method('save')
@@ -80,13 +80,13 @@ class AddProductToCartTest extends TestCase
             ->method('findByUser')
             ->with($this->user)
             ->willReturn(null);
-        
+
         $this->productRepository
             ->expects($this->once())
             ->method('findById')
             ->with($this->product->getId())
             ->willReturn($this->product);
-        
+
         $this->cartRepository
             ->expects($this->once())
             ->method('save')
@@ -122,7 +122,7 @@ class AddProductToCartTest extends TestCase
             ->method('findByUser')
             ->with($this->user)
             ->willReturn(new Cart($this->user));
-        
+
         $this->productRepository
             ->expects($this->once())
             ->method('findById')
@@ -149,7 +149,7 @@ class AddProductToCartTest extends TestCase
             ->method('findByUser')
             ->with($this->user)
             ->willReturn(new Cart($this->user));
-        
+
         $this->productRepository
             ->expects($this->once())
             ->method('findById')
@@ -168,7 +168,7 @@ class AddProductToCartTest extends TestCase
             ->method('findByUser')
             ->with($this->user)
             ->willReturn(new Cart($this->user));
-        
+
         $this->productRepository
             ->expects($this->once())
             ->method('findById')

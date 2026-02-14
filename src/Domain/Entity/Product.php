@@ -18,7 +18,7 @@ class Product
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
-    
+
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $nameEs = null;
 
@@ -48,7 +48,7 @@ class Product
         string $description,
         Money $price,
         int $stock,
-        string $category
+        string $category,
     ) {
         $this->id = Uuid::v4()->toRfc4122();
         $this->name = $name;
@@ -76,23 +76,24 @@ class Product
         $this->name = $name;
         $this->touch();
     }
-    
+
     public function getNameEs(): ?string
     {
         return $this->nameEs;
     }
-    
+
     public function setNameEs(?string $nameEs): void
     {
         $this->nameEs = $nameEs;
         $this->touch();
     }
-    
+
     public function getDisplayName(string $locale = 'en'): string
     {
-        if ($locale === 'es' && $this->nameEs !== null) {
+        if ('es' === $locale && null !== $this->nameEs) {
             return $this->nameEs;
         }
+
         return $this->name;
     }
 

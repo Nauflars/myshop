@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Controller;
 
-use App\Infrastructure\Repository\DoctrineUserRepository;
 use App\Infrastructure\Repository\DoctrineOrderRepository;
+use App\Infrastructure\Repository\DoctrineUserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,8 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin controller for viewing user management and insights from spec-006
- * 
+ * Admin controller for viewing user management and insights from spec-006.
+ *
  * Implements FR-026 to FR-030: Admin user management
  * - List all registered users with statistics
  * - View user details with order history summary
@@ -27,13 +27,13 @@ class AdminUserController extends AbstractController
 {
     public function __construct(
         private readonly DoctrineUserRepository $userRepository,
-        private readonly DoctrineOrderRepository $orderRepository
+        private readonly DoctrineOrderRepository $orderRepository,
     ) {
     }
 
     /**
-     * List all registered users with statistics
-     * 
+     * List all registered users with statistics.
+     *
      * Implements FR-026: Display list of all users
      * Implements FR-027: Calculate order counts per user
      * Implements FR-030: Search by email and name
@@ -49,7 +49,7 @@ class AdminUserController extends AbstractController
         // FR-030: Search by email or name
         if (!empty($search)) {
             $queryBuilder->andWhere('u.email LIKE :search OR u.name LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+                ->setParameter('search', '%'.$search.'%');
         }
 
         $users = $queryBuilder->getQuery()->getResult();
@@ -58,7 +58,7 @@ class AdminUserController extends AbstractController
         $userStats = [];
         foreach ($users as $user) {
             $orderCount = $this->orderRepository->count(['user' => $user, 'status' => 'completed']);
-            
+
             $userStats[$user->getId()] = [
                 'orderCount' => $orderCount,
             ];
@@ -73,8 +73,8 @@ class AdminUserController extends AbstractController
     }
 
     /**
-     * View user details with order history summary
-     * 
+     * View user details with order history summary.
+     *
      * Implements FR-028: View user details including order history
      * Implements FR-029: Read-only view (no order modifications)
      */
@@ -85,6 +85,7 @@ class AdminUserController extends AbstractController
 
         if (!$user) {
             $this->addFlash('error', 'Usuario no encontrado.');
+
             return $this->redirectToRoute('admin_users_list');
         }
 

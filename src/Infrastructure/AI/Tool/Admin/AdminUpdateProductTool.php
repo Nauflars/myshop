@@ -19,25 +19,25 @@ final class AdminUpdateProductTool
     public function __construct(
         private readonly UpdateProduct $updateProduct,
         private readonly AdminAssistantLogger $logger,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
     /**
-     * Update an existing product
+     * Update an existing product.
      *
-     * @param string $productName Nombre del producto a actualizar
-     * @param string $field Campo a actualizar: price, stock, description, category, name, nameEs
-     * @param mixed $value Nuevo valor para el campo
+     * @param string   $productName          Nombre del producto a actualizar
+     * @param string   $field                Campo a actualizar: price, stock, description, category, name, nameEs
+     * @param mixed    $value                Nuevo valor para el campo
      * @param int|null $disambiguation_index Si hay múltiples productos con el mismo nombre, índice del producto seleccionado (1-based)
-     * @param bool $confirmed Confirmación explícita del administrador (requerida)
+     * @param bool     $confirmed            Confirmación explícita del administrador (requerida)
      */
     public function __invoke(
         string $productName,
         string $field,
         mixed $value,
         ?int $disambiguation_index = null,
-        bool $confirmed = false
+        bool $confirmed = false,
     ): array {
         // Verify admin role
         $user = $this->security->getUser();
@@ -61,11 +61,11 @@ final class AdminUpdateProductTool
             }
 
             // Handle disambiguation
-            if (count($products) > 1 && $disambiguation_index === null) {
+            if (count($products) > 1 && null === $disambiguation_index) {
                 $productList = [];
                 foreach ($products as $index => $product) {
                     $productList[] = sprintf(
-                        "%d. %s (ID: %s, Price: $%.2f, Stock: %d, Category: %s)",
+                        '%d. %s (ID: %s, Price: $%.2f, Stock: %d, Category: %s)',
                         $index + 1,
                         $product->getName(),
                         $product->getId(),
@@ -78,20 +78,20 @@ final class AdminUpdateProductTool
                 return [
                     'success' => false,
                     'requires_disambiguation' => true,
-                    'message' => "I found " . count($products) . " products with that name:\n\n" .
-                        implode("\n", $productList) .
+                    'message' => 'I found '.count($products)." products with that name:\n\n".
+                        implode("\n", $productList).
                         "\n\nWhich of these products do you want to update? Please respond with the number.",
                     'product_count' => count($products),
                 ];
             }
 
             // Select the  product
-            $selectedProductIndex = $disambiguation_index !== null ? $disambiguation_index - 1 : 0;
-            
+            $selectedProductIndex = null !== $disambiguation_index ? $disambiguation_index - 1 : 0;
+
             if (!isset($products[$selectedProductIndex])) {
                 return [
                     'success' => false,
-                    'error' => "Invalid index. Please select a number between 1 and " . count($products),
+                    'error' => 'Invalid index. Please select a number between 1 and '.count($products),
                 ];
             }
 
@@ -103,18 +103,18 @@ final class AdminUpdateProductTool
             // Check if confirmation is required
             if (!$confirmed) {
                 $fieldNameEs = UpdateProduct::getFieldNameInSpanish($field);
-                $displayValue = is_numeric($value) && in_array($field, ['price']) 
-                    ? '$' . number_format((float)$value, 2) 
+                $displayValue = is_numeric($value) && in_array($field, ['price'])
+                    ? '$'.number_format((float) $value, 2)
                     : $value;
 
                 return [
                     'success' => false,
                     'requires_confirmation' => true,
-                    'message' => "Update summary:\n" .
-                        "\u2022 Product: {$product->getName()}\n" .
-                        "\u2022 Field: {$fieldNameEs}\n" .
-                        "\u2022 Current value: {$currentValues['current_value']}\n" .
-                        "\u2022 New value: {$displayValue}\n" .
+                    'message' => "Update summary:\n".
+                        "\u2022 Product: {$product->getName()}\n".
+                        "\u2022 Field: {$fieldNameEs}\n".
+                        "\u2022 Current value: {$currentValues['current_value']}\n".
+                        "\u2022 New value: {$displayValue}\n".
                         "\nDo you confirm this update? Respond 'yes', 'confirm' or 'go ahead'.",
                     'current_value' => $currentValues['current_value'],
                     'new_value' => $displayValue,
@@ -133,8 +133,8 @@ final class AdminUpdateProductTool
             );
 
             $fieldNameEs = UpdateProduct::getFieldNameInSpanish($field);
-            $displayValue = is_numeric($value) && in_array($field, ['price']) 
-                ? '$' . number_format((float)$value, 2) 
+            $displayValue = is_numeric($value) && in_array($field, ['price'])
+                ? '$'.number_format((float) $value, 2)
                 : $value;
 
             return [
@@ -146,7 +146,6 @@ final class AdminUpdateProductTool
                 'new_value' => $displayValue,
                 'previous_value' => $currentValues['current_value'],
             ];
-
         } catch (\InvalidArgumentException $e) {
             // Log failed action
             $this->logger->logFailedAction(

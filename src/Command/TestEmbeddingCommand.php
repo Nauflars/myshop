@@ -16,8 +16,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * TestEmbeddingCommand - Test end-to-end embedding workflow
- * 
+ * TestEmbeddingCommand - Test end-to-end embedding workflow.
+ *
  * Implements spec-010 T010: Verify OpenAI → MongoDB → Retrieval → Validation
  * Tests embedding generation, storage, and similarity search
  */
@@ -29,7 +29,7 @@ class TestEmbeddingCommand extends Command
 {
     public function __construct(
         private readonly EmbeddingServiceInterface $embeddingService,
-        private readonly MongoDBEmbeddingRepository $repository
+        private readonly MongoDBEmbeddingRepository $repository,
     ) {
         parent::__construct();
     }
@@ -91,7 +91,7 @@ class TestEmbeddingCommand extends Command
 
         // Test 1: Generate embedding
         $io->section('1. Generating embedding from OpenAI');
-        $io->text('Text: ' . $text);
+        $io->text('Text: '.$text);
 
         try {
             $startTime = microtime(true);
@@ -109,12 +109,12 @@ class TestEmbeddingCommand extends Command
                     ['Model', $this->embeddingService->getModelName()],
                     ['Dimensions', $this->embeddingService->getDimensions()],
                     ['Vector length', count($embedding)],
-                    ['First 5 values', implode(', ', array_map(fn($v) => round($v, 6), array_slice($embedding, 0, 5)))],
+                    ['First 5 values', implode(', ', array_map(fn ($v) => round($v, 6), array_slice($embedding, 0, 5)))],
                 ]
             );
-
         } catch (\Exception $e) {
-            $io->error('Embedding generation failed: ' . $e->getMessage());
+            $io->error('Embedding generation failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -143,9 +143,9 @@ class TestEmbeddingCommand extends Command
                 sprintf('Category: %s', $productEmbedding->getCategory()),
                 sprintf('Valid: %s', $productEmbedding->isValidEmbedding() ? 'Yes' : 'No'),
             ]);
-
         } catch (\Exception $e) {
-            $io->error('Entity creation failed: ' . $e->getMessage());
+            $io->error('Entity creation failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -157,13 +157,14 @@ class TestEmbeddingCommand extends Command
 
             if (!$result) {
                 $io->error('Failed to save embedding to MongoDB');
+
                 return Command::FAILURE;
             }
 
             $io->success('Embedding saved to MongoDB');
-
         } catch (\Exception $e) {
-            $io->error('Save operation failed: ' . $e->getMessage());
+            $io->error('Save operation failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -173,8 +174,9 @@ class TestEmbeddingCommand extends Command
         try {
             $retrieved = $this->repository->findByProductId($productId);
 
-            if ($retrieved === null) {
+            if (null === $retrieved) {
                 $io->error('Failed to retrieve embedding from MongoDB');
+
                 return Command::FAILURE;
             }
 
@@ -183,12 +185,12 @@ class TestEmbeddingCommand extends Command
             $io->text([
                 sprintf('Product ID: %d', $retrieved->getProductId()),
                 sprintf('Name: %s', $retrieved->getName()),
-                sprintf('Description: %s', substr($retrieved->getDescription(), 0, 50) . '...'),
+                sprintf('Description: %s', substr($retrieved->getDescription(), 0, 50).'...'),
                 sprintf('Vector dimensions: %d', count($retrieved->getEmbedding())),
             ]);
-
         } catch (\Exception $e) {
-            $io->error('Retrieval failed: ' . $e->getMessage());
+            $io->error('Retrieval failed: '.$e->getMessage());
+
             return Command::FAILURE;
         }
 
@@ -210,6 +212,7 @@ class TestEmbeddingCommand extends Command
 
         if (count($embedding) !== count($retrieved->getEmbedding()) || $difference >= 0.00001) {
             $io->warning('Embedding integrity check failed!');
+
             return Command::FAILURE;
         }
 
@@ -228,7 +231,7 @@ class TestEmbeddingCommand extends Command
                     $io->table(
                         ['Product ID', 'Similarity', 'Name', 'Category'],
                         array_map(
-                            fn($r) => [
+                            fn ($r) => [
                                 $r['productId'],
                                 round($r['similarity'], 4),
                                 substr($r['name'] ?? 'N/A', 0, 30),
@@ -240,9 +243,8 @@ class TestEmbeddingCommand extends Command
                 }
 
                 $io->success('Similarity search completed');
-
             } catch (\Exception $e) {
-                $io->warning('Similarity search failed: ' . $e->getMessage());
+                $io->warning('Similarity search failed: '.$e->getMessage());
             }
         }
 
@@ -258,9 +260,8 @@ class TestEmbeddingCommand extends Command
                 } else {
                     $io->warning('Test embedding not found for deletion');
                 }
-
             } catch (\Exception $e) {
-                $io->warning('Cleanup failed: ' . $e->getMessage());
+                $io->warning('Cleanup failed: '.$e->getMessage());
             }
         } else {
             $io->note(sprintf(

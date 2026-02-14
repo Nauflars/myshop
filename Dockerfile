@@ -24,6 +24,9 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 # Install AMQP PHP extension for RabbitMQ
 RUN pecl install amqp && docker-php-ext-enable amqp
 
+# Install PCOV for code coverage reports
+RUN pecl install pcov && docker-php-ext-enable pcov
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

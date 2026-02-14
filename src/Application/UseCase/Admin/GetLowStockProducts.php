@@ -7,13 +7,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Get products with low stock levels
- * Part of spec-008 US2 - Inventory Management
+ * Part of spec-008 US2 - Inventory Management.
  */
 class GetLowStockProducts
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private int $defaultThreshold = 10
+        private int $defaultThreshold = 10,
     ) {
     }
 
@@ -23,7 +23,7 @@ class GetLowStockProducts
     public function execute(?int $threshold = null): array
     {
         $threshold = $threshold ?? $this->defaultThreshold;
-        
+
         if ($threshold < 0) {
             throw new \InvalidArgumentException('Threshold cannot be negative');
         }

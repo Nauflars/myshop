@@ -5,8 +5,8 @@ namespace App\Domain\ValueObject;
 use App\Domain\Entity\Product;
 
 /**
- * Result containing recommended products with similarity scores
- * 
+ * Result containing recommended products with similarity scores.
+ *
  * Immutable value object returned by recommendation service
  */
 final class RecommendationResult
@@ -16,8 +16,8 @@ final class RecommendationResult
     private \DateTimeImmutable $generatedAt;
 
     /**
-     * @param Product[] $products Array of Product entities
-     * @param float[] $similarityScores Cosine similarity scores (0-1)
+     * @param Product[] $products         Array of Product entities
+     * @param float[]   $similarityScores Cosine similarity scores (0-1)
      */
     public function __construct(array $products, array $similarityScores)
     {
@@ -52,7 +52,7 @@ final class RecommendationResult
     }
 
     /**
-     * Get product at specific index with its score
+     * Get product at specific index with its score.
      */
     public function getProductWithScore(int $index): ?array
     {
@@ -67,8 +67,8 @@ final class RecommendationResult
     }
 
     /**
-     * Get all products with their scores
-     * 
+     * Get all products with their scores.
+     *
      * @return array Array of ['product' => Product, 'score' => float]
      */
     public function getProductsWithScores(): array
@@ -80,11 +80,12 @@ final class RecommendationResult
                 'score' => $this->similarityScores[$index],
             ];
         }
+
         return $result;
     }
 
     /**
-     * Get count of recommendations
+     * Get count of recommendations.
      */
     public function count(): int
     {
@@ -92,7 +93,7 @@ final class RecommendationResult
     }
 
     /**
-     * Check if result is empty
+     * Check if result is empty.
      */
     public function isEmpty(): bool
     {
@@ -100,7 +101,7 @@ final class RecommendationResult
     }
 
     /**
-     * Get average similarity score
+     * Get average similarity score.
      */
     public function getAverageScore(): float
     {
@@ -112,7 +113,7 @@ final class RecommendationResult
     }
 
     /**
-     * Filter products by minimum similarity score
+     * Filter products by minimum similarity score.
      */
     public function filterByMinScore(float $minScore): self
     {

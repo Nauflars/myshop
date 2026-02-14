@@ -10,8 +10,8 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
 
 /**
- * GetAdminStatsTool - AI Tool for retrieving business statistics (Admin only)
- * 
+ * GetAdminStatsTool - AI Tool for retrieving business statistics (Admin only).
+ *
  * Provides comprehensive business metrics including sales, top products, active users,
  * and pending orders. Only accessible to users with ROLE_ADMIN.
  */
@@ -23,7 +23,7 @@ final class GetAdminStatsTool
 {
     public function __construct(
         private readonly GetAdminStats $getAdminStats,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
@@ -34,7 +34,7 @@ final class GetAdminStatsTool
     {
         try {
             $user = $this->security->getUser();
-            
+
             if (!$user instanceof User) {
                 return [
                     'success' => false,
@@ -55,15 +55,15 @@ final class GetAdminStatsTool
 
             if ($result['success']) {
                 $stats = $result['stats'];
-                
+
                 // Format response
                 $formattedMessage = sprintf(
-                    "📊 **Business Statistics**\n\n" .
-                    "💰 Monthly sales: $%.2f\n" .
-                    "📈 Total revenue: $%.2f\n" .
-                    "📦 Average order value: $%.2f\n" .
-                    "👥 Active users (30 days): %d\n" .
-                    "⏳ Pending orders: %d\n\n" .
+                    "📊 **Business Statistics**\n\n".
+                    "💰 Monthly sales: $%.2f\n".
+                    "📈 Total revenue: $%.2f\n".
+                    "📦 Average order value: $%.2f\n".
+                    "👥 Active users (30 days): %d\n".
+                    "⏳ Pending orders: %d\n\n".
                     "**Top-Selling Products:**\n%s",
                     $stats['monthlySales'],
                     $stats['totalRevenue'],
@@ -95,14 +95,14 @@ final class GetAdminStatsTool
         $formatted = [];
         foreach ($products as $idx => $product) {
             $formatted[] = sprintf(
-                "%d. %s - $%.2f (%d in stock)",
+                '%d. %s - $%.2f (%d in stock)',
                 $idx + 1,
                 $product['name'],
                 $product['price'],
                 $product['stock']
             );
         }
-        
+
         return implode("\n", $formatted) ?: 'No product data available';
     }
 }

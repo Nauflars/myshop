@@ -25,7 +25,7 @@ class CartItemTest extends TestCase
     public function testCartItemCreation(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 2);
-        
+
         $this->assertNotEmpty($cartItem->getId());
         $this->assertSame($this->cart, $cartItem->getCart());
         $this->assertSame($this->product, $cartItem->getProduct());
@@ -35,7 +35,7 @@ class CartItemTest extends TestCase
     public function testPriceSnapshot(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 1);
-        
+
         $priceSnapshot = $cartItem->getPriceSnapshot();
         $this->assertEquals(1000, $priceSnapshot->getAmountInCents());
         $this->assertEquals('USD', $priceSnapshot->getCurrency());
@@ -44,7 +44,7 @@ class CartItemTest extends TestCase
     public function testGetSubtotal(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 3);
-        
+
         $subtotal = $cartItem->getSubtotal();
         $this->assertEquals(3000, $subtotal->getAmountInCents());
         $this->assertEquals('USD', $subtotal->getCurrency());
@@ -53,7 +53,7 @@ class CartItemTest extends TestCase
     public function testSetQuantity(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 1);
-        
+
         $cartItem->setQuantity(5);
         $this->assertEquals(5, $cartItem->getQuantity());
     }
@@ -61,7 +61,7 @@ class CartItemTest extends TestCase
     public function testIncrementQuantity(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 2);
-        
+
         $cartItem->incrementQuantity(3);
         $this->assertEquals(5, $cartItem->getQuantity());
     }
@@ -69,7 +69,7 @@ class CartItemTest extends TestCase
     public function testDecrementQuantity(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 5);
-        
+
         $cartItem->decrementQuantity(2);
         $this->assertEquals(3, $cartItem->getQuantity());
     }
@@ -78,21 +78,21 @@ class CartItemTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Quantity must be greater than zero');
-        
+
         new CartItem($this->cart, $this->product, 0);
     }
 
     public function testQuantityCannotBeNegative(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        
+
         new CartItem($this->cart, $this->product, -1);
     }
 
     public function testSetQuantityCannotBeZero(): void
     {
         $cartItem = new CartItem($this->cart, $this->product, 5);
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $cartItem->setQuantity(0);
     }

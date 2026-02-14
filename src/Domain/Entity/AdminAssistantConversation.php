@@ -10,8 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * AdminAssistantConversation - Represents a chat session between admin and assistant
- * 
+ * AdminAssistantConversation - Represents a chat session between admin and assistant.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Each conversation is isolated per admin user session
  */
@@ -122,10 +122,10 @@ class AdminAssistantConversation
 
     public function updateContext(string $key, mixed $value): void
     {
-        if ($this->contextState === null) {
+        if (null === $this->contextState) {
             $this->contextState = [];
         }
-        
+
         $this->contextState[$key] = $value;
     }
 
@@ -150,7 +150,7 @@ class AdminAssistantConversation
 
     public function isActive(): bool
     {
-        return $this->endedAt === null;
+        return null === $this->endedAt;
     }
 
     public function getMessageCount(): int

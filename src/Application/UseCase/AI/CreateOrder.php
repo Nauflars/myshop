@@ -11,16 +11,17 @@ use Doctrine\ORM\EntityManagerInterface;
 final class CreateOrder
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
-     * Create an order from cart with explicit user confirmation
+     * Create an order from cart with explicit user confirmation.
      *
-     * @param Cart $cart The user's cart
-     * @param array $checkoutInfo Validated checkout information
-     * @param bool $userConfirmed User has explicitly confirmed order creation
+     * @param Cart  $cart          The user's cart
+     * @param array $checkoutInfo  Validated checkout information
+     * @param bool  $userConfirmed User has explicitly confirmed order creation
+     *
      * @return array Order result with human-friendly reference
      */
     public function execute(Cart $cart, array $checkoutInfo, bool $userConfirmed): array
@@ -45,7 +46,7 @@ final class CreateOrder
 
         // Persist order
         $this->entityManager->persist($order);
-        
+
         // Clear cart after order creation
         $cart->clear();
 

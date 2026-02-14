@@ -9,20 +9,20 @@ use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
 
 /**
- * UpdateProduct - Admin use case to update existing products
- * 
+ * UpdateProduct - Admin use case to update existing products.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Validates updates and applies changes to products
  */
 class UpdateProduct
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
     /**
-     * Find products by name (supports partial matching)
+     * Find products by name (supports partial matching).
      *
      * @return Product[]
      */
@@ -32,9 +32,10 @@ class UpdateProduct
     }
 
     /**
-     * Update product with provided changes
+     * Update product with provided changes.
      *
      * @param array $changes ['field' => 'value', ...]
+     *
      * @throws \InvalidArgumentException if validation fails
      */
     public function execute(Product $product, array $changes): Product
@@ -85,7 +86,7 @@ class UpdateProduct
     private function updateDescription(Product $product, string $newDescription): void
     {
         $description = trim($newDescription);
-        if ($description === '') {
+        if ('' === $description) {
             throw new \InvalidArgumentException('La descripción no puede estar vacía');
         }
 
@@ -95,7 +96,7 @@ class UpdateProduct
     private function updateCategory(Product $product, string $newCategory): void
     {
         $category = trim($newCategory);
-        if ($category === '') {
+        if ('' === $category) {
             throw new \InvalidArgumentException('La categoría no puede estar vacía');
         }
 
@@ -105,7 +106,7 @@ class UpdateProduct
     private function updateName(Product $product, string $newName): void
     {
         $name = trim($newName);
-        if ($name === '') {
+        if ('' === $name) {
             throw new \InvalidArgumentException('El nombre no puede estar vacío');
         }
         if (mb_strlen($name) > 255) {
@@ -132,7 +133,7 @@ class UpdateProduct
         }
 
         $allowedFields = ['price', 'stock', 'description', 'category', 'name', 'nameEs'];
-        
+
         foreach ($changes as $field => $value) {
             if (!in_array($field, $allowedFields, true)) {
                 throw new \InvalidArgumentException("Campo no permitido: {$field}");
@@ -141,7 +142,7 @@ class UpdateProduct
     }
 
     /**
-     * Get current values for confirmation
+     * Get current values for confirmation.
      */
     public function getCurrentValues(Product $product, array $fields): array
     {
@@ -163,7 +164,7 @@ class UpdateProduct
     }
 
     /**
-     * Get field name in Spanish for user-friendly messages
+     * Get field name in Spanish for user-friendly messages.
      */
     public static function getFieldNameInSpanish(string $field): string
     {

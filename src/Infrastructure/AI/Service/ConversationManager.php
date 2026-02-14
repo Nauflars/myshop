@@ -10,11 +10,11 @@ use App\Application\UseCase\AI\Conversation\SaveConversation;
 use App\Domain\Entity\User;
 
 /**
- * ConversationManager Service
- * 
+ * ConversationManager Service.
+ *
  * Infrastructure service for managing conversation persistence in the chatbot.
  * Orchestrates conversation use cases and provides a clean API for controllers.
- * 
+ *
  * Updated in spec-003 to use database persistence instead of sessions.
  */
 final class ConversationManager
@@ -22,12 +22,12 @@ final class ConversationManager
     public function __construct(
         private readonly SaveConversation $saveConversation,
         private readonly LoadConversation $loadConversation,
-        private readonly ClearConversation $clearConversation
+        private readonly ClearConversation $clearConversation,
     ) {
     }
 
     /**
-     * Save a user message to the conversation
+     * Save a user message to the conversation.
      */
     public function saveUserMessage(User $user, ?string $conversationId, string $content): array
     {
@@ -35,19 +35,19 @@ final class ConversationManager
     }
 
     /**
-     * Save an assistant response to the conversation
+     * Save an assistant response to the conversation.
      */
     public function saveAssistantMessage(
         User $user,
         string $conversationId,
         string $content,
-        ?array $toolCalls = null
+        ?array $toolCalls = null,
     ): array {
         return $this->saveConversation->execute($user, $conversationId, 'assistant', $content, $toolCalls);
     }
 
     /**
-     * Load conversation history for AI context
+     * Load conversation history for AI context.
      */
     public function loadConversation(User $user, string $conversationId): array
     {
@@ -55,7 +55,7 @@ final class ConversationManager
     }
 
     /**
-     * Clear/delete a conversation
+     * Clear/delete a conversation.
      */
     public function clearConversation(User $user, string $conversationId): array
     {
@@ -63,22 +63,23 @@ final class ConversationManager
     }
 
     /**
-     * Format messages for AI agent context
-     * 
+     * Format messages for AI agent context.
+     *
      * @param array $messages Array of message objects from LoadConversation
+     *
      * @return array Array in format expected by Symfony AI
      */
     public function formatMessagesForAI(array $messages): array
     {
         $formatted = [];
-        
+
         foreach ($messages as $msg) {
             $formatted[] = [
                 'role' => $msg['role'],
                 'content' => $msg['content'],
             ];
         }
-        
+
         return $formatted;
     }
 }

@@ -10,15 +10,16 @@ use App\Domain\Repository\OrderRepositoryInterface;
 final class GetOrderStatus
 {
     public function __construct(
-        private readonly OrderRepositoryInterface $orderRepository
+        private readonly OrderRepositoryInterface $orderRepository,
     ) {
     }
 
     /**
-     * Get order status by human-friendly order number
+     * Get order status by human-friendly order number.
      *
-     * @param User $user The authenticated user
+     * @param User   $user           The authenticated user
      * @param string $orderReference Human-friendly order reference (e.g., 'ORD-20260206-001')
+     *
      * @return array|null Order status or null if not found
      */
     public function execute(User $user, string $orderReference): ?array
@@ -27,7 +28,7 @@ final class GetOrderStatus
         $order = $this->orderRepository->findByOrderNumber($orderReference);
 
         // Verify the order belongs to the user
-        if ($order === null || $order->getUser()->getId() !== $user->getId()) {
+        if (null === $order || $order->getUser()->getId() !== $user->getId()) {
             return null;
         }
 

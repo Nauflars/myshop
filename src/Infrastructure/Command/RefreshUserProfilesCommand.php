@@ -26,7 +26,7 @@ class RefreshUserProfilesCommand extends Command
     public function __construct(
         EntityManagerInterface $entityManager,
         UserProfileService $profileService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         parent::__construct();
         $this->entityManager = $entityManager;
@@ -72,16 +72,17 @@ class RefreshUserProfilesCommand extends Command
                 return $this->refreshStaleProfiles($io);
             } elseif ($all) {
                 return $this->refreshAllUsers($io);
-            } else {
-                $io->error('Please specify one of: --all, --stale-only, or --user-id=<UUID>');
-                return Command::INVALID;
             }
+            $io->error('Please specify one of: --all, --stale-only, or --user-id=<UUID>');
+
+            return Command::INVALID;
         } catch (\Exception $e) {
-            $io->error('Command failed: ' . $e->getMessage());
+            $io->error('Command failed: '.$e->getMessage());
             $this->logger->error('Profile refresh command failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return Command::FAILURE;
         }
     }
@@ -94,6 +95,7 @@ class RefreshUserProfilesCommand extends Command
 
         if (!$user) {
             $io->error("User not found: {$userId}");
+
             return Command::FAILURE;
         }
 
@@ -102,7 +104,7 @@ class RefreshUserProfilesCommand extends Command
         $profile = $this->profileService->refreshProfile($user);
 
         if ($profile) {
-            $io->success("✓ Profile refreshed successfully");
+            $io->success('✓ Profile refreshed successfully');
             $io->table(
                 ['Metric', 'Value'],
                 [
@@ -113,11 +115,12 @@ class RefreshUserProfilesCommand extends Command
                     ['Last Updated', $profile->getUpdatedAt()->format('Y-m-d H:i:s')],
                 ]
             );
-            return Command::SUCCESS;
-        } else {
-            $io->warning('Profile not generated (user may have no activity)');
+
             return Command::SUCCESS;
         }
+        $io->warning('Profile not generated (user may have no activity)');
+
+        return Command::SUCCESS;
     }
 
     private function refreshAllUsers(SymfonyStyle $io): int
@@ -138,14 +141,14 @@ class RefreshUserProfilesCommand extends Command
         foreach ($users as $user) {
             try {
                 $profile = $this->profileService->refreshProfile($user);
-                
+
                 if ($profile) {
-                    $success++;
+                    ++$success;
                 } else {
-                    $skipped++;
+                    ++$skipped;
                 }
             } catch (\Exception $e) {
-                $failed++;
+                ++$failed;
                 $this->logger->error('Failed to refresh profile', [
                     'userId' => $user->getId(),
                     'error' => $e->getMessage(),
@@ -157,7 +160,7 @@ class RefreshUserProfilesCommand extends Command
 
         $io->progressFinish();
 
-        $io->success("Profile refresh completed");
+        $io->success('Profile refresh completed');
         $io->table(
             ['Status', 'Count'],
             [
@@ -178,8 +181,9 @@ class RefreshUserProfilesCommand extends Command
         $staleProfiles = $this->profileService->getStaleProfiles(30);
         $total = count($staleProfiles);
 
-        if ($total === 0) {
+        if (0 === $total) {
             $io->success('No stale profiles found');
+
             return Command::SUCCESS;
         }
 
@@ -193,21 +197,21 @@ class RefreshUserProfilesCommand extends Command
         foreach ($staleProfiles as $profile) {
             try {
                 $user = $this->entityManager->getRepository(User::class)->find($profile->getUserId());
-                
+
                 if (!$user) {
-                    $failed++;
+                    ++$failed;
                     continue;
                 }
 
                 $refreshed = $this->profileService->refreshProfile($user);
-                
+
                 if ($refreshed) {
-                    $success++;
+                    ++$success;
                 } else {
-                    $failed++;
+                    ++$failed;
                 }
             } catch (\Exception $e) {
-                $failed++;
+                ++$failed;
                 $this->logger->error('Failed to refresh stale profile', [
                     'userId' => $profile->getUserId(),
                     'error' => $e->getMessage(),
@@ -219,7 +223,7 @@ class RefreshUserProfilesCommand extends Command
 
         $io->progressFinish();
 
-        $io->success("Stale profile refresh completed");
+        $io->success('Stale profile refresh completed');
         $io->table(
             ['Status', 'Count'],
             [

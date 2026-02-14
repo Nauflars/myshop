@@ -7,19 +7,20 @@ namespace App\Application\UseCase\AI;
 final class CollectCheckoutInformation
 {
     /**
-     * Validate and structure checkout information collected conversationally
+     * Validate and structure checkout information collected conversationally.
      *
-     * @param string $shippingAddress Full shipping address
-     * @param string $paymentMethod Payment method (e.g., 'credit_card', 'paypal')
-     * @param string $contactEmail Contact email
-     * @param string|null $contactPhone Optional contact phone
+     * @param string      $shippingAddress Full shipping address
+     * @param string      $paymentMethod   Payment method (e.g., 'credit_card', 'paypal')
+     * @param string      $contactEmail    Contact email
+     * @param string|null $contactPhone    Optional contact phone
+     *
      * @return array Validation result with structured data
      */
     public function execute(
         string $shippingAddress,
         string $paymentMethod,
         string $contactEmail,
-        ?string $contactPhone = null
+        ?string $contactPhone = null,
     ): array {
         $errors = [];
 

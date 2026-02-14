@@ -9,8 +9,8 @@ use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 
 /**
- * T095: Failed Job Registry - Dead Letter Queue for embedding sync failures
- * 
+ * T095: Failed Job Registry - Dead Letter Queue for embedding sync failures.
+ *
  * Records failed embedding sync operations for later retry
  * Implements exponential backoff for retry scheduling
  */
@@ -27,25 +27,23 @@ class FailedJobRegistry
 
     public function __construct(
         private readonly Connection $connection,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Record a failed embedding sync job
-     * 
-     * @param Product $product
+     * Record a failed embedding sync job.
+     *
      * @param string $operation create, update, or delete
-     * @param \Throwable $error
-     * @param int $attempts Current number of attempts
+     * @param int    $attempts  Current number of attempts
      */
     public function recordFailure(
         Product $product,
         string $operation,
         \Throwable $error,
-        int $attempts = 0
+        int $attempts = 0,
     ): int {
-        $attempts++;
+        ++$attempts;
         $retryAfter = $this->calculateRetryTime($attempts);
 
         try {
@@ -82,7 +80,6 @@ class FailedJobRegistry
             ]);
 
             return $jobId;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to record failed job', [
                 'product_id' => $product->getId(),
@@ -94,10 +91,9 @@ class FailedJobRegistry
     }
 
     /**
-     * Get jobs ready for retry
-     * 
+     * Get jobs ready for retry.
+     *
      * @param int $limit Maximum number of jobs to return
-     * @return array
      */
     public function getJobsReadyForRetry(int $limit = 100): array
     {
@@ -117,7 +113,6 @@ class FailedJobRegistry
                 'limit' => \PDO::PARAM_INT,
                 'maxAttempts' => \PDO::PARAM_INT,
             ]);
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to fetch jobs for retry', [
                 'error' => $e->getMessage(),
@@ -128,7 +123,7 @@ class FailedJobRegistry
     }
 
     /**
-     * Mark job as retrying
+     * Mark job as retrying.
      */
     public function markAsRetrying(int $jobId): bool
     {
@@ -141,7 +136,6 @@ class FailedJobRegistry
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to mark job as retrying', [
                 'job_id' => $jobId,
@@ -153,7 +147,7 @@ class FailedJobRegistry
     }
 
     /**
-     * Mark job as resolved (successfully retried)
+     * Mark job as resolved (successfully retried).
      */
     public function markAsResolved(int $jobId): bool
     {
@@ -168,7 +162,6 @@ class FailedJobRegistry
             $this->logger->info('Failed job resolved', ['job_id' => $jobId]);
 
             return true;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to mark job as resolved', [
                 'job_id' => $jobId,
@@ -180,7 +173,7 @@ class FailedJobRegistry
     }
 
     /**
-     * Update job after retry failure (increment attempts, calculate next retry)
+     * Update job after retry failure (increment attempts, calculate next retry).
      */
     public function updateAfterRetryFailure(int $jobId, int $currentAttempts): bool
     {
@@ -198,7 +191,6 @@ class FailedJobRegistry
             ]);
 
             return true;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to update job after retry', [
                 'job_id' => $jobId,
@@ -210,8 +202,8 @@ class FailedJobRegistry
     }
 
     /**
-     * Get failure statistics
-     * 
+     * Get failure statistics.
+     *
      * @return array ['total' => int, 'failed' => int, 'retrying' => int, 'resolved' => int, 'abandoned' => int]
      */
     public function getStatistics(): array
@@ -239,7 +231,6 @@ class FailedJobRegistry
             }
 
             return $result;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to get statistics', [
                 'error' => $e->getMessage(),
@@ -256,7 +247,7 @@ class FailedJobRegistry
     }
 
     /**
-     * Calculate next retry time based on attempts (exponential backoff)
+     * Calculate next retry time based on attempts (exponential backoff).
      */
     private function calculateRetryTime(int $attempts): ?\DateTime
     {

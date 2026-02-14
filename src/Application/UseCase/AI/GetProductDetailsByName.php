@@ -9,14 +9,15 @@ use App\Domain\Repository\ProductRepositoryInterface;
 final class GetProductDetailsByName
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
     /**
-     * Get detailed product information by product name
+     * Get detailed product information by product name.
      *
      * @param string $productName The name of the product
+     *
      * @return array|null Product details or null if not found
      */
     public function execute(string $productName): ?array
@@ -25,7 +26,7 @@ final class GetProductDetailsByName
 
         // Find product by exact name match (case-insensitive)
         foreach ($products as $product) {
-            if (strcasecmp($product->getName(), $productName) === 0) {
+            if (0 === strcasecmp($product->getName(), $productName)) {
                 return [
                     'name' => $product->getName(),
                     'description' => $product->getDescription(),

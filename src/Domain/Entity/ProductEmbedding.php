@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Entity;
 
 /**
- * ProductEmbedding - Vector embedding representation of product for semantic search
- * 
+ * ProductEmbedding - Vector embedding representation of product for semantic search.
+ *
  * Stored in MongoDB for vector similarity search. This is NOT a Doctrine entity.
  * MongoDB document structure managed by MongoDBEmbeddingRepository.
- * 
+ *
  * Part of spec-010: Semantic Product Search
  */
 class ProductEmbedding
@@ -21,7 +21,7 @@ class ProductEmbedding
         private string $description,
         private ?string $category = null,
         private array $metadata = [],
-        private ?\DateTimeImmutable $updatedAt = null
+        private ?\DateTimeImmutable $updatedAt = null,
     ) {
         $this->updatedAt = $updatedAt ?? new \DateTimeImmutable();
     }
@@ -110,13 +110,13 @@ class ProductEmbedding
         } elseif (!is_array($embedding)) {
             $embedding = (array) $embedding;
         }
-        
+
         // Same for metadata
         $metadata = $data['metadata'] ?? [];
         if ($metadata instanceof \MongoDB\Model\BSONArray || $metadata instanceof \MongoDB\Model\BSONDocument) {
             $metadata = iterator_to_array($metadata);
         }
-        
+
         return new self(
             productId: $data['product_id'],
             embedding: $embedding,
@@ -124,17 +124,17 @@ class ProductEmbedding
             description: $data['description'],
             category: $data['category'] ?? null,
             metadata: $metadata,
-            updatedAt: isset($data['updated_at']) 
+            updatedAt: isset($data['updated_at'])
                 ? new \DateTimeImmutable($data['updated_at'])
                 : null
         );
     }
 
     /**
-     * Validate embedding dimensions (should be 1536 for text-embedding-3-small)
+     * Validate embedding dimensions (should be 1536 for text-embedding-3-small).
      */
     public function isValidEmbedding(): bool
     {
-        return count($this->embedding) === 1536;
+        return 1536 === count($this->embedding);
     }
 }

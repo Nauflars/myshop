@@ -14,8 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * SetupMongoDBEmbeddingsCommand - Initialize MongoDB for User Embeddings Queue
- * 
+ * SetupMongoDBEmbeddingsCommand - Initialize MongoDB for User Embeddings Queue.
+ *
  * Implements spec-014 T010: MongoDB collection setup with schema validation
  * Creates user_embeddings collection with validation rules and indexes
  */
@@ -28,7 +28,7 @@ class SetupMongoDBEmbeddingsCommand extends Command
     public function __construct(
         private readonly Client $mongoClient,
         private readonly LoggerInterface $logger,
-        private readonly string $databaseName
+        private readonly string $databaseName,
     ) {
         parent::__construct();
     }
@@ -68,27 +68,27 @@ class SetupMongoDBEmbeddingsCommand extends Command
 
             // Check if collection already exists
             $existingCollections = iterator_to_array($database->listCollections(['name' => $collectionName]));
-            
+
             if (count($existingCollections) > 0) {
                 $io->info(sprintf('Collection "%s" already exists. Updating validation rules...', $collectionName));
-                
+
                 // Update validation rules
                 $database->command([
                     'collMod' => $collectionName,
                     'validator' => $this->getValidationSchema(),
                     'validationLevel' => 'moderate',
-                    'validationAction' => 'error'
+                    'validationAction' => 'error',
                 ]);
             } else {
                 $io->section('Creating user_embeddings collection...');
-                
+
                 // Create collection with validation
                 $database->createCollection($collectionName, [
                     'validator' => $this->getValidationSchema(),
                     'validationLevel' => 'moderate',
-                    'validationAction' => 'error'
+                    'validationAction' => 'error',
                 ]);
-                
+
                 $io->success('Collection created successfully!');
             }
 
@@ -100,16 +100,16 @@ class SetupMongoDBEmbeddingsCommand extends Command
                 [
                     'name' => 'idx_user_id',
                     'key' => ['user_id' => 1],
-                    'unique' => true
+                    'unique' => true,
                 ],
                 [
                     'name' => 'idx_last_updated',
-                    'key' => ['last_updated' => -1]
+                    'key' => ['last_updated' => -1],
                 ],
                 [
                     'name' => 'idx_event_count',
-                    'key' => ['event_count' => -1]
-                ]
+                    'key' => ['event_count' => -1],
+                ],
             ];
 
             foreach ($indexes as $indexSpec) {
@@ -118,7 +118,7 @@ class SetupMongoDBEmbeddingsCommand extends Command
                         $indexSpec['key'],
                         [
                             'name' => $indexSpec['name'],
-                            'unique' => $indexSpec['unique'] ?? false
+                            'unique' => $indexSpec['unique'] ?? false,
                         ]
                     );
                     $io->writeln(sprintf('  ✓ Created index: %s', $indexSpec['name']));
@@ -133,10 +133,10 @@ class SetupMongoDBEmbeddingsCommand extends Command
 
             // Verify setup
             $io->section('Verifying setup...');
-            
+
             $indexes = iterator_to_array($collection->listIndexes());
             $io->writeln(sprintf('Total indexes: %d', count($indexes)));
-            
+
             foreach ($indexes as $index) {
                 $io->writeln(sprintf('  - %s', $index->getName()));
             }
@@ -147,26 +147,25 @@ class SetupMongoDBEmbeddingsCommand extends Command
                 sprintf('Database: %s', $this->databaseName),
                 sprintf('Collection: %s', $collectionName),
                 'Schema validation: ACTIVE',
-                sprintf('Indexes: %d created', count($indexes))
+                sprintf('Indexes: %d created', count($indexes)),
             ]);
 
             $this->logger->info('MongoDB user embeddings collection setup completed', [
                 'database' => $this->databaseName,
                 'collection' => $collectionName,
-                'indexes_count' => count($indexes)
+                'indexes_count' => count($indexes),
             ]);
 
             return Command::SUCCESS;
-
         } catch (MongoException $e) {
             $io->error([
                 'MongoDB setup failed!',
-                $e->getMessage()
+                $e->getMessage(),
             ]);
 
             $this->logger->error('MongoDB setup failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return Command::FAILURE;
@@ -182,52 +181,52 @@ class SetupMongoDBEmbeddingsCommand extends Command
                 'properties' => [
                     'user_id' => [
                         'bsonType' => 'int',
-                        'description' => 'User ID (references MySQL users table)'
+                        'description' => 'User ID (references MySQL users table)',
                     ],
                     'embedding' => [
                         'bsonType' => 'array',
                         'minItems' => 1536,
                         'maxItems' => 1536,
                         'items' => [
-                            'bsonType' => 'double'
+                            'bsonType' => 'double',
                         ],
-                        'description' => '1536-dimensional embedding vector (OpenAI text-embedding-3-small)'
+                        'description' => '1536-dimensional embedding vector (OpenAI text-embedding-3-small)',
                     ],
                     'dimension_count' => [
                         'bsonType' => 'int',
                         'minimum' => 1536,
                         'maximum' => 1536,
-                        'description' => 'Embedding dimension count (must be 1536)'
+                        'description' => 'Embedding dimension count (must be 1536)',
                     ],
                     'last_updated' => [
                         'bsonType' => 'date',
-                        'description' => 'Timestamp of last embedding update'
+                        'description' => 'Timestamp of last embedding update',
                     ],
                     'event_count' => [
                         'bsonType' => 'int',
                         'minimum' => 0,
-                        'description' => 'Total number of events processed for this user'
+                        'description' => 'Total number of events processed for this user',
                     ],
                     'last_event_type' => [
                         'bsonType' => 'string',
                         'enum' => ['search', 'product_view', 'product_click', 'product_purchase'],
-                        'description' => 'Type of the most recent event processed'
+                        'description' => 'Type of the most recent event processed',
                     ],
                     'created_at' => [
                         'bsonType' => 'date',
-                        'description' => 'Timestamp when embedding was first created'
+                        'description' => 'Timestamp when embedding was first created',
                     ],
                     'updated_at' => [
                         'bsonType' => 'date',
-                        'description' => 'Timestamp when document was last modified'
+                        'description' => 'Timestamp when document was last modified',
                     ],
                     'version' => [
                         'bsonType' => 'int',
                         'minimum' => 0,
-                        'description' => 'Optimistic locking version number'
-                    ]
-                ]
-            ]
+                        'description' => 'Optimistic locking version number',
+                    ],
+                ],
+            ],
         ];
     }
 }

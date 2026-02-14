@@ -14,8 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * InitializeMongoDBCommand - Initialize MongoDB user_embeddings collection
- * 
+ * InitializeMongoDBCommand - Initialize MongoDB user_embeddings collection.
+ *
  * Implements spec-014: Setup MongoDB collection with indexes
  */
 #[AsCommand(
@@ -27,7 +27,7 @@ final class InitializeMongoDBCommand extends Command
     public function __construct(
         private readonly Client $mongoClient,
         private readonly LoggerInterface $logger,
-        private readonly string $databaseName = 'myshop'
+        private readonly string $databaseName = 'myshop',
     ) {
         parent::__construct();
     }
@@ -87,7 +87,7 @@ HELP
 
             // Check if collection exists
             $collections = iterator_to_array($database->listCollections([
-                'filter' => ['name' => $collectionName]
+                'filter' => ['name' => $collectionName],
             ]));
             $exists = count($collections) > 0;
 
@@ -100,6 +100,7 @@ HELP
                         false
                     )) {
                         $io->warning('Operation cancelled');
+
                         return Command::SUCCESS;
                     }
 
@@ -112,7 +113,7 @@ HELP
 
             if (!$exists) {
                 $io->section('Creating user_embeddings collection');
-                
+
                 // Create collection with validation schema
                 $database->createCollection($collectionName, [
                     'validator' => [
@@ -122,7 +123,7 @@ HELP
                             'properties' => [
                                 'user_id' => [
                                     'bsonType' => 'int',
-                                    'description' => 'User identifier (required, unique)'
+                                    'description' => 'User identifier (required, unique)',
                                 ],
                                 'vector' => [
                                     'bsonType' => 'array',
@@ -130,25 +131,25 @@ HELP
                                     'maxItems' => 1536,
                                     'items' => [
                                         'bsonType' => 'double',
-                                        'description' => '1536-dimensional embedding vector'
-                                    ]
+                                        'description' => '1536-dimensional embedding vector',
+                                    ],
                                 ],
                                 'last_updated_at' => [
                                     'bsonType' => 'string',
-                                    'description' => 'ISO 8601 timestamp of last update'
+                                    'description' => 'ISO 8601 timestamp of last update',
                                 ],
                                 'version' => [
                                     'bsonType' => 'int',
                                     'minimum' => 1,
-                                    'description' => 'Optimistic locking version'
+                                    'description' => 'Optimistic locking version',
                                 ],
                                 'created_at' => [
                                     'bsonType' => ['string', 'null'],
-                                    'description' => 'ISO 8601 timestamp of creation'
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'description' => 'ISO 8601 timestamp of creation',
+                                ],
+                            ],
+                        ],
+                    ],
                 ]);
 
                 $io->success('Collection created with validation schema');
@@ -164,7 +165,7 @@ HELP
                 [
                     'unique' => true,
                     'name' => 'idx_user_id',
-                    'background' => false
+                    'background' => false,
                 ]
             );
             $io->writeln('✓ Created unique index: idx_user_id');
@@ -174,7 +175,7 @@ HELP
                 ['last_updated_at' => 1],
                 [
                     'name' => 'idx_last_updated',
-                    'background' => false
+                    'background' => false,
                 ]
             );
             $io->writeln('✓ Created index: idx_last_updated');
@@ -184,7 +185,7 @@ HELP
                 ['user_id' => 1, 'version' => 1],
                 [
                     'name' => 'idx_user_version',
-                    'background' => false
+                    'background' => false,
                 ]
             );
             $io->writeln('✓ Created compound index: idx_user_version');
@@ -192,7 +193,7 @@ HELP
             // Display collection stats
             $io->section('Collection Information');
             $stats = $database->command(['collStats' => $collectionName])->toArray()[0];
-            
+
             $io->table(
                 ['Property', 'Value'],
                 [
@@ -212,7 +213,7 @@ HELP
                 $indexTable[] = [
                     $index['name'],
                     json_encode($index['key']),
-                    $index['unique'] ?? false ? 'Yes' : 'No'
+                    $index['unique'] ?? false ? 'Yes' : 'No',
                 ];
             }
 
@@ -229,10 +230,9 @@ HELP
             ]);
 
             return Command::SUCCESS;
-
         } catch (\Throwable $e) {
-            $io->error('MongoDB initialization failed: ' . $e->getMessage());
-            
+            $io->error('MongoDB initialization failed: '.$e->getMessage());
+
             $this->logger->error('MongoDB initialization failed', [
                 'error' => $e->getMessage(),
                 'exception' => get_class($e),
@@ -243,7 +243,7 @@ HELP
     }
 
     /**
-     * Format bytes to human-readable size
+     * Format bytes to human-readable size.
      */
     private function formatBytes(int $bytes): string
     {
@@ -251,9 +251,9 @@ HELP
         $i = 0;
         while ($bytes >= 1024 && $i < count($units) - 1) {
             $bytes /= 1024;
-            $i++;
+            ++$i;
         }
 
-        return round($bytes, 2) . ' ' . $units[$i];
+        return round($bytes, 2).' '.$units[$i];
     }
 }

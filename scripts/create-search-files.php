@@ -136,8 +136,8 @@ class SearchHistoryRepository extends ServiceEntityRepository
 PHP;
 
 // Write files
-file_put_contents(__DIR__ . '/src/Entity/SearchHistory.php', $searchHistoryContent);
-file_put_contents(__DIR__ . '/src/Repository/SearchHistoryRepository.php', $repositoryContent);
+file_put_contents(__DIR__.'/src/Entity/SearchHistory.php', $searchHistoryContent);
+file_put_contents(__DIR__.'/src/Repository/SearchHistoryRepository.php', $repositoryContent);
 
 echo "✅ Files created successfully:\n";
 echo "  - src/Entity/SearchHistory.php\n";

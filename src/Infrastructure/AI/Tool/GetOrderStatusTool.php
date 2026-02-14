@@ -16,7 +16,7 @@ final class GetOrderStatusTool
 {
     public function __construct(
         private readonly GetOrderStatus $getOrderStatus,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
@@ -28,7 +28,7 @@ final class GetOrderStatusTool
         try {
             $user = $this->security->getUser();
 
-            if ($user === null) {
+            if (null === $user) {
                 return [
                     'success' => false,
                     'order' => null,
@@ -38,7 +38,7 @@ final class GetOrderStatusTool
 
             $order = $this->getOrderStatus->execute($user, $orderReference);
 
-            if ($order === null) {
+            if (null === $order) {
                 return [
                     'success' => false,
                     'order' => null,
@@ -50,7 +50,7 @@ final class GetOrderStatusTool
                 'success' => true,
                 'order' => $order,
                 'message' => sprintf(
-                    "Order %s status: %s.",
+                    'Order %s status: %s.',
                     $order['orderReference'],
                     $order['status']
                 ),

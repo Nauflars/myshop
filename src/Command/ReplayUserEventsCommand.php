@@ -6,7 +6,6 @@ namespace App\Command;
 
 use App\Application\UseCase\PublishUserInteractionEvent;
 use App\Repository\UserInteractionRepository;
-use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -16,8 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * ReplayUserEventsCommand - Replay unprocessed or failed events from MySQL
- * 
+ * ReplayUserEventsCommand - Replay unprocessed or failed events from MySQL.
+ *
  * Implements spec-014 US4: Manual replay capability for failed events
  * Useful for recovering from RabbitMQ downtime or worker failures
  */
@@ -30,7 +29,7 @@ final class ReplayUserEventsCommand extends Command
     public function __construct(
         private readonly PublishUserInteractionEvent $publishUseCase,
         private readonly UserInteractionRepository $userInteractionRepository,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -130,7 +129,7 @@ HELP
 
         try {
             // Parse since date
-            $sinceDate = new DateTimeImmutable($since);
+            $sinceDate = new \DateTimeImmutable($since);
 
             // Build query criteria
             $io->section('Query Criteria');
@@ -153,12 +152,13 @@ HELP
             }
 
             // Filter by user ID if specified
-            if ($userId !== null) {
-                $events = array_filter($events, fn($event) => $event->getUserId() === $userId);
+            if (null !== $userId) {
+                $events = array_filter($events, fn ($event) => $event->getUserId() === $userId);
             }
 
             if (empty($events)) {
                 $io->success('No events found matching criteria');
+
                 return Command::SUCCESS;
             }
 
@@ -168,7 +168,7 @@ HELP
             // Show sample events
             $sampleSize = min(10, count($events));
             $sampleEvents = array_slice($events, 0, $sampleSize);
-            
+
             $tableData = [];
             foreach ($sampleEvents as $event) {
                 $tableData[] = [
@@ -196,6 +196,7 @@ HELP
                     false
                 )) {
                     $io->warning('Replay cancelled');
+
                     return Command::SUCCESS;
                 }
             }
@@ -203,6 +204,7 @@ HELP
             // Replay events
             if ($dryRun) {
                 $io->info('DRY RUN: No events were actually published');
+
                 return Command::SUCCESS;
             }
 
@@ -216,20 +218,19 @@ HELP
             foreach ($events as $event) {
                 try {
                     $published = $this->publishUseCase->execute($event);
-                    
+
                     if ($published) {
-                        $success++;
+                        ++$success;
                     } else {
-                        $failed++;
+                        ++$failed;
                         $errors[] = sprintf(
                             'Event #%d (user %d) failed to publish',
                             $event->getId(),
                             $event->getUserId()
                         );
                     }
-
                 } catch (\Throwable $e) {
-                    $failed++;
+                    ++$failed;
                     $errors[] = sprintf(
                         'Event #%d (user %d): %s',
                         $event->getId(),
@@ -265,9 +266,9 @@ HELP
                 $io->section('Errors');
                 $maxErrors = 20;
                 $displayErrors = array_slice($errors, 0, $maxErrors);
-                
+
                 foreach ($displayErrors as $error) {
-                    $io->text('• ' . $error);
+                    $io->text('• '.$error);
                 }
 
                 if (count($errors) > $maxErrors) {
@@ -290,15 +291,16 @@ HELP
                     'Replay completed with %d failures. Check logs for details.',
                     $failed
                 ));
+
                 return Command::FAILURE;
             }
 
             $io->success(sprintf('Successfully replayed %d events!', $success));
-            return Command::SUCCESS;
 
+            return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Replay failed: ' . $e->getMessage());
-            
+            $io->error('Replay failed: '.$e->getMessage());
+
             $this->logger->error('Event replay command failed', [
                 'error' => $e->getMessage(),
                 'exception' => get_class($e),

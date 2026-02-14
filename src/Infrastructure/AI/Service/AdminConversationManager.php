@@ -12,35 +12,35 @@ use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 
 /**
- * AdminConversationManager - Manages admin assistant conversation sessions
- * 
+ * AdminConversationManager - Manages admin assistant conversation sessions.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Handles conversation persistence and session management
  */
 class AdminConversationManager
 {
     public function __construct(
-        private readonly AdminAssistantRepository $repository
+        private readonly AdminAssistantRepository $repository,
     ) {
     }
 
     /**
-     * Get or create active conversation for admin user
+     * Get or create active conversation for admin user.
      */
     public function getOrCreateConversation(User $adminUser, ?string $sessionId = null): AdminAssistantConversation
     {
         // Try to find by session ID first
-        if ($sessionId !== null) {
+        if (null !== $sessionId) {
             $conversation = $this->repository->findBySessionId($sessionId);
-            if ($conversation !== null && $conversation->getAdminUser()->getId() === $adminUser->getId()) {
+            if (null !== $conversation && $conversation->getAdminUser()->getId() === $adminUser->getId()) {
                 return $conversation;
             }
         }
 
         // Fall back to finding active conversation for user
         $conversation = $this->repository->findActiveByUser($adminUser);
-        
-        if ($conversation === null) {
+
+        if (null === $conversation) {
             $conversation = new AdminAssistantConversation($adminUser, $sessionId);
             $this->repository->save($conversation);
         }
@@ -49,7 +49,7 @@ class AdminConversationManager
     }
 
     /**
-     * Save admin message to conversation
+     * Save admin message to conversation.
      */
     public function saveAdminMessage(AdminAssistantConversation $conversation, string $messageText): AdminAssistantMessage
     {
@@ -65,12 +65,12 @@ class AdminConversationManager
     }
 
     /**
-     * Save assistant response to conversation
+     * Save assistant response to conversation.
      */
     public function saveAssistantMessage(
         AdminAssistantConversation $conversation,
         string $messageText,
-        ?array $toolInvocations = null
+        ?array $toolInvocations = null,
     ): AdminAssistantMessage {
         $message = new AdminAssistantMessage(
             $conversation,
@@ -78,7 +78,7 @@ class AdminConversationManager
             $messageText
         );
 
-        if ($toolInvocations !== null && !empty($toolInvocations)) {
+        if (null !== $toolInvocations && !empty($toolInvocations)) {
             foreach ($toolInvocations as $invocation) {
                 $message->addToolInvocation(
                     $invocation['tool'] ?? 'unknown',
@@ -94,7 +94,7 @@ class AdminConversationManager
     }
 
     /**
-     * Convert conversation to MessageBag for AI agent
+     * Convert conversation to MessageBag for AI agent.
      */
     public function conversationToMessageBag(AdminAssistantConversation $conversation): MessageBag
     {
@@ -112,7 +112,7 @@ class AdminConversationManager
     }
 
     /**
-     * End conversation session
+     * End conversation session.
      */
     public function endConversation(AdminAssistantConversation $conversation): void
     {
@@ -121,7 +121,7 @@ class AdminConversationManager
     }
 
     /**
-     * Update conversational context
+     * Update conversational context.
      */
     public function updateContext(AdminAssistantConversation $conversation, string $key, mixed $value): void
     {
@@ -130,7 +130,7 @@ class AdminConversationManager
     }
 
     /**
-     * Get context value
+     * Get context value.
      */
     public function getContextValue(AdminAssistantConversation $conversation, string $key): mixed
     {
@@ -138,7 +138,7 @@ class AdminConversationManager
     }
 
     /**
-     * Clear context
+     * Clear context.
      */
     public function clearContext(AdminAssistantConversation $conversation): void
     {
@@ -147,7 +147,7 @@ class AdminConversationManager
     }
 
     /**
-     * Get recent conversations for user
+     * Get recent conversations for user.
      *
      * @return AdminAssistantConversation[]
      */
@@ -157,13 +157,13 @@ class AdminConversationManager
     }
 
     /**
-     * Create a new conversation (ends any active ones first)
+     * Create a new conversation (ends any active ones first).
      */
     public function startNewConversation(User $adminUser, ?string $sessionId = null): AdminAssistantConversation
     {
         // End any active conversations
         $activeConversation = $this->repository->findActiveByUser($adminUser);
-        if ($activeConversation !== null) {
+        if (null !== $activeConversation) {
             $this->endConversation($activeConversation);
         }
 

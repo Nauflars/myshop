@@ -10,8 +10,8 @@ use App\Domain\Repository\ProductRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * SyncEmbeddingHandler - Handle async embedding sync messages
- * 
+ * SyncEmbeddingHandler - Handle async embedding sync messages.
+ *
  * Implements spec-010 FR-005: Async processing of embedding sync
  * Note: Requires symfony/messenger component for async processing
  */
@@ -20,7 +20,7 @@ class SyncEmbeddingHandler
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
         private readonly ProductEmbeddingSyncService $syncService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -33,18 +33,20 @@ class SyncEmbeddingHandler
 
         $product = $this->productRepository->find($message->getProductId());
 
-        if ($product === null) {
+        if (null === $product) {
             // Product deleted or not found
-            if ($message->getOperation() === 'delete') {
+            if ('delete' === $message->getOperation()) {
                 $this->logger->info('Product already deleted, skipping', [
                     'product_id' => $message->getProductId(),
                 ]);
+
                 return;
             }
 
             $this->logger->warning('Product not found for embedding sync', [
                 'product_id' => $message->getProductId(),
             ]);
+
             return;
         }
 
@@ -65,7 +67,6 @@ class SyncEmbeddingHandler
                     'operation' => $message->getOperation(),
                 ]);
             }
-
         } catch (\Exception $e) {
             $this->logger->error('Exception during embedding sync', [
                 'product_id' => $message->getProductId(),

@@ -250,6 +250,50 @@ test-watch: ## Watch tests (requires phpunit-watcher)
 	docker-compose exec php vendor/bin/phpunit-watcher watch
 
 # ========================================
+# Quality Gates (Constitution v1.1.0)
+# ========================================
+
+quality-gates: ## Run all quality gates (pre-push validation)
+	@bash scripts/quality-gates.sh
+
+qa-tests: ## Run all tests (unit + integration + E2E)
+	docker-compose exec php vendor/bin/phpunit
+
+qa-coverage: ## Check test coverage meets thresholds
+	docker-compose exec php vendor/bin/phpunit --coverage-text
+
+qa-phpstan: ## Run PHPStan static analysis
+	docker-compose exec php vendor/bin/phpstan analyse
+
+qa-cs-fixer: ## Check code style with PHP CS Fixer
+	docker-compose exec php vendor/bin/php-cs-fixer fix --dry-run --diff
+
+qa-cs-fixer-fix: ## Fix code style with PHP CS Fixer
+	docker-compose exec php vendor/bin/php-cs-fixer fix
+
+qa-composer-validate: ## Validate composer.json
+	docker-compose exec php composer validate --strict
+
+qa-composer-audit: ## Check for security vulnerabilities
+	docker-compose exec php composer audit
+
+qa-lint-container: ## Validate Symfony container
+	docker-compose exec php php bin/console lint:container
+
+qa-lint-yaml: ## Validate YAML configuration
+	docker-compose exec php php bin/console lint:yaml config/
+
+qa-lint-twig: ## Validate Twig templates
+	docker-compose exec php php bin/console lint:twig templates/
+
+qa-lint-router: ## Validate Symfony router
+	docker-compose exec php php bin/console lint:router
+
+qa-lint-all: qa-lint-container qa-lint-yaml qa-lint-twig qa-lint-router ## Run all Symfony linters
+
+qa-full: qa-tests qa-phpstan qa-cs-fixer qa-composer-validate qa-composer-audit qa-lint-all ## Run all quality checks (without coverage)
+
+# ========================================
 # Application Specific Commands
 # ========================================
 

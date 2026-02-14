@@ -9,15 +9,15 @@ use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\Money;
 
 /**
- * CreateProduct - Admin use case to create new products
- * 
+ * CreateProduct - Admin use case to create new products.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Validates data and creates product entities
  */
 class CreateProduct
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
@@ -58,14 +58,14 @@ class CreateProduct
         $errors = [];
 
         // Validate name
-        if (empty($data['name']) || trim($data['name']) === '') {
+        if (empty($data['name']) || '' === trim($data['name'])) {
             $errors[] = 'El nombre del producto es obligatorio';
         } elseif (mb_strlen(trim($data['name'])) > 255) {
             $errors[] = 'El nombre no puede exceder 255 caracteres';
         }
 
         // Validate description
-        if (empty($data['description']) || trim($data['description']) === '') {
+        if (empty($data['description']) || '' === trim($data['description'])) {
             $errors[] = 'La descripción del producto es obligatoria';
         }
 
@@ -96,7 +96,7 @@ class CreateProduct
         }
 
         // Validate category
-        if (empty($data['category']) || trim($data['category']) === '') {
+        if (empty($data['category']) || '' === trim($data['category'])) {
             $errors[] = 'La categoría es obligatoria';
         }
 
@@ -106,7 +106,7 @@ class CreateProduct
     }
 
     /**
-     * Check if required fields are present
+     * Check if required fields are present.
      *
      * @return array List of missing required field names
      */
@@ -116,7 +116,7 @@ class CreateProduct
         $missing = [];
 
         foreach ($required as $field) {
-            if (!isset($data[$field]) || (is_string($data[$field]) && trim($data[$field]) === '')) {
+            if (!isset($data[$field]) || (is_string($data[$field]) && '' === trim($data[$field]))) {
                 $missing[] = $field;
             }
         }
@@ -125,7 +125,7 @@ class CreateProduct
     }
 
     /**
-     * Get field name in Spanish for user-friendly messages
+     * Get field name in Spanish for user-friendly messages.
      */
     public static function getFieldNameInSpanish(string $field): string
     {

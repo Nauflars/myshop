@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -11,7 +12,6 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\Cache\CacheInterface;
-use Psr\Cache\CacheItemPoolInterface;
 
 #[AsCommand(
     name: 'app:cache:clear-recommendations',
@@ -20,7 +20,7 @@ use Psr\Cache\CacheItemPoolInterface;
 class ClearRecommendationCacheCommand extends Command
 {
     public function __construct(
-        private readonly CacheInterface $cache
+        private readonly CacheInterface $cache,
     ) {
         parent::__construct();
     }
@@ -47,6 +47,7 @@ class ClearRecommendationCacheCommand extends Command
                     $io->success('All cache cleared successfully!');
                 } else {
                     $io->error('Cache adapter does not support clearing all cache.');
+
                     return Command::FAILURE;
                 }
             } else {
@@ -60,14 +61,14 @@ class ClearRecommendationCacheCommand extends Command
                     '2. Use Redis CLI: docker compose exec redis redis-cli --scan --pattern "recommendations_*"',
                     '3. Use Redis Commander web UI: http://localhost:8083',
                 ]);
-                
+
                 return Command::SUCCESS;
             }
 
             return Command::SUCCESS;
-
         } catch (\Exception $e) {
-            $io->error('Failed to clear cache: ' . $e->getMessage());
+            $io->error('Failed to clear cache: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

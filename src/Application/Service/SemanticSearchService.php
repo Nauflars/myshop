@@ -14,14 +14,15 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
 /**
- * SemanticSearchService - AI-powered semantic search using vector embeddings
- * 
+ * SemanticSearchService - AI-powered semantic search using vector embeddings.
+ *
  * Implements spec-010 T032-T039: Vector similarity search with OpenAI embeddings
  * T080: Max 50 results to prevent large result sets
  */
 class SemanticSearchService
 {
     private const MAX_RESULTS_LIMIT = 50;
+
     public function __construct(
         private readonly EmbeddingServiceInterface $embeddingService,
         private readonly MongoDBEmbeddingRepository $embeddingRepository,
@@ -29,12 +30,12 @@ class SemanticSearchService
         private readonly EmbeddingCacheService $cacheService,
         private readonly LoggerInterface $logger,
         private readonly SearchMetricsCollector $metricsCollector,
-        private readonly Stopwatch $stopwatch
+        private readonly Stopwatch $stopwatch,
     ) {
     }
 
     /**
-     * Search products using semantic similarity
+     * Search products using semantic similarity.
      */
     public function search(SearchQuery $searchQuery): SearchResult
     {
@@ -58,7 +59,7 @@ class SemanticSearchService
                     'effective' => $effectiveLimit,
                 ]);
             }
-            
+
             // Generate query embedding
             $queryEmbedding = $this->generateQueryEmbedding($searchQuery->getQuery());
 
@@ -128,7 +129,6 @@ class SemanticSearchService
             );
 
             return $searchResult;
-
         } catch (\Exception $e) {
             // Stop stopwatch on error
             if ($this->stopwatch->isStarted('semantic_search')) {
@@ -144,20 +144,21 @@ class SemanticSearchService
     }
 
     /**
-     * Generate embedding for search query
-     * 
+     * Generate embedding for search query.
+     *
      * Implements T053-T054: Cache check before OpenAI API call, cache write after success
      */
     public function generateQueryEmbedding(string $query): array
     {
         // T053: Check cache before calling OpenAI API
         $cachedEmbedding = $this->cacheService->get($query);
-        
-        if ($cachedEmbedding !== null) {
+
+        if (null !== $cachedEmbedding) {
             $this->logger->debug('Using cached query embedding', [
                 'query' => $query,
                 'cache_hit' => true,
             ]);
+
             return $cachedEmbedding;
         }
 
@@ -174,7 +175,6 @@ class SemanticSearchService
             $this->cacheService->set($query, $embedding);
 
             return $embedding;
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to generate query embedding', [
                 'query' => $query,
@@ -186,9 +186,10 @@ class SemanticSearchService
     }
 
     /**
-     * Enrich MongoDB results with full product data from MySQL
-     * 
+     * Enrich MongoDB results with full product data from MySQL.
+     *
      * @param array $mongoResults Results from MongoDB with productId and similarity
+     *
      * @return array Enriched results with Product entity and score
      */
     public function enrichResults(array $mongoResults): array
@@ -201,7 +202,7 @@ class SemanticSearchService
 
             $product = $this->productRepository->findById($uuid);
 
-            if ($product === null) {
+            if (null === $product) {
                 $this->logger->warning('Product not found in MySQL', [
                     'uuid' => $uuid,
                 ]);
@@ -218,7 +219,7 @@ class SemanticSearchService
     }
 
     /**
-     * Remove duplicate products (same UUID)
+     * Remove duplicate products (same UUID).
      */
     private function deduplicateResults(array $results): array
     {
@@ -243,13 +244,13 @@ class SemanticSearchService
     }
 
     /**
-     * Filter results by category
+     * Filter results by category.
      */
     private function filterByCategory(array $results, string $category): array
     {
         return array_values(array_filter(
             $results,
-            fn($result) => $result['product']->getCategory() === $category
+            fn ($result) => $result['product']->getCategory() === $category
         ));
     }
 }

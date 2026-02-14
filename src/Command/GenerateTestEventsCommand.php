@@ -7,7 +7,6 @@ namespace App\Command;
 use App\Application\Message\UpdateUserEmbeddingMessage;
 use App\Domain\ValueObject\EventType;
 use App\Infrastructure\Queue\RabbitMQPublisher;
-use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -18,8 +17,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * GenerateTestEventsCommand - Load testing tool for user embeddings queue
- * 
+ * GenerateTestEventsCommand - Load testing tool for user embeddings queue.
+ *
  * Spec-014 Phase 8 T078: Generates N events for M users to test queue performance
  * Used for load testing and performance validation (T080-T082)
  */
@@ -39,12 +38,12 @@ class GenerateTestEventsCommand extends Command
         'webcam',
         'phone charger',
         'bluetooth speaker',
-        'smart watch'
+        'smart watch',
     ];
 
     public function __construct(
         private readonly RabbitMQPublisher $publisher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -122,7 +121,7 @@ HELP
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $numUsers = (int) $input->getOption('users');
         $eventsPerUser = (int) $input->getOption('events-per-user');
         $eventTypeOption = $input->getOption('event-type');
@@ -147,6 +146,7 @@ HELP
 
         if (!$io->confirm('Generate these test events?', true)) {
             $io->warning('Operation cancelled');
+
             return Command::SUCCESS;
         }
 
@@ -160,21 +160,21 @@ HELP
         $publishedCount = 0;
         $failedCount = 0;
 
-        for ($userId = $startUserId; $userId < $startUserId + $numUsers; $userId++) {
-            for ($eventNum = 0; $eventNum < $eventsPerUser; $eventNum++) {
+        for ($userId = $startUserId; $userId < $startUserId + $numUsers; ++$userId) {
+            for ($eventNum = 0; $eventNum < $eventsPerUser; ++$eventNum) {
                 try {
                     $message = $this->generateEvent($userId, $eventTypeOption);
                     $this->publisher->publish($message);
-                    $publishedCount++;
+                    ++$publishedCount;
 
                     if ($delayMs > 0) {
                         usleep($delayMs * 1000);
                     }
                 } catch (\Exception $e) {
-                    $failedCount++;
+                    ++$failedCount;
                     $this->logger->error('Failed to publish test event', [
                         'user_id' => $userId,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
                 }
 
@@ -209,6 +209,7 @@ HELP
 
         if ($failedCount > 0) {
             $io->warning(sprintf('%d events failed to publish. Check logs for details.', $failedCount));
+
             return Command::FAILURE;
         }
 
@@ -230,7 +231,7 @@ HELP
                 eventType: EventType::SEARCH,
                 searchPhrase: $this->randomSearchPhrase(),
                 productId: null,
-                occurredAt: new DateTimeImmutable()
+                occurredAt: new \DateTimeImmutable()
             ),
             EventType::PRODUCT_VIEW,
             EventType::PRODUCT_CLICK,
@@ -239,20 +240,21 @@ HELP
                 eventType: $eventType,
                 searchPhrase: null,
                 productId: random_int(1, 1000),
-                occurredAt: new DateTimeImmutable()
+                occurredAt: new \DateTimeImmutable()
             ),
         };
     }
 
     private function selectEventType(string $option): EventType
     {
-        if ($option === 'mixed') {
+        if ('mixed' === $option) {
             $types = [
                 EventType::SEARCH,
                 EventType::PRODUCT_VIEW,
                 EventType::PRODUCT_CLICK,
-                EventType::PRODUCT_PURCHASE
+                EventType::PRODUCT_PURCHASE,
             ];
+
             return $types[array_rand($types)];
         }
 
@@ -261,7 +263,7 @@ HELP
             'product_view' => EventType::PRODUCT_VIEW,
             'product_click' => EventType::PRODUCT_CLICK,
             'product_purchase' => EventType::PRODUCT_PURCHASE,
-            default => EventType::SEARCH
+            default => EventType::SEARCH,
         };
     }
 

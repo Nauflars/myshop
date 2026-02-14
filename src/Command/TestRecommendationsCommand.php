@@ -20,7 +20,7 @@ class TestRecommendationsCommand extends Command
 {
     public function __construct(
         private readonly RecommendationService $recommendationService,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
@@ -36,13 +36,14 @@ class TestRecommendationsCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $userId = $input->getOption('user-id');
-        
+
         $userRepo = $this->entityManager->getRepository(User::class);
-        
+
         if ($userId) {
             $user = $userRepo->find($userId);
             if (!$user) {
                 $io->error("User not found: $userId");
+
                 return Command::FAILURE;
             }
         } else {
@@ -50,24 +51,25 @@ class TestRecommendationsCommand extends Command
             $user = $userRepo->findOneBy([]);
             if (!$user) {
                 $io->error('No users in database');
+
                 return Command::FAILURE;
             }
         }
 
         $io->title('Testing Recommendations');
-        $io->info("User: " . $user->getEmail() . " (ID: " . $user->getId() . ")");
+        $io->info('User: '.$user->getEmail().' (ID: '.$user->getId().')');
 
         try {
             $result = $this->recommendationService->getRecommendationsForUser($user, 20);
 
             $io->section('Results');
-            $io->writeln("Total products: " . count($result->products));
-            $io->writeln("Average score: " . number_format($result->averageScore, 4));
-            $io->writeln("Is personalized: " . ($result->isPersonalized ? 'YES' : 'NO (fallback)'));
+            $io->writeln('Total products: '.count($result->products));
+            $io->writeln('Average score: '.number_format($result->averageScore, 4));
+            $io->writeln('Is personalized: '.($result->isPersonalized ? 'YES' : 'NO (fallback)'));
 
             if (count($result->products) > 0) {
                 $io->section('Top Recommendations');
-                
+
                 $rows = [];
                 foreach ($result->products as $i => $product) {
                     $score = $result->scores[$i] ?? 0;
@@ -78,19 +80,20 @@ class TestRecommendationsCommand extends Command
                         $product->getId(),
                     ];
                 }
-                
-                $io->table(['#', 'Score', 'Product', 'ID'], $rows);
-                
-                $io->success('Recommendations are working!');
-                return Command::SUCCESS;
-            } else {
-                $io->warning('No recommendations returned');
-                return Command::FAILURE;
-            }
 
+                $io->table(['#', 'Score', 'Product', 'ID'], $rows);
+
+                $io->success('Recommendations are working!');
+
+                return Command::SUCCESS;
+            }
+            $io->warning('No recommendations returned');
+
+            return Command::FAILURE;
         } catch (\Exception $e) {
-            $io->error('Failed to get recommendations: ' . $e->getMessage());
+            $io->error('Failed to get recommendations: '.$e->getMessage());
             $io->writeln($e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }

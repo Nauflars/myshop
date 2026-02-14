@@ -25,11 +25,11 @@ class OrderFixtures extends Fixture implements DependentFixtureInterface
 
         foreach ($statuses as $index => $status) {
             $order = new Order($customer);
-            
+
             // Add 2-3 items to each order
             $itemCount = rand(2, 3);
-            for ($i = 0; $i < $itemCount; $i++) {
-                $product = $this->getReference("product-" . (($index * 3) + $i), \App\Domain\Entity\Product::class);
+            for ($i = 0; $i < $itemCount; ++$i) {
+                $product = $this->getReference('product-'.(($index * 3) + $i), \App\Domain\Entity\Product::class);
                 $orderItem = new OrderItem(
                     $order,
                     $product,

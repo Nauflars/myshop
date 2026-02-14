@@ -15,7 +15,7 @@ class UserFixtures extends Fixture
     public const CUSTOMER_USER_REFERENCE = 'customer-user';
 
     public function __construct(
-        private readonly UserPasswordHasherInterface $passwordHasher
+        private readonly UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -44,7 +44,7 @@ class UserFixtures extends Fixture
         $this->addReference(self::SELLER_USER_REFERENCE, $seller);
 
         // Customer Users
-        for ($i = 1; $i <= 3; $i++) {
+        for ($i = 1; $i <= 3; ++$i) {
             $customer = new User(
                 "Customer {$i}",
                 new Email("customer{$i}@myshop.com"),
@@ -53,8 +53,8 @@ class UserFixtures extends Fixture
             );
             $customer->setPasswordHash($this->passwordHasher->hashPassword($customer, 'customer123'));
             $manager->persist($customer);
-            
-            if ($i === 1) {
+
+            if (1 === $i) {
                 $this->addReference(self::CUSTOMER_USER_REFERENCE, $customer);
             }
         }

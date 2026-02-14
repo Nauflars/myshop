@@ -14,8 +14,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin controller for managing unanswered questions from spec-006
- * 
+ * Admin controller for managing unanswered questions from spec-006.
+ *
  * Implements FR-013 to FR-018: Admin unanswered questions management
  * - List all unanswered questions with filtering
  * - Update question status (New → Reviewed → Planned → Resolved)
@@ -28,13 +28,13 @@ class AdminUnansweredQuestionsController extends AbstractController
 {
     public function __construct(
         private readonly UnansweredQuestionRepository $questionRepository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
-     * List all unanswered questions with filtering and pagination
-     * 
+     * List all unanswered questions with filtering and pagination.
+     *
      * Implements FR-013: Display list of all unanswered questions
      * Implements FR-016: Filter by status and date range
      * Implements FR-017: Pagination (50 per page)
@@ -48,11 +48,11 @@ class AdminUnansweredQuestionsController extends AbstractController
 
         // Build filter criteria from query parameters
         $criteria = [];
-        
+
         if ($status = $request->query->get('status')) {
             $criteria['status'] = $status;
         }
-        
+
         if ($reason = $request->query->get('reason')) {
             $criteria['reason'] = $reason;
         }
@@ -85,8 +85,8 @@ class AdminUnansweredQuestionsController extends AbstractController
     }
 
     /**
-     * View and update a specific unanswered question
-     * 
+     * View and update a specific unanswered question.
+     *
      * Implements FR-014: Change question status
      * Implements FR-015: Add internal notes
      */
@@ -94,9 +94,10 @@ class AdminUnansweredQuestionsController extends AbstractController
     public function view(Request $request, int $id): Response
     {
         $question = $this->questionRepository->find($id);
-        
+
         if (!$question) {
             $this->addFlash('error', 'Pregunta no encontrada.');
+
             return $this->redirectToRoute('admin_unanswered_questions_list');
         }
 
@@ -107,7 +108,7 @@ class AdminUnansweredQuestionsController extends AbstractController
                     UnansweredQuestion::STATUS_NEW,
                     UnansweredQuestion::STATUS_REVIEWED,
                     UnansweredQuestion::STATUS_PLANNED,
-                    UnansweredQuestion::STATUS_RESOLVED
+                    UnansweredQuestion::STATUS_RESOLVED,
                 ])) {
                     $question->setStatus($newStatus);
                 }
@@ -120,7 +121,7 @@ class AdminUnansweredQuestionsController extends AbstractController
 
             $this->entityManager->flush();
             $this->addFlash('success', 'Pregunta actualizada correctamente.');
-            
+
             return $this->redirectToRoute('admin_unanswered_questions_view', ['id' => $id]);
         }
 
@@ -137,8 +138,8 @@ class AdminUnansweredQuestionsController extends AbstractController
     }
 
     /**
-     * Bulk update status for multiple questions
-     * 
+     * Bulk update status for multiple questions.
+     *
      * Implements FR-018 (P3): Bulk operations on questions
      */
     #[Route('/bulk/update-status', name: 'admin_unanswered_questions_bulk_update', methods: ['POST'])]
@@ -149,6 +150,7 @@ class AdminUnansweredQuestionsController extends AbstractController
 
         if (empty($questionIds) || !$newStatus) {
             $this->addFlash('error', 'Seleccione preguntas y un estado válido.');
+
             return $this->redirectToRoute('admin_unanswered_questions_list');
         }
 
@@ -157,7 +159,7 @@ class AdminUnansweredQuestionsController extends AbstractController
             $question = $this->questionRepository->find((int) $id);
             if ($question) {
                 $question->setStatus($newStatus);
-                $count++;
+                ++$count;
             }
         }
 

@@ -23,7 +23,7 @@ class CreateUserProfileIndexesCommand extends Command
     public function __construct(
         Client $mongoClient,
         string $databaseName,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         parent::__construct();
         $this->mongoClient = $mongoClient;
@@ -81,10 +81,11 @@ class CreateUserProfileIndexesCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Failed to create indexes: ' . $e->getMessage());
+            $io->error('Failed to create indexes: '.$e->getMessage());
             $this->logger->error('Failed to create user profile indexes', [
                 'error' => $e->getMessage(),
             ]);
+
             return Command::FAILURE;
         }
     }

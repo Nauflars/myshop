@@ -15,8 +15,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
- * ConsumeUserEmbeddingQueueCommand - Start worker to consume RabbitMQ messages
- * 
+ * ConsumeUserEmbeddingQueueCommand - Start worker to consume RabbitMQ messages.
+ *
  * Implements spec-014 US1: Manual command to start queue consumer
  * Alternative to docker worker service for development/debugging
  */
@@ -29,7 +29,7 @@ final class ConsumeUserEmbeddingQueueCommand extends Command
     public function __construct(
         private readonly MessageBusInterface $messageBus,
         private readonly PublishUserInteractionEvent $publishUseCase,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -113,7 +113,7 @@ HELP
         $startTime = time();
         $memoryLimit = (int) $input->getOption('memory-limit') * 1024 * 1024; // Convert MB to bytes
         $timeLimit = (int) $input->getOption('time-limit');
-        $limit = $input->getOption('limit') !== null ? (int) $input->getOption('limit') : null;
+        $limit = null !== $input->getOption('limit') ? (int) $input->getOption('limit') : null;
         $replay = $input->getOption('replay');
         $replayLimit = (int) $input->getOption('replay-limit');
 
@@ -122,18 +122,18 @@ HELP
         // Replay unprocessed events first
         if ($replay) {
             $io->section('Replaying unprocessed events from database');
-            
+
             try {
                 $result = $this->publishUseCase->replayUnprocessedEvents($replayLimit);
-                
+
                 $io->success(sprintf(
                     'Replay completed: %d successful, %d failed',
                     $result['success'],
                     $result['failed']
                 ));
-
             } catch (\Throwable $e) {
-                $io->error('Replay failed: ' . $e->getMessage());
+                $io->error('Replay failed: '.$e->getMessage());
+
                 return Command::FAILURE;
             }
         }
@@ -159,7 +159,7 @@ HELP
             '--queues=user_embedding_updates',
         ];
 
-        if ($limit !== null) {
+        if (null !== $limit) {
             $consumeOptions[] = sprintf('--limit=%d', $limit);
         }
 
@@ -177,7 +177,7 @@ HELP
         // Note: In real implementation, this would call Symfony's messenger:consume
         // For now, just show the command that would be executed
         $io->note(
-            'In production, this executes: messenger:consume ' . implode(' ', $consumeOptions)
+            'In production, this executes: messenger:consume '.implode(' ', $consumeOptions)
         );
         $io->comment(
             'To run the actual consumer, use: php bin/console messenger:consume async --queues=user_embedding_updates'

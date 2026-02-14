@@ -6,7 +6,6 @@ namespace App\Command;
 
 use App\Domain\Repository\ContextStorageInterface;
 use App\Domain\ValueObject\ConversationContext;
-use DateTimeImmutable;
 use Predis\Client;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,8 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Command to test context storage functionality
- * 
+ * Command to test context storage functionality.
+ *
  * Tests Redis connection, context CRUD operations, and TTL behavior.
  */
 #[AsCommand(
@@ -27,7 +26,7 @@ class TestContextCommand extends Command
 {
     public function __construct(
         private readonly Client $redis,
-        private readonly ContextStorageInterface $contextStorage
+        private readonly ContextStorageInterface $contextStorage,
     ) {
         parent::__construct();
     }
@@ -35,7 +34,7 @@ class TestContextCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $io->title('Context Storage Test Suite');
 
         // Test 1: Redis Connection
@@ -43,29 +42,31 @@ class TestContextCommand extends Command
         try {
             $pong = $this->redis->ping();
             $pongString = (string) $pong;
-            if ($pongString === 'PONG') {
+            if ('PONG' === $pongString) {
                 $io->success('✓ Redis connection successful');
             } else {
                 $io->error('✗ Redis connection failed: unexpected response');
+
                 return Command::FAILURE;
             }
         } catch (\Exception $e) {
             $io->error("✗ Redis connection failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
         // Test 2: Create Test Context
         $io->section('Test 2: Store Test Context');
-        $testKey = 'test:context:' . uniqid();
-        
+        $testKey = 'test:context:'.uniqid();
+
         try {
             $testContext = new TestConversationContext(
                 userId: 'test-user-123',
                 flow: 'product_browsing',
                 lastTool: 'GetProductsTool',
                 turnCount: 1,
-                createdAt: new DateTimeImmutable(),
-                updatedAt: new DateTimeImmutable(),
+                createdAt: new \DateTimeImmutable(),
+                updatedAt: new \DateTimeImmutable(),
                 testData: 'This is a test context'
             );
 
@@ -73,6 +74,7 @@ class TestContextCommand extends Command
             $io->success("✓ Test context stored with key: {$testKey}");
         } catch (\Exception $e) {
             $io->error("✗ Failed to store context: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
@@ -80,14 +82,16 @@ class TestContextCommand extends Command
         $io->section('Test 3: Retrieve Context');
         try {
             $retrieved = $this->contextStorage->get($testKey);
-            
-            if ($retrieved === null) {
+
+            if (null === $retrieved) {
                 $io->error('✗ Failed to retrieve context: returned null');
+
                 return Command::FAILURE;
             }
 
-            if ($retrieved->getUserId() !== 'test-user-123') {
+            if ('test-user-123' !== $retrieved->getUserId()) {
                 $io->error('✗ Retrieved context has incorrect data');
+
                 return Command::FAILURE;
             }
 
@@ -96,10 +100,11 @@ class TestContextCommand extends Command
                 "  User ID: {$retrieved->getUserId()}",
                 "  Flow: {$retrieved->getFlow()}",
                 "  Last Tool: {$retrieved->getLastTool()}",
-                "  Turn Count: {$retrieved->getTurnCount()}"
+                "  Turn Count: {$retrieved->getTurnCount()}",
             ]);
         } catch (\Exception $e) {
             $io->error("✗ Failed to retrieve context: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
@@ -109,6 +114,7 @@ class TestContextCommand extends Command
             $io->success('✓ Context exists check passed');
         } else {
             $io->error('✗ Context exists check failed');
+
             return Command::FAILURE;
         }
 
@@ -116,8 +122,9 @@ class TestContextCommand extends Command
         $io->section('Test 5: TTL Operations');
         try {
             $ttl = $this->contextStorage->getTtl($testKey);
-            if ($ttl === null) {
+            if (null === $ttl) {
                 $io->error('✗ Failed to get TTL');
+
                 return Command::FAILURE;
             }
             $io->writeln("  Current TTL: {$ttl} seconds");
@@ -126,20 +133,23 @@ class TestContextCommand extends Command
             $refreshed = $this->contextStorage->refreshTtl($testKey, 120);
             if (!$refreshed) {
                 $io->error('✗ Failed to refresh TTL');
+
                 return Command::FAILURE;
             }
 
             $newTtl = $this->contextStorage->getTtl($testKey);
             $io->writeln("  New TTL: {$newTtl} seconds");
-            
+
             if ($newTtl > $ttl) {
                 $io->success('✓ TTL refresh successful');
             } else {
                 $io->error('✗ TTL did not increase after refresh');
+
                 return Command::FAILURE;
             }
         } catch (\Exception $e) {
             $io->error("✗ TTL operations failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
@@ -149,32 +159,35 @@ class TestContextCommand extends Command
             $deleted = $this->contextStorage->delete($testKey);
             if (!$deleted) {
                 $io->error('✗ Failed to delete context');
+
                 return Command::FAILURE;
             }
 
             $stillExists = $this->contextStorage->exists($testKey);
             if ($stillExists) {
                 $io->error('✗ Context still exists after deletion');
+
                 return Command::FAILURE;
             }
 
             $io->success('✓ Context deleted successfully');
         } catch (\Exception $e) {
             $io->error("✗ Delete operation failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
         // Test 7: Expired Context
         $io->section('Test 7: Context Expiration');
         try {
-            $shortKey = 'test:context:short-' . uniqid();
+            $shortKey = 'test:context:short-'.uniqid();
             $shortContext = new TestConversationContext(
                 userId: 'test-user-456',
                 flow: 'checkout',
                 lastTool: null,
                 turnCount: 1,
-                createdAt: new DateTimeImmutable(),
-                updatedAt: new DateTimeImmutable(),
+                createdAt: new \DateTimeImmutable(),
+                updatedAt: new \DateTimeImmutable(),
                 testData: 'This will expire soon'
             );
 
@@ -184,25 +197,27 @@ class TestContextCommand extends Command
             sleep(3);
 
             $expired = $this->contextStorage->get($shortKey);
-            if ($expired === null) {
+            if (null === $expired) {
                 $io->success('✓ Expired context correctly returned null');
             } else {
                 $io->error('✗ Expired context was still retrieved');
+
                 return Command::FAILURE;
             }
         } catch (\Exception $e) {
             $io->error("✗ Expiration test failed: {$e->getMessage()}");
+
             return Command::FAILURE;
         }
 
         $io->success('All context storage tests passed! ✓');
-        
+
         return Command::SUCCESS;
     }
 }
 
 /**
- * Test implementation of ConversationContext for testing purposes
+ * Test implementation of ConversationContext for testing purposes.
  */
 class TestConversationContext extends ConversationContext
 {
@@ -211,9 +226,9 @@ class TestConversationContext extends ConversationContext
         string $flow,
         ?string $lastTool,
         int $turnCount,
-        DateTimeImmutable $createdAt,
-        DateTimeImmutable $updatedAt,
-        private readonly string $testData
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $updatedAt,
+        private readonly string $testData,
     ) {
         parent::__construct($userId, $flow, $lastTool, $turnCount, $createdAt, $updatedAt);
     }
@@ -227,7 +242,7 @@ class TestConversationContext extends ConversationContext
             'turnCount' => $this->turnCount,
             'createdAt' => $this->createdAt->format(\DateTimeInterface::RFC3339),
             'updatedAt' => $this->updatedAt->format(\DateTimeInterface::RFC3339),
-            'testData' => $this->testData
+            'testData' => $this->testData,
         ];
     }
 
@@ -238,8 +253,8 @@ class TestConversationContext extends ConversationContext
             flow: $data['flow'],
             lastTool: $data['lastTool'] ?? null,
             turnCount: $data['turnCount'],
-            createdAt: new DateTimeImmutable($data['createdAt']),
-            updatedAt: new DateTimeImmutable($data['updatedAt']),
+            createdAt: new \DateTimeImmutable($data['createdAt']),
+            updatedAt: new \DateTimeImmutable($data['updatedAt']),
             testData: $data['testData'] ?? ''
         );
     }

@@ -10,7 +10,7 @@ final readonly class StatsDTO
         public int $productCount,
         public int $userCount,
         public int $orderCount,
-        public array $topProducts
+        public array $topProducts,
     ) {
     }
 }

@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Domain\ValueObject;
 
 /**
- * EmbeddingWeights - Configuration value object for embedding calculation parameters
- * 
+ * EmbeddingWeights - Configuration value object for embedding calculation parameters.
+ *
  * Implements spec-014 research: Temporal decay and event weighting configuration
  * Provides centralized configuration for embedding update algorithm
  */
 final readonly class EmbeddingWeights
 {
     /**
-     * @param float $decayLambda Exponential decay constant (default: 0.023 for 30-day half-life)
-     * @param int $batchWindowSeconds Time window for batching events per user (default: 5 seconds)
-     * @param bool $batchEnabled Whether to batch multiple events (default: false)
-     * @param int $maxRetries Maximum retry attempts for failed messages (default: 5)
-     * @param int $retryDelayMs Initial retry delay in milliseconds (default: 5000)
+     * @param float $decayLambda        Exponential decay constant (default: 0.023 for 30-day half-life)
+     * @param int   $batchWindowSeconds Time window for batching events per user (default: 5 seconds)
+     * @param bool  $batchEnabled       Whether to batch multiple events (default: false)
+     * @param int   $maxRetries         Maximum retry attempts for failed messages (default: 5)
+     * @param int   $retryDelayMs       Initial retry delay in milliseconds (default: 5000)
      */
     public function __construct(
         public float $decayLambda = 0.023,
@@ -38,11 +38,12 @@ final readonly class EmbeddingWeights
     }
 
     /**
-     * Calculate decay factor for given time delta
-     * 
+     * Calculate decay factor for given time delta.
+     *
      * Formula: decay_factor = exp(-lambda * days)
-     * 
+     *
      * @param int $daysSinceLastUpdate Days elapsed since last embedding update
+     *
      * @return float Decay factor (0.0 to 1.0)
      */
     public function calculateDecayFactor(int $daysSinceLastUpdate): float
@@ -55,10 +56,10 @@ final readonly class EmbeddingWeights
     }
 
     /**
-     * Calculate half-life period in days
-     * 
+     * Calculate half-life period in days.
+     *
      * Half-life = ln(2) / lambda
-     * 
+     *
      * @return float Number of days for embedding weight to decay by 50%
      */
     public function getHalfLifeDays(): float
@@ -67,7 +68,7 @@ final readonly class EmbeddingWeights
     }
 
     /**
-     * Create from environment variables
+     * Create from environment variables.
      */
     public static function fromEnvironment(): self
     {
@@ -81,7 +82,7 @@ final readonly class EmbeddingWeights
     }
 
     /**
-     * Create with custom decay lambda
+     * Create with custom decay lambda.
      */
     public static function withDecayLambda(float $lambda): self
     {

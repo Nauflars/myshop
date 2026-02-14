@@ -6,20 +6,21 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\ConversationRepositoryInterface;
 
 /**
- * ListUserConversations Use Case
- * 
+ * ListUserConversations Use Case.
+ *
  * Lists all conversations for the authenticated user, ordered by most recent.
  * Returns summary information without full message content.
  */
 final class ListUserConversations
 {
     public function __construct(
-        private readonly ConversationRepositoryInterface $conversationRepository
+        private readonly ConversationRepositoryInterface $conversationRepository,
     ) {
     }
 
     /**
      * @param User $user The authenticated user
+     *
      * @return array{success: bool, conversations: array, count: int, message: string}
      */
     public function execute(User $user): array
@@ -30,7 +31,7 @@ final class ListUserConversations
             $summaries = [];
             foreach ($conversations as $conversation) {
                 $lastMessage = $conversation->getLastMessage();
-                
+
                 $summaries[] = [
                     'id' => $conversation->getId(),
                     'title' => $conversation->getTitle(),
@@ -55,7 +56,7 @@ final class ListUserConversations
                 'success' => false,
                 'conversations' => [],
                 'count' => 0,
-                'message' => 'Error al listar las conversaciones: ' . $e->getMessage(),
+                'message' => 'Error al listar las conversaciones: '.$e->getMessage(),
             ];
         }
     }

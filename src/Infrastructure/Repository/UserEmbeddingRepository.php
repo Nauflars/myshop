@@ -12,8 +12,8 @@ use MongoDB\Collection;
 use Psr\Log\LoggerInterface;
 
 /**
- * UserEmbeddingRepository - MongoDB implementation for user embeddings
- * 
+ * UserEmbeddingRepository - MongoDB implementation for user embeddings.
+ *
  * Implements spec-014 data model: user_embeddings collection in MongoDB
  * Stores 1536-dimensional vectors with version-based optimistic locking
  */
@@ -25,7 +25,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         private readonly Client $mongoClient,
         private readonly LoggerInterface $logger,
         private readonly string $databaseName = 'myshop',
-        private readonly string $collectionName = 'user_embeddings'
+        private readonly string $collectionName = 'user_embeddings',
     ) {
         $this->collection = $this->mongoClient
             ->selectDatabase($databaseName)
@@ -36,9 +36,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Find user embedding by user ID
-     * 
+     * Find user embedding by user ID.
+     *
      * @param string $userId User UUID identifier
+     *
      * @return UserEmbedding|null Embedding or null if not found
      */
     public function findByUserId(string $userId): ?UserEmbedding
@@ -46,7 +47,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         try {
             $document = $this->collection->findOne(['user_id' => $userId]);
 
-            if ($document === null) {
+            if (null === $document) {
                 return null;
             }
 
@@ -56,7 +57,6 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 : (array) $document;
 
             return $this->documentToEmbedding($documentArray);
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to find user embedding', [
                 'user_id' => $userId,
@@ -68,9 +68,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Save user embedding with optimistic locking
-     * 
+     * Save user embedding with optimistic locking.
+     *
      * @param UserEmbedding $embedding Embedding to save
+     *
      * @return bool True if saved successfully, false if version conflict
      */
     public function save(UserEmbedding $embedding): bool
@@ -82,42 +83,40 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 'user_id' => $embedding->userId,
                 'version' => $embedding->version,
                 'vector_dimensions' => count($embedding->vector),
-                'is_new' => $embedding->version === 1,
+                'is_new' => 1 === $embedding->version,
             ]);
 
-            if ($embedding->version === 1) {
+            if (1 === $embedding->version) {
                 // New embedding: insert
                 $result = $this->collection->insertOne($document);
-                
+
                 $this->logger->info('MongoDB insertOne result', [
                     'user_id' => $embedding->userId,
                     'inserted_count' => $result->getInsertedCount(),
                     'inserted_id' => (string) $result->getInsertedId(),
                 ]);
-                
-                return $result->getInsertedCount() === 1;
 
-            } else {
-                // Existing embedding: update with optimistic locking
-                $result = $this->collection->updateOne(
-                    [
-                        'user_id' => $embedding->userId,
-                        'version' => $embedding->version - 1, // Check previous version
-                    ],
-                    ['$set' => $document]
-                );
+                return 1 === $result->getInsertedCount();
+            }
+            // Existing embedding: update with optimistic locking
+            $result = $this->collection->updateOne(
+                [
+                    'user_id' => $embedding->userId,
+                    'version' => $embedding->version - 1, // Check previous version
+                ],
+                ['$set' => $document]
+            );
 
-                if ($result->getModifiedCount() === 0) {
-                    $this->logger->warning('Optimistic locking conflict detected', [
-                        'user_id' => $embedding->userId,
-                        'version' => $embedding->version,
-                    ]);
-                    return false;
-                }
+            if (0 === $result->getModifiedCount()) {
+                $this->logger->warning('Optimistic locking conflict detected', [
+                    'user_id' => $embedding->userId,
+                    'version' => $embedding->version,
+                ]);
 
-                return true;
+                return false;
             }
 
+            return true;
         } catch (\Throwable $e) {
             $this->logger->error('Failed to save user embedding', [
                 'user_id' => $embedding->userId,
@@ -130,16 +129,16 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Check if embedding exists for user
-     * 
+     * Check if embedding exists for user.
+     *
      * @param string $userId User UUID identifier
+     *
      * @return bool True if embedding exists
      */
     public function exists(string $userId): bool
     {
         try {
             return $this->collection->countDocuments(['user_id' => $userId]) > 0;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to check embedding existence', [
                 'user_id' => $userId,
@@ -151,17 +150,18 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Delete user embedding
-     * 
+     * Delete user embedding.
+     *
      * @param string $userId User UUID identifier
+     *
      * @return bool True if deleted
      */
     public function delete(string $userId): bool
     {
         try {
             $result = $this->collection->deleteOne(['user_id' => $userId]);
-            return $result->getDeletedCount() === 1;
 
+            return 1 === $result->getDeletedCount();
         } catch (\Throwable $e) {
             $this->logger->error('Failed to delete user embedding', [
                 'user_id' => $userId,
@@ -173,9 +173,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Get current version of user embedding
-     * 
+     * Get current version of user embedding.
+     *
      * @param string $userId User UUID identifier
+     *
      * @return int|null Version number, or null if not found
      */
     public function getVersion(string $userId): ?int
@@ -186,7 +187,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 ['projection' => ['version' => 1]]
             );
 
-            if ($document === null) {
+            if (null === $document) {
                 return null;
             }
 
@@ -196,7 +197,6 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 : (array) $document;
 
             return $documentArray['version'] ?? null;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to get embedding version', [
                 'user_id' => $userId,
@@ -208,17 +208,18 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Find stale embeddings that need decay application
-     * 
+     * Find stale embeddings that need decay application.
+     *
      * @param int $maxDaysOld Find embeddings older than this many days
-     * @param int $limit Maximum number to return
+     * @param int $limit      Maximum number to return
+     *
      * @return array<UserEmbedding> Stale embeddings
      */
     public function findStaleEmbeddings(int $maxDaysOld, int $limit = 100): array
     {
         try {
-            $olderThan = new DateTimeImmutable("-{$maxDaysOld} days");
-            
+            $olderThan = new \DateTimeImmutable("-{$maxDaysOld} days");
+
             $cursor = $this->collection->find(
                 ['last_updated_at' => ['$lt' => $olderThan->format('c')]],
                 ['limit' => $limit]
@@ -234,7 +235,6 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
             }
 
             return $embeddings;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to find stale embeddings', [
                 'max_days_old' => $maxDaysOld,
@@ -246,15 +246,14 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Count total embeddings
-     * 
+     * Count total embeddings.
+     *
      * @return int Number of embeddings
      */
     public function count(): int
     {
         try {
             return $this->collection->countDocuments([]);
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to count embeddings', [
                 'error' => $e->getMessage(),
@@ -265,9 +264,10 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Convert MongoDB document to UserEmbedding value object
-     * 
+     * Convert MongoDB document to UserEmbedding value object.
+     *
      * @param array<string, mixed> $document MongoDB document
+     *
      * @return UserEmbedding User embedding
      */
     private function documentToEmbedding(array $document): UserEmbedding
@@ -276,17 +276,17 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         $lastUpdated = $document['last_updated'];
         if ($lastUpdated instanceof \MongoDB\BSON\UTCDateTime) {
             // Convert MongoDB UTCDateTime to PHP DateTime, then to DateTimeImmutable
-            $lastUpdatedAt = DateTimeImmutable::createFromMutable($lastUpdated->toDateTime());
+            $lastUpdatedAt = \DateTimeImmutable::createFromMutable($lastUpdated->toDateTime());
         } else {
-            $lastUpdatedAt = new DateTimeImmutable($lastUpdated);
+            $lastUpdatedAt = new \DateTimeImmutable($lastUpdated);
         }
-        
+
         // Convert BSONArray to PHP array
         $vector = $document['vector'];
         if ($vector instanceof \MongoDB\Model\BSONArray) {
             $vector = $vector->getArrayCopy();
         }
-        
+
         return new UserEmbedding(
             userId: (string) $document['user_id'],
             vector: $vector,
@@ -296,15 +296,16 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Convert UserEmbedding to MongoDB document
-     * 
+     * Convert UserEmbedding to MongoDB document.
+     *
      * @param UserEmbedding $embedding User embedding
+     *
      * @return array<string, mixed> MongoDB document
      */
     private function embeddingToDocument(UserEmbedding $embedding): array
     {
         $now = new \MongoDB\BSON\UTCDateTime();
-        
+
         $document = [
             'user_id' => $embedding->userId,
             'vector' => $embedding->vector,
@@ -313,17 +314,17 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
             'version' => $embedding->version,
             'updated_at' => $now,
         ];
-        
+
         // Only set created_at on insert
-        if ($embedding->version === 1) {
+        if (1 === $embedding->version) {
             $document['created_at'] = $now;
         }
-        
+
         return $document;
     }
 
     /**
-     * Ensure MongoDB indexes exist
+     * Ensure MongoDB indexes exist.
      */
     private function ensureIndexes(): void
     {
@@ -343,7 +344,6 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
             $this->logger->debug('MongoDB indexes ensured', [
                 'collection' => $this->collectionName,
             ]);
-
         } catch (\Throwable $e) {
             // Log but don't fail - indexes might already exist
             $this->logger->warning('Failed to ensure indexes', [
@@ -353,12 +353,13 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Find similar products based on user embedding vector
-     * 
+     * Find similar products based on user embedding vector.
+     *
      * Performs cosine similarity search against product_embeddings collection
-     * 
+     *
      * @param array<float> $embedding User's 1536-dimensional embedding vector
-     * @param int $limit Maximum number of results
+     * @param int          $limit     Maximum number of results
+     *
      * @return array<array{productId: string, score: float}> Products with similarity scores
      */
     public function findSimilarProducts(array $embedding, int $limit = 20): array
@@ -420,7 +421,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
             }
 
             // Sort by similarity descending
-            usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+            usort($results, fn ($a, $b) => $b['score'] <=> $a['score']);
 
             // Limit results
             $results = array_slice($results, 0, $limit);
@@ -431,7 +432,6 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
             ]);
 
             return $results;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to perform vector search for products', [
                 'error' => $e->getMessage(),
@@ -443,10 +443,11 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
     }
 
     /**
-     * Calculate cosine similarity between two vectors
-     * 
+     * Calculate cosine similarity between two vectors.
+     *
      * @param array<float> $vec1 First vector
      * @param array<float> $vec2 Second vector
+     *
      * @return float Similarity score (0.0 to 1.0)
      */
     private function calculateCosineSimilarity(array $vec1, array $vec2): float
@@ -456,6 +457,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
                 'vec1_length' => count($vec1),
                 'vec2_length' => count($vec2),
             ]);
+
             return 0.0;
         }
 
@@ -463,7 +465,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         $magnitude1 = 0;
         $magnitude2 = 0;
 
-        for ($i = 0; $i < count($vec1); $i++) {
+        for ($i = 0; $i < count($vec1); ++$i) {
             $dotProduct += $vec1[$i] * $vec2[$i];
             $magnitude1 += $vec1[$i] * $vec1[$i];
             $magnitude2 += $vec2[$i] * $vec2[$i];
@@ -472,7 +474,7 @@ final class UserEmbeddingRepository implements UserEmbeddingRepositoryInterface
         $magnitude1 = sqrt($magnitude1);
         $magnitude2 = sqrt($magnitude2);
 
-        if ($magnitude1 == 0 || $magnitude2 == 0) {
+        if (0 == $magnitude1 || 0 == $magnitude2) {
             return 0.0;
         }
 

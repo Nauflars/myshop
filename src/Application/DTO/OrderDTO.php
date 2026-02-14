@@ -17,7 +17,7 @@ final readonly class OrderDTO
         public string $currency,
         public string $status,
         public string $createdAt,
-        public string $updatedAt
+        public string $updatedAt,
     ) {
     }
 }

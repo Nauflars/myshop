@@ -10,19 +10,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * AdminMetricsController - Display search performance metrics dashboard
- * 
+ * AdminMetricsController - Display search performance metrics dashboard.
+ *
  * Implements T089: Admin dashboard widget showing search metrics
  */
 class AdminMetricsController extends AbstractController
 {
     public function __construct(
-        private readonly SearchMetricsCollector $metricsCollector
+        private readonly SearchMetricsCollector $metricsCollector,
     ) {
     }
 
     /**
-     * Search metrics dashboard
+     * Search metrics dashboard.
      */
     #[Route('/admin/search-metrics', name: 'admin_search_metrics', methods: ['GET'])]
     public function searchMetrics(): Response

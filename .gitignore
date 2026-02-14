@@ -50,3 +50,8 @@ yarn-error.log
 .env.dev
 .env.example
 .env.test
+
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###

@@ -10,8 +10,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * UnansweredQuestionRepository
- * 
+ * UnansweredQuestionRepository.
+ *
  * Infrastructure repository for querying unanswered questions.
  * Spec: 006-unanswered-questions-admin
  */
@@ -29,9 +29,10 @@ class UnansweredQuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find all questions with optional filtering and pagination
-     * 
+     * Find all questions with optional filtering and pagination.
+     *
      * @param array{status?: string, reason?: string, user?: User, limit?: int, offset?: int} $criteria
+     *
      * @return UnansweredQuestion[]
      */
     public function findWithFilters(array $criteria = []): array
@@ -66,8 +67,8 @@ class UnansweredQuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count questions by status
-     * 
+     * Count questions by status.
+     *
      * @return array<string, int>
      */
     public function countByStatus(): array
@@ -87,8 +88,8 @@ class UnansweredQuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count questions by reason category
-     * 
+     * Count questions by reason category.
+     *
      * @return array<string, int>
      */
     public function countByReason(): array
@@ -108,7 +109,7 @@ class UnansweredQuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get most recent unanswered questions
+     * Get most recent unanswered questions.
      */
     public function findRecent(int $limit = 10): array
     {
@@ -120,7 +121,7 @@ class UnansweredQuestionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Count total questions
+     * Count total questions.
      */
     public function countTotal(): int
     {

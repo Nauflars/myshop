@@ -144,7 +144,7 @@ class AdminAssistantActionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get actions within a date range
+     * Get actions within a date range.
      *
      * @return AdminAssistantAction[]
      */
@@ -157,7 +157,7 @@ class AdminAssistantActionRepository extends ServiceEntityRepository
             ->setParameter('end', $end)
             ->orderBy('a.performedAt', 'DESC');
 
-        if ($user !== null) {
+        if (null !== $user) {
             $qb->andWhere('a.adminUser = :user')
                 ->setParameter('user', $user);
         }
@@ -166,7 +166,7 @@ class AdminAssistantActionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get action statistics summary
+     * Get action statistics summary.
      *
      * @return array{total: int, successful: int, failed: int, productActions: int, analyticsActions: int}
      */
@@ -174,7 +174,7 @@ class AdminAssistantActionRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('a');
 
-        if ($user !== null) {
+        if (null !== $user) {
             $qb->where('a.adminUser = :user')
                 ->setParameter('user', $user);
         }

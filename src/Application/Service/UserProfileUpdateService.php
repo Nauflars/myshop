@@ -9,8 +9,8 @@ use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 
 /**
- * UserProfileUpdateService - Handles automatic profile updates
- * 
+ * UserProfileUpdateService - Handles automatic profile updates.
+ *
  * Updates user profiles automatically when:
  * - User completes a purchase
  * - User performs a search
@@ -21,13 +21,13 @@ class UserProfileUpdateService
         private readonly ProfileAggregationService $profileAggregation,
         private readonly UserProfileService $userProfileService,
         private readonly LoggerInterface $logger,
-        private readonly CacheInterface $cache
+        private readonly CacheInterface $cache,
     ) {
     }
 
     /**
-     * Update user profile asynchronously (non-blocking)
-     * 
+     * Update user profile asynchronously (non-blocking).
+     *
      * This is called after searches and purchases to keep profiles up-to-date
      */
     public function scheduleProfileUpdate(User $user): void
@@ -45,7 +45,7 @@ class UserProfileUpdateService
     }
 
     /**
-     * Immediately update user profile
+     * Immediately update user profile.
      */
     public function updateProfile(User $user): void
     {
@@ -62,17 +62,17 @@ class UserProfileUpdateService
             $snapshot = $this->profileAggregation->aggregateUserData($user);
 
             // Check if user has any activity
-            $hasActivity = 
-                count($snapshot->getRecentPurchases()) > 0 ||
-                count($snapshot->getRecentSearches()) > 0 ||
-                count($snapshot->getDominantCategories()) > 0;
+            $hasActivity =
+                count($snapshot->getRecentPurchases()) > 0
+                || count($snapshot->getRecentSearches()) > 0
+                || count($snapshot->getDominantCategories()) > 0;
 
             // If no activity, create a basic profile with user name/interests
             if (!$hasActivity) {
                 $this->logger->info('User has no recorded activity, creating basic profile', [
                     'userId' => $user->getId(),
                 ]);
-                
+
                 // Create basic snapshot with user name as initial interest
                 $userName = $user->getName() ?? '';
                 $initialData = !empty($userName) ? [$userName] : ['new user'];
@@ -81,7 +81,7 @@ class UserProfileUpdateService
                     recentSearches: [],
                     dominantCategories: []
                 );
-                
+
                 // Generate profile with basic snapshot
                 $this->userProfileService->refreshProfile($user, $snapshot);
             } else {
@@ -94,7 +94,6 @@ class UserProfileUpdateService
                 'purchases' => count($snapshot->getRecentPurchases()),
                 'searches' => count($snapshot->getRecentSearches()),
             ]);
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to update user profile', [
                 'userId' => $user->getId(),
@@ -106,7 +105,7 @@ class UserProfileUpdateService
     }
 
     /**
-     * Clear user-related cache entries
+     * Clear user-related cache entries.
      */
     private function clearUserCache(User $user): void
     {

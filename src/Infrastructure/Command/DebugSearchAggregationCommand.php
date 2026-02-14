@@ -2,9 +2,9 @@
 
 namespace App\Infrastructure\Command;
 
-use App\Domain\Entity\User;
 use App\Domain\Entity\Conversation;
 use App\Domain\Entity\ConversationMessage;
+use App\Domain\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -47,40 +47,42 @@ class DebugSearchAggregationCommand extends Command
 
         if (!$user) {
             $io->error("User not found: $email");
+
             return Command::FAILURE;
         }
 
-        $io->success("✓ User found: " . $user->getId());
+        $io->success('✓ User found: '.$user->getId());
 
         // Step 2: Query conversations using Conversation::class
         $io->section('Step 2: Querying conversations');
         try {
             $conversationRepo = $this->entityManager->getRepository(Conversation::class);
-            $io->writeln("Repository class: " . get_class($conversationRepo));
-            
+            $io->writeln('Repository class: '.get_class($conversationRepo));
+
             $conversations = $conversationRepo->findBy(
                 ['user' => $user],
                 ['updatedAt' => 'DESC'],
                 10
             );
 
-            $io->success("✓ Found " . count($conversations) . " conversations");
+            $io->success('✓ Found '.count($conversations).' conversations');
 
-            if (count($conversations) === 0) {
-                $io->warning("No conversations found for this user");
+            if (0 === count($conversations)) {
+                $io->warning('No conversations found for this user');
+
                 return Command::SUCCESS;
             }
 
             // Step 3: Query messages for each conversation
             $io->section('Step 3: Extracting user messages');
             $messageRepo = $this->entityManager->getRepository(ConversationMessage::class);
-            $io->writeln("Message repository class: " . get_class($messageRepo));
+            $io->writeln('Message repository class: '.get_class($messageRepo));
 
             $allSearches = [];
             foreach ($conversations as $index => $conversation) {
-                $io->writeln("\nConversation " . ($index + 1) . ":");
-                $io->writeln("  - ID: " . $conversation->getId());
-                $io->writeln("  - Updated: " . $conversation->getUpdatedAt()->format('Y-m-d H:i:s'));
+                $io->writeln("\nConversation ".($index + 1).':');
+                $io->writeln('  - ID: '.$conversation->getId());
+                $io->writeln('  - Updated: '.$conversation->getUpdatedAt()->format('Y-m-d H:i:s'));
 
                 try {
                     $messages = $messageRepo->findBy(
@@ -89,7 +91,7 @@ class DebugSearchAggregationCommand extends Command
                         20
                     );
 
-                    $io->writeln("  - User messages: " . count($messages));
+                    $io->writeln('  - User messages: '.count($messages));
 
                     foreach ($messages as $msgIndex => $message) {
                         $text = $message->getContent();
@@ -99,16 +101,16 @@ class DebugSearchAggregationCommand extends Command
 
                         if ($isValid) {
                             $allSearches[] = $text;
-                            $io->writeln("    ✓ Msg " . ($msgIndex + 1) . ": \"$text\" (length: $textLength)");
+                            $io->writeln('    ✓ Msg '.($msgIndex + 1).": \"$text\" (length: $textLength)");
                         } else {
                             $reason = $textLength <= 3 ? 'too short' : 'starts with /';
-                            $io->writeln("    ✗ Msg " . ($msgIndex + 1) . ": \"$text\" (length: $textLength, $reason)");
+                            $io->writeln('    ✗ Msg '.($msgIndex + 1).": \"$text\" (length: $textLength, $reason)");
                         }
                     }
                 } catch (\Exception $e) {
-                    $io->error("Failed to query messages for conversation: " . $e->getMessage());
-                    $io->writeln("Exception class: " . get_class($e));
-                    $io->writeln("Trace: " . $e->getTraceAsString());
+                    $io->error('Failed to query messages for conversation: '.$e->getMessage());
+                    $io->writeln('Exception class: '.get_class($e));
+                    $io->writeln('Trace: '.$e->getTraceAsString());
                 }
             }
 
@@ -117,22 +119,22 @@ class DebugSearchAggregationCommand extends Command
             $uniqueSearches = array_unique($allSearches);
             $recentSearches = array_slice($uniqueSearches, 0, 20);
 
-            $io->writeln("Total messages extracted: " . count($allSearches));
-            $io->writeln("Unique searches: " . count($uniqueSearches));
-            $io->writeln("After limiting to 20: " . count($recentSearches));
+            $io->writeln('Total messages extracted: '.count($allSearches));
+            $io->writeln('Unique searches: '.count($uniqueSearches));
+            $io->writeln('After limiting to 20: '.count($recentSearches));
 
             if (count($recentSearches) > 0) {
-                $io->success("✓ Searches found!");
+                $io->success('✓ Searches found!');
                 $io->listing($recentSearches);
             } else {
-                $io->warning("No valid searches extracted");
+                $io->warning('No valid searches extracted');
             }
-
         } catch (\Exception $e) {
-            $io->error("Failed to query conversations: " . $e->getMessage());
-            $io->writeln("Exception class: " . get_class($e));
-            $io->writeln("Trace:");
+            $io->error('Failed to query conversations: '.$e->getMessage());
+            $io->writeln('Exception class: '.get_class($e));
+            $io->writeln('Trace:');
             $io->writeln($e->getTraceAsString());
+
             return Command::FAILURE;
         }
 

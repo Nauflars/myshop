@@ -3,12 +3,11 @@
 namespace App\Infrastructure\Controller;
 
 use App\Application\Service\RecommendationService;
-use App\Domain\ValueObject\RecommendationResult;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Psr\Log\LoggerInterface;
 
 class HomeController extends AbstractController
 {
@@ -17,7 +16,7 @@ class HomeController extends AbstractController
 
     public function __construct(
         RecommendationService $recommendationService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->recommendationService = $recommendationService;
         $this->logger = $logger;
@@ -33,7 +32,7 @@ class HomeController extends AbstractController
         if ($user) {
             try {
                 $recommendations = $this->recommendationService->getRecommendationsForUser($user, 12);
-                
+
                 $this->logger->info('Recommendations displayed on home page', [
                     'userId' => $user->getId(),
                     'count' => $recommendations->count(),
@@ -44,7 +43,7 @@ class HomeController extends AbstractController
                     'userId' => $user->getId(),
                     'error' => $e->getMessage(),
                 ]);
-                
+
                 // Graceful fallback - get default recommendations
                 $recommendations = $this->recommendationService->getFallbackRecommendations(12);
             }
@@ -55,7 +54,7 @@ class HomeController extends AbstractController
 
         return $this->render('home.html.twig', [
             'recommendations' => $recommendations,
-            'isPersonalized' => $user !== null,
+            'isPersonalized' => null !== $user,
         ]);
     }
 

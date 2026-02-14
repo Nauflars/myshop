@@ -3,7 +3,6 @@
 namespace App\Tests\Domain\ValueObject;
 
 use App\Domain\ValueObject\Email;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class EmailTest extends TestCase
@@ -11,7 +10,7 @@ class EmailTest extends TestCase
     public function testEmailCreation(): void
     {
         $email = new Email('test@example.com');
-        
+
         $this->assertEquals('test@example.com', $email->getValue());
         $this->assertEquals('test@example.com', (string) $email);
     }
@@ -19,20 +18,20 @@ class EmailTest extends TestCase
     public function testEmailIsLowercased(): void
     {
         $email = new Email('TEST@EXAMPLE.COM');
-        
+
         $this->assertEquals('test@example.com', $email->getValue());
     }
 
     public function testEmailIsTrimmed(): void
     {
         $email = new Email('test@example.com  ');
-        
+
         $this->assertEquals('test@example.com', $email->getValue());
     }
 
     public function testInvalidEmailThrowsException(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('"invalid-email" is not a valid email address');
         new Email('invalid-email');
     }
@@ -42,7 +41,7 @@ class EmailTest extends TestCase
      */
     public function testVariousInvalidEmailsThrowException(string $invalidEmail): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         new Email($invalidEmail);
     }
 
@@ -84,7 +83,7 @@ class EmailTest extends TestCase
         $email1 = new Email('test@example.com');
         $email2 = new Email('test@example.com');
         $email3 = new Email('other@example.com');
-        
+
         $this->assertTrue($email1->equals($email2));
         $this->assertFalse($email1->equals($email3));
     }
@@ -93,14 +92,14 @@ class EmailTest extends TestCase
     {
         $email1 = new Email('Test@Example.com');
         $email2 = new Email('test@example.com');
-        
+
         $this->assertTrue($email1->equals($email2));
     }
 
     public function testToString(): void
     {
         $email = new Email('test@example.com');
-        
+
         $this->assertEquals('test@example.com', (string) $email);
     }
 }

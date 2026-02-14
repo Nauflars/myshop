@@ -2,7 +2,7 @@
 
 require 'vendor/autoload.php';
 
-$client = new \MongoDB\Client('mongodb://root:rootpassword@mongodb:27017');
+$client = new MongoDB\Client('mongodb://root:rootpassword@mongodb:27017');
 $database = $client->selectDatabase('myshop');
 
 // Get a user with embedding
@@ -18,13 +18,13 @@ $userId = $userDoc['user_id'];
 $userVector = $userDoc['vector'];
 
 // Convert BSON array to PHP array
-if ($userVector instanceof \MongoDB\Model\BSONArray) {
+if ($userVector instanceof MongoDB\Model\BSONArray) {
     $userVector = $userVector->getArrayCopy();
 }
 
 echo "=== SIMULATING RECOMMENDATION FOR USER ===\n\n";
 echo "User ID: $userId\n";
-echo "User vector dimensions: " . count($userVector) . "\n\n";
+echo 'User vector dimensions: '.count($userVector)."\n\n";
 
 // Fetch all product embeddings
 $productCollection = $database->selectCollection('product_embeddings');
@@ -37,7 +37,7 @@ $allProducts = $productCollection->find([], [
     ],
 ])->toArray();
 
-echo "Total products in database: " . count($allProducts) . "\n\n";
+echo 'Total products in database: '.count($allProducts)."\n\n";
 
 // Calculate cosine similarity
 function cosineSimilarity(array $a, array $b): float
@@ -45,39 +45,39 @@ function cosineSimilarity(array $a, array $b): float
     $dotProduct = 0.0;
     $magnitudeA = 0.0;
     $magnitudeB = 0.0;
-    
-    for ($i = 0; $i < count($a); $i++) {
+
+    for ($i = 0; $i < count($a); ++$i) {
         $dotProduct += $a[$i] * $b[$i];
         $magnitudeA += $a[$i] * $a[$i];
         $magnitudeB += $b[$i] * $b[$i];
     }
-    
+
     $magnitudeA = sqrt($magnitudeA);
     $magnitudeB = sqrt($magnitudeB);
-    
-    if ($magnitudeA == 0 || $magnitudeB == 0) {
+
+    if (0 == $magnitudeA || 0 == $magnitudeB) {
         return 0.0;
     }
-    
+
     return $dotProduct / ($magnitudeA * $magnitudeB);
 }
 
 $results = [];
 
 foreach ($allProducts as $doc) {
-    $docArray = $doc instanceof \MongoDB\Model\BSONDocument ? $doc->getArrayCopy() : (array) $doc;
-    
+    $docArray = $doc instanceof MongoDB\Model\BSONDocument ? $doc->getArrayCopy() : (array) $doc;
+
     if (!isset($docArray['embedding'])) {
         continue;
     }
-    
+
     $productEmbedding = $docArray['embedding'];
-    if ($productEmbedding instanceof \MongoDB\Model\BSONArray) {
+    if ($productEmbedding instanceof MongoDB\Model\BSONArray) {
         $productEmbedding = $productEmbedding->getArrayCopy();
     }
-    
+
     $similarity = cosineSimilarity($userVector, $productEmbedding);
-    
+
     $results[] = [
         'product_id' => $docArray['product_id'],
         'name' => $docArray['name'] ?? 'Unknown',
@@ -86,7 +86,7 @@ foreach ($allProducts as $doc) {
 }
 
 // Sort by score descending
-usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+usort($results, fn ($a, $b) => $b['score'] <=> $a['score']);
 
 // Show top 20
 $top20 = array_slice($results, 0, 20);
@@ -98,10 +98,12 @@ $aboveThreshold = 0;
 
 foreach ($top20 as $i => $result) {
     $meetsThreshold = $result['score'] >= $minThreshold;
-    if ($meetsThreshold) $aboveThreshold++;
-    
+    if ($meetsThreshold) {
+        ++$aboveThreshold;
+    }
+
     $icon = $meetsThreshold ? '✓' : '✗';
-    
+
     echo sprintf("%2d. %s Score: %.4f - %s (ID: %s)\n",
         $i + 1,
         $icon,
@@ -111,10 +113,10 @@ foreach ($top20 as $i => $result) {
     );
 }
 
-echo "\n" . str_repeat("=", 70) . "\n";
+echo "\n".str_repeat('=', 70)."\n";
 echo sprintf("Products above threshold (%.2f): %d / %d\n", $minThreshold, $aboveThreshold, count($top20));
 
-if ($aboveThreshold == 0) {
+if (0 == $aboveThreshold) {
     echo "\n⚠ WARNING: No products meet the minimum similarity threshold!\n";
     echo "This is why recommendations are not showing.\n\n";
     echo "Possible solutions:\n";

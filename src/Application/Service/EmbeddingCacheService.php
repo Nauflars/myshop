@@ -9,8 +9,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * Service for caching query embeddings in Redis to reduce OpenAI API costs
- * 
+ * Service for caching query embeddings in Redis to reduce OpenAI API costs.
+ *
  * Implements spec-010 User Story 5: Query Embedding Cache
  * Cache key format: search:embedding:{md5(query)}
  * TTL: Configurable via EMBEDDING_CACHE_TTL environment variable
@@ -18,7 +18,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 class EmbeddingCacheService
 {
     private const CACHE_KEY_PREFIX = 'search:embedding:';
-    
+
     private int $cacheTtl;
     private int $cacheHits = 0;
     private int $cacheMisses = 0;
@@ -26,15 +26,16 @@ class EmbeddingCacheService
     public function __construct(
         private readonly CacheInterface $cache,
         private readonly LoggerInterface $logger,
-        string $embeddingCacheTtl = '3600' // Default 1 hour
+        string $embeddingCacheTtl = '3600', // Default 1 hour
     ) {
         $this->cacheTtl = (int) $embeddingCacheTtl;
     }
 
     /**
-     * Get cached embedding for a query
-     * 
+     * Get cached embedding for a query.
+     *
      * @param string $query The search query
+     *
      * @return array|null The cached embedding array (1536 dimensions) or null if not cached
      */
     public function get(string $query): ?array
@@ -44,29 +45,30 @@ class EmbeddingCacheService
             $cachedValue = $this->cache->get($cacheKey, function (ItemInterface $item) {
                 // Cache miss - return null to indicate no cached value
                 $item->expiresAfter($this->cacheTtl);
+
                 return null;
             });
 
-            if ($cachedValue !== null) {
-                $this->cacheHits++;
-                
+            if (null !== $cachedValue) {
+                ++$this->cacheHits;
+
                 // Deserialize from JSON
                 $embedding = $this->deserialize($cachedValue);
-                
-                if ($embedding !== null) {
+
+                if (null !== $embedding) {
                     $this->logger->info('Embedding cache HIT', [
                         'query' => $query,
                         'cache_key' => $cacheKey,
                         'embedding_dimensions' => count($embedding),
                         'total_hits' => $this->cacheHits,
                     ]);
-                    
+
                     return $embedding;
                 }
             }
 
             // Cache miss
-            $this->cacheMisses++;
+            ++$this->cacheMisses;
             $this->logger->info('Embedding cache MISS', [
                 'query' => $query,
                 'cache_key' => $cacheKey,
@@ -74,7 +76,6 @@ class EmbeddingCacheService
             ]);
 
             return null;
-
         } catch (\Throwable $e) {
             // Redis connection error or other cache failure
             $this->logger->warning('Cache retrieval failed, bypassing cache', [
@@ -88,41 +89,45 @@ class EmbeddingCacheService
     }
 
     /**
-     * Store embedding in cache
-     * 
-     * @param string $query The search query
-     * @param array $embedding The embedding array (1536 dimensions)
+     * Store embedding in cache.
+     *
+     * @param string $query     The search query
+     * @param array  $embedding The embedding array (1536 dimensions)
+     *
      * @return bool True if successfully cached, false on error
      */
     public function set(string $query, array $embedding): bool
     {
         try {
             // Validate embedding dimensions
-            if (count($embedding) !== 1536) {
+            if (1536 !== count($embedding)) {
                 $this->logger->error('Invalid embedding dimensions for cache', [
                     'query' => $query,
                     'expected_dimensions' => 1536,
                     'actual_dimensions' => count($embedding),
                 ]);
+
                 return false;
             }
 
             $cacheKey = $this->generateCacheKey($query);
-            
+
             // Serialize to JSON
             $serialized = $this->serialize($embedding);
-            
-            if ($serialized === null) {
+
+            if (null === $serialized) {
                 $this->logger->error('Failed to serialize embedding for cache', [
                     'query' => $query,
                     'cache_key' => $cacheKey,
                 ]);
+
                 return false;
             }
 
             // Store in cache with TTL
             $this->cache->get($cacheKey, function (ItemInterface $item) use ($serialized) {
                 $item->expiresAfter($this->cacheTtl);
+
                 return $serialized;
             });
 
@@ -134,7 +139,6 @@ class EmbeddingCacheService
             ]);
 
             return true;
-
         } catch (\Throwable $e) {
             // Redis connection error or other cache failure
             // Don't throw exception - just log and continue
@@ -149,9 +153,10 @@ class EmbeddingCacheService
     }
 
     /**
-     * Delete cached embedding for a query
-     * 
+     * Delete cached embedding for a query.
+     *
      * @param string $query The search query
+     *
      * @return bool True if successfully deleted, false on error
      */
     public function delete(string $query): bool
@@ -166,7 +171,6 @@ class EmbeddingCacheService
             ]);
 
             return true;
-
         } catch (\Throwable $e) {
             $this->logger->warning('Cache deletion failed', [
                 'query' => $query,
@@ -178,8 +182,8 @@ class EmbeddingCacheService
     }
 
     /**
-     * Clear all cached embeddings
-     * 
+     * Clear all cached embeddings.
+     *
      * @return bool True if successfully cleared, false on error
      */
     public function clear(): bool
@@ -199,7 +203,6 @@ class EmbeddingCacheService
             $this->cacheMisses = 0;
 
             return true;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to clear embedding cache', [
                 'error' => $e->getMessage(),
@@ -210,8 +213,8 @@ class EmbeddingCacheService
     }
 
     /**
-     * Get cache hit/miss statistics
-     * 
+     * Get cache hit/miss statistics.
+     *
      * @return array{hits: int, misses: int, hit_rate: float}
      */
     public function getStats(): array
@@ -227,11 +230,12 @@ class EmbeddingCacheService
     }
 
     /**
-     * Generate cache key from query
-     * 
+     * Generate cache key from query.
+     *
      * Format: search:embedding:{md5(query)}
-     * 
+     *
      * @param string $query The search query
+     *
      * @return string The cache key
      */
     private function generateCacheKey(string $query): string
@@ -239,64 +243,70 @@ class EmbeddingCacheService
         // Normalize query (lowercase, trim) before hashing
         $normalizedQuery = strtolower(trim($query));
         $hash = md5($normalizedQuery);
-        
-        return self::CACHE_KEY_PREFIX . $hash;
+
+        return self::CACHE_KEY_PREFIX.$hash;
     }
 
     /**
-     * Serialize embedding array to JSON string
-     * 
+     * Serialize embedding array to JSON string.
+     *
      * @param array $embedding The embedding array
+     *
      * @return string|null JSON string or null on error
      */
     private function serialize(array $embedding): ?string
     {
         try {
             $json = json_encode($embedding, JSON_THROW_ON_ERROR);
+
             return $json;
         } catch (\JsonException $e) {
             $this->logger->error('Failed to serialize embedding', [
                 'error' => $e->getMessage(),
                 'dimensions' => count($embedding),
             ]);
+
             return null;
         }
     }
 
     /**
-     * Deserialize JSON string to embedding array
-     * 
+     * Deserialize JSON string to embedding array.
+     *
      * @param string $json The JSON string
+     *
      * @return array|null Embedding array or null on error
      */
     private function deserialize(string $json): ?array
     {
         try {
             $embedding = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-            
+
             // Validate it's an array
             if (!is_array($embedding)) {
                 $this->logger->error('Deserialized value is not an array', [
                     'type' => gettype($embedding),
                 ]);
+
                 return null;
             }
 
             // Validate dimensions
-            if (count($embedding) !== 1536) {
+            if (1536 !== count($embedding)) {
                 $this->logger->error('Invalid embedding dimensions in cache', [
                     'expected' => 1536,
                     'actual' => count($embedding),
                 ]);
+
                 return null;
             }
 
             return $embedding;
-
         } catch (\JsonException $e) {
             $this->logger->error('Failed to deserialize embedding', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }

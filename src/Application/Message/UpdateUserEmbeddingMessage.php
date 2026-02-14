@@ -5,39 +5,38 @@ declare(strict_types=1);
 namespace App\Application\Message;
 
 use App\Domain\ValueObject\EventType;
-use DateTimeImmutable;
 
 /**
- * UpdateUserEmbeddingMessage - Async message for RabbitMQ queue
- * 
+ * UpdateUserEmbeddingMessage - Async message for RabbitMQ queue.
+ *
  * Implements spec-014 data model: Queue message for user embedding updates
  * Published when user interactions occur, consumed by workers to update embeddings
  */
 final readonly class UpdateUserEmbeddingMessage
 {
     /**
-     * @param string $userId User UUID identifier
-     * @param EventType $eventType Type of interaction (search, view, click, purchase)
-     * @param string|null $searchPhrase Search query text (for search events)
-     * @param int|null $productId Product reference (for product events)
-     * @param DateTimeImmutable $occurredAt When the interaction occurred
-     * @param array<string, mixed> $metadata Additional context
-     * @param string $messageId SHA-256 hash for idempotency
+     * @param string               $userId       User UUID identifier
+     * @param EventType            $eventType    Type of interaction (search, view, click, purchase)
+     * @param string|null          $searchPhrase Search query text (for search events)
+     * @param int|null             $productId    Product reference (for product events)
+     * @param \DateTimeImmutable   $occurredAt   When the interaction occurred
+     * @param array<string, mixed> $metadata     Additional context
+     * @param string               $messageId    SHA-256 hash for idempotency
      */
     public function __construct(
         public string $userId,
         public EventType $eventType,
         public ?string $searchPhrase,
         public ?int $productId,
-        public DateTimeImmutable $occurredAt,
+        public \DateTimeImmutable $occurredAt,
         public array $metadata,
-        public string $messageId
+        public string $messageId,
     ) {
         $this->validate();
     }
 
     /**
-     * Validate message data consistency
+     * Validate message data consistency.
      */
     private function validate(): void
     {
@@ -51,28 +50,26 @@ final readonly class UpdateUserEmbeddingMessage
         }
 
         // Product events require product_id
-        if ($this->eventType->requiresProduct() && $this->productId === null) {
-            throw new \InvalidArgumentException(
-                sprintf('%s events require product_id', $this->eventType->value)
-            );
+        if ($this->eventType->requiresProduct() && null === $this->productId) {
+            throw new \InvalidArgumentException(sprintf('%s events require product_id', $this->eventType->value));
         }
 
         // Validate message_id format
-        if (strlen($this->messageId) !== 64) {
+        if (64 !== strlen($this->messageId)) {
             throw new \InvalidArgumentException('Message ID must be 64-character SHA-256 hash');
         }
     }
 
     /**
-     * Create from domain event
+     * Create from domain event.
      */
     public static function fromDomainEvent(
         string $userId,
         EventType $eventType,
         ?string $searchPhrase,
         ?int $productId,
-        DateTimeImmutable $occurredAt,
-        array $metadata = []
+        \DateTimeImmutable $occurredAt,
+        array $metadata = [],
     ): self {
         $messageId = self::generateMessageId($userId, $eventType, $searchPhrase, $productId, $occurredAt);
 
@@ -88,8 +85,8 @@ final readonly class UpdateUserEmbeddingMessage
     }
 
     /**
-     * Generate unique message ID for idempotency
-     * 
+     * Generate unique message ID for idempotency.
+     *
      * SHA-256 hash of: user_id + event_type + reference + occurred_at
      */
     public static function generateMessageId(
@@ -97,7 +94,7 @@ final readonly class UpdateUserEmbeddingMessage
         EventType $eventType,
         ?string $searchPhrase,
         ?int $productId,
-        DateTimeImmutable $occurredAt
+        \DateTimeImmutable $occurredAt,
     ): string {
         $reference = $searchPhrase ?? (string) $productId;
         $data = sprintf(
@@ -112,7 +109,7 @@ final readonly class UpdateUserEmbeddingMessage
     }
 
     /**
-     * Get event weight from event type
+     * Get event weight from event type.
      */
     public function getWeight(): float
     {
@@ -120,8 +117,8 @@ final readonly class UpdateUserEmbeddingMessage
     }
 
     /**
-     * Convert to array for serialization
-     * 
+     * Convert to array for serialization.
+     *
      * @return array<string, mixed>
      */
     public function toArray(): array

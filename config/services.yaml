@@ -47,6 +47,10 @@ services:
     App\Domain\Repository\ConversationRepositoryInterface:
         class: App\Infrastructure\Repository\DoctrineConversationRepository
 
+    # Application Port Interfaces -> Infrastructure Implementations
+    App\Application\Port\MessagePublisherInterface:
+        class: App\Infrastructure\Queue\RabbitMQPublisher
+
     # Embedding Configuration (spec-014)
     App\Domain\ValueObject\EmbeddingWeights:
         factory: ['App\Domain\ValueObject\EmbeddingWeights', 'fromEnvironment']

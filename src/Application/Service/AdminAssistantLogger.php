@@ -11,8 +11,8 @@ use App\Infrastructure\Repository\AdminAssistantActionRepository;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * AdminAssistantLogger - Logs all admin assistant actions for audit trail
- * 
+ * AdminAssistantLogger - Logs all admin assistant actions for audit trail.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Provides compliance and security auditing capabilities
  */
@@ -20,18 +20,18 @@ class AdminAssistantLogger
 {
     public function __construct(
         private readonly AdminAssistantActionRepository $repository,
-        private readonly RequestStack $requestStack
+        private readonly RequestStack $requestStack,
     ) {
     }
 
     /**
-     * Log a product creation action
+     * Log a product creation action.
      */
     public function logProductCreation(
         User $adminUser,
         string $productId,
         array $productData,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -58,13 +58,13 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a product update action
+     * Log a product update action.
      */
     public function logProductUpdate(
         User $adminUser,
         string $productId,
         array $changes,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -86,7 +86,7 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a product deletion action
+     * Log a product deletion action.
      */
     public function logProductDeletion(
         User $adminUser,
@@ -94,7 +94,7 @@ class AdminAssistantLogger
         string $productName,
         bool $success,
         ?string $errorMessage = null,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -119,12 +119,12 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a sales overview query
+     * Log a sales overview query.
      */
     public function logSalesQuery(
         User $adminUser,
         array $queryResult,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -145,13 +145,13 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a product statistics query
+     * Log a product statistics query.
      */
     public function logProductStatsQuery(
         User $adminUser,
         string $productId,
         array $queryResult,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -169,12 +169,12 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a top products query
+     * Log a top products query.
      */
     public function logTopProductsQuery(
         User $adminUser,
         int $resultCount,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -191,12 +191,12 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a user purchase statistics query
+     * Log a user purchase statistics query.
      */
     public function logUserStatsQuery(
         User $adminUser,
         int $resultCount,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -213,7 +213,7 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a stock update action (spec-008 US2)
+     * Log a stock update action (spec-008 US2).
      */
     public function logStockUpdate(
         string $productId,
@@ -223,7 +223,7 @@ class AdminAssistantLogger
         string $mode,
         int $quantity,
         ?string $reason = null,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         // Get current admin user from conversation if available
         $adminUser = $conversation?->getAdminUser() ?? throw new \LogicException('Admin user required for stock update audit');
@@ -255,14 +255,14 @@ class AdminAssistantLogger
     }
 
     /**
-     * Log a failed action
+     * Log a failed action.
      */
     public function logFailedAction(
         User $adminUser,
         string $actionType,
         string $errorMessage,
         ?array $context = null,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ): AdminAssistantAction {
         $action = new AdminAssistantAction(
             $adminUser,
@@ -271,8 +271,8 @@ class AdminAssistantLogger
         );
 
         $action->markAsFailed($errorMessage);
-        
-        if ($context !== null) {
+
+        if (null !== $context) {
             $action->setActionParameters($context);
         }
 
@@ -283,25 +283,25 @@ class AdminAssistantLogger
     }
 
     /**
-     * Enrich action with HTTP request data
+     * Enrich action with HTTP request data.
      */
     private function enrichWithRequestData(AdminAssistantAction $action): void
     {
         $request = $this->requestStack->getCurrentRequest();
-        
-        if ($request === null) {
+
+        if (null === $request) {
             return;
         }
 
         // Get client IP address
         $ip = $request->getClientIp();
-        if ($ip !== null) {
+        if (null !== $ip) {
             $action->setIpAddress($ip);
         }
 
         // Get user agent
         $userAgent = $request->headers->get('User-Agent');
-        if ($userAgent !== null) {
+        if (null !== $userAgent) {
             $action->setUserAgent($userAgent);
         }
     }

@@ -7,25 +7,23 @@ namespace App\Domain\ValueObject;
 use App\Domain\Entity\Product;
 
 /**
- * SearchResult - Value object for search results
- * 
+ * SearchResult - Value object for search results.
+ *
  * Implements spec-010 T031: Encapsulates search results with scores and metadata
  */
 class SearchResult
 {
     /**
-     * @param array<Product> $products
-     * @param array<string, float> $scores Product ID => similarity score
-     * @param string $mode 'semantic' or 'keyword'
-     * @param int $totalResults
-     * @param float $executionTimeMs
+     * @param array<Product>       $products
+     * @param array<string, float> $scores   Product ID => similarity score
+     * @param string               $mode     'semantic' or 'keyword'
      */
     public function __construct(
         private readonly array $products,
         private readonly array $scores,
         private readonly string $mode,
         private readonly int $totalResults,
-        private readonly float $executionTimeMs
+        private readonly float $executionTimeMs,
     ) {
     }
 
@@ -79,7 +77,7 @@ class SearchResult
     {
         return [
             'products' => array_map(
-                fn(Product $p) => [
+                fn (Product $p) => [
                     'id' => $p->getId(),
                     'name' => $p->getName(),
                     'description' => $p->getDescription(),

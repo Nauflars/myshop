@@ -25,7 +25,7 @@ class SimulateSearchCommand extends Command
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserProfileUpdateService $profileUpdateService
+        UserProfileUpdateService $profileUpdateService,
     ) {
         parent::__construct();
         $this->entityManager = $entityManager;
@@ -42,7 +42,7 @@ class SimulateSearchCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $email = $input->getArgument('email');
         $searchQuery = $input->getArgument('searchQuery');
 
@@ -55,6 +55,7 @@ class SimulateSearchCommand extends Command
 
         if (!$user) {
             $io->error("User not found: $email");
+
             return Command::FAILURE;
         }
 
@@ -66,51 +67,52 @@ class SimulateSearchCommand extends Command
             'docker exec myshop_mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop --quiet --eval "db.user_profiles.findOne({userId: \'%s\'})"',
             $user->getId()
         ));
-        if (trim($result) === 'null') {
-            $io->writeln("No profile exists");
+        if ('null' === trim($result)) {
+            $io->writeln('No profile exists');
         } else {
-            $io->writeln("Profile exists");
+            $io->writeln('Profile exists');
         }
 
         // Step 3: Create conversation with search message
         $io->section('Step 3: Creating conversation with search message');
         $conversation = new Conversation($user);
         $this->entityManager->persist($conversation);
-        
+
         $message = new ConversationMessage($conversation, 'user', $searchQuery);
         $this->entityManager->persist($message);
-        
+
         $this->entityManager->flush();
-        
+
         $io->success("✓ Conversation created with message: \"$searchQuery\"");
-        $io->writeln("Conversation ID: " . $conversation->getId());
+        $io->writeln('Conversation ID: '.$conversation->getId());
 
         // Step 4: Trigger automatic profile update
         $io->section('Step 4: Triggering automatic profile update');
         try {
             $this->profileUpdateService->scheduleProfileUpdate($user);
-            $io->success("✓ Profile update scheduled/executed");
+            $io->success('✓ Profile update scheduled/executed');
         } catch (\Exception $e) {
-            $io->error("Failed to update profile: " . $e->getMessage());
-            $io->writeln("Trace: " . $e->getTraceAsString());
+            $io->error('Failed to update profile: '.$e->getMessage());
+            $io->writeln('Trace: '.$e->getTraceAsString());
+
             return Command::FAILURE;
         }
 
         // Step 5: Verify profile in MongoDB (after)
         $io->section('Step 5: Verifying MongoDB profile (after)');
         sleep(2); // Give it a moment to complete
-        
+
         $result = shell_exec(sprintf(
             'docker exec myshop_mongodb mongosh -u root -p rootpassword --authenticationDatabase admin myshop --quiet --eval "db.user_profiles.findOne({userId: \'%s\'}, {userId: 1, lastActivityDate: 1, \'dataSnapshot.recentSearches\': 1})"',
             $user->getId()
         ));
-        
-        if (trim($result) === 'null') {
-            $io->warning("⚠ Profile still does NOT exist in MongoDB");
-            $io->writeln("This suggests automatic profile creation is not working.");
+
+        if ('null' === trim($result)) {
+            $io->warning('⚠ Profile still does NOT exist in MongoDB');
+            $io->writeln('This suggests automatic profile creation is not working.');
         } else {
-            $io->success("✓ Profile EXISTS in MongoDB!");
-            $io->writeln("Profile details:");
+            $io->success('✓ Profile EXISTS in MongoDB!');
+            $io->writeln('Profile details:');
             $io->writeln($result);
         }
 

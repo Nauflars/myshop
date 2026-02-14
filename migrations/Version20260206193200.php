@@ -8,8 +8,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Migration for spec-006: Unanswered Questions Tracking & Admin Panel
- * 
+ * Migration for spec-006: Unanswered Questions Tracking & Admin Panel.
+ *
  * Creates the unanswered_questions table to store chatbot questions
  * that could not be answered by the AI agent.
  */

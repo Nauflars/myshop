@@ -2,7 +2,6 @@
 
 namespace App\Tests\Application\UseCase;
 
-use App\Application\Service\UserProfileUpdateService;
 use App\Application\UseCase\CreateUser;
 use App\Domain\Entity\User;
 use App\Domain\Repository\UserRepositoryInterface;
@@ -15,14 +14,12 @@ class CreateUserTest extends TestCase
 {
     private UserRepositoryInterface $userRepository;
     private UserPasswordHasherInterface $passwordHasher;
-    private UserProfileUpdateService $profileUpdateService;
     private LoggerInterface $logger;
-    
+
     protected function setUp(): void
     {
         $this->userRepository = $this->createMock(UserRepositoryInterface::class);
         $this->passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
-        $this->profileUpdateService = $this->createMock(UserProfileUpdateService::class);
         $this->logger = $this->createMock(LoggerInterface::class);
     }
 
@@ -40,14 +37,10 @@ class CreateUserTest extends TestCase
         $this->userRepository->expects($this->once())
             ->method('save')
             ->with($this->isInstanceOf(User::class));
-            
-        $this->profileUpdateService->expects($this->once())
-            ->method('scheduleProfileUpdate');
 
         $useCase = new CreateUser(
-            $this->userRepository, 
+            $this->userRepository,
             $this->passwordHasher,
-            $this->profileUpdateService,
             $this->logger
         );
         $user = $useCase->execute('John Doe', 'john@example.com', 'plain_password');
@@ -64,12 +57,10 @@ class CreateUserTest extends TestCase
         $this->userRepository->method('findByEmail')->willReturn(null);
         $this->passwordHasher->method('hashPassword')->willReturn('hashed');
         $this->userRepository->method('save');
-        $this->profileUpdateService->method('scheduleProfileUpdate');
 
         $useCase = new CreateUser(
-            $this->userRepository, 
+            $this->userRepository,
             $this->passwordHasher,
-            $this->profileUpdateService,
             $this->logger
         );
         $user = $useCase->execute('Admin', 'admin@example.com', 'pass', 'ROLE_ADMIN');
@@ -81,29 +72,28 @@ class CreateUserTest extends TestCase
     public function testExecuteThrowsExceptionIfUserExists(): void
     {
         $existingUser = new User('Existing', new Email('john@example.com'), 'hash');
-        
+
         $this->userRepository->expects($this->once())
             ->method('findByEmail')
             ->with('john@example.com')
             ->willReturn($existingUser);
 
         $useCase = new CreateUser(
-            $this->userRepository, 
+            $this->userRepository,
             $this->passwordHasher,
-            $this->profileUpdateService,
             $this->logger
         );
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('User with this email already exists');
-        
+
         $useCase->execute('John Doe', 'john@example.com', 'password');
     }
 
     public function testExecuteHashesPassword(): void
     {
         $this->userRepository->method('findByEmail')->willReturn(null);
-        
+
         $this->passwordHasher->expects($this->once())
             ->method('hashPassword')
             ->with(
@@ -113,12 +103,10 @@ class CreateUserTest extends TestCase
             ->willReturn('secure_hashed_password');
 
         $this->userRepository->method('save');
-        $this->profileUpdateService->method('scheduleProfileUpdate');
 
         $useCase = new CreateUser(
-            $this->userRepository, 
+            $this->userRepository,
             $this->passwordHasher,
-            $this->profileUpdateService,
             $this->logger
         );
         $user = $useCase->execute('Test', 'test@example.com', 'my_plain_password');

@@ -41,7 +41,7 @@ class CartItem
         $this->cart = $cart;
         $this->product = $product;
         $this->quantity = $quantity;
-        
+
         // Snapshot the price at the time of adding to cart
         $price = $product->getPrice();
         $this->priceSnapshotInCents = $price->getAmountInCents();

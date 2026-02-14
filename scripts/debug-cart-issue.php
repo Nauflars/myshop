@@ -2,7 +2,6 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-use App\Infrastructure\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 
 (new Dotenv())->bootEnv(__DIR__.'/.env');
@@ -26,17 +25,17 @@ if (!$user) {
     exit(1);
 }
 
-echo "Found user: " . $user->getEmail() . "\n";
-echo "User ID: " . $user->getId() . "\n";
-echo "User ID (hex): " . bin2hex($user->getId()) . "\n\n";
+echo 'Found user: '.$user->getEmail()."\n";
+echo 'User ID: '.$user->getId()."\n";
+echo 'User ID (hex): '.bin2hex($user->getId())."\n\n";
 
 // Check for existing cart using the repository method
 $cartRepo = $entityManager->getRepository(App\Domain\Entity\Cart::class);
 $cart = $cartRepo->findByUser($user);
 
-echo "Cart found using repository: " . ($cart ? 'YES - ID: ' . $cart->getId() : 'NO') . "\n";
+echo 'Cart found using repository: '.($cart ? 'YES - ID: '.$cart->getId() : 'NO')."\n";
 if ($cart) {
-    echo "Cart items count: " . count($cart->getItems()) . "\n";
+    echo 'Cart items count: '.count($cart->getItems())."\n";
 }
 
 // Check for existing cart using query builder
@@ -48,11 +47,11 @@ $carts = $qb->select('c')
     ->getQuery()
     ->getResult();
 
-echo "Carts found for user: " . count($carts) . "\n";
+echo 'Carts found for user: '.count($carts)."\n";
 
 foreach ($carts as $cart) {
-    echo "  - Cart ID: " . $cart->getId() . "\n";
-    echo "    Items: " . count($cart->getItems()) . "\n";
+    echo '  - Cart ID: '.$cart->getId()."\n";
+    echo '    Items: '.count($cart->getItems())."\n";
 }
 
 // Check if there are orphaned carts
@@ -60,4 +59,4 @@ $allCarts = $entityManager->createQuery(
     'SELECT c FROM App\Domain\Entity\Cart c WHERE c.user = :userId'
 )->setParameter('userId', $userId)->getResult();
 
-echo "\nAll carts for this user ID: " . count($allCarts) . "\n";
+echo "\nAll carts for this user ID: ".count($allCarts)."\n";

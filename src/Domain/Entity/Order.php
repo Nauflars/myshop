@@ -49,7 +49,7 @@ class Order
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
-    public function __construct(User $user, string $orderNumber = null)
+    public function __construct(User $user, ?string $orderNumber = null)
     {
         $this->id = Uuid::v4()->toRfc4122();
         $this->orderNumber = $orderNumber ?? $this->generateOrderNumber();
@@ -140,7 +140,7 @@ class Order
 
     public function confirm(): void
     {
-        if ($this->status !== self::STATUS_PENDING) {
+        if (self::STATUS_PENDING !== $this->status) {
             throw new \LogicException('Only pending orders can be confirmed');
         }
         $this->setStatus(self::STATUS_CONFIRMED);
@@ -148,7 +148,7 @@ class Order
 
     public function ship(): void
     {
-        if ($this->status !== self::STATUS_CONFIRMED) {
+        if (self::STATUS_CONFIRMED !== $this->status) {
             throw new \LogicException('Only confirmed orders can be shipped');
         }
         $this->setStatus(self::STATUS_SHIPPED);
@@ -156,7 +156,7 @@ class Order
 
     public function deliver(): void
     {
-        if ($this->status !== self::STATUS_SHIPPED) {
+        if (self::STATUS_SHIPPED !== $this->status) {
             throw new \LogicException('Only shipped orders can be delivered');
         }
         $this->setStatus(self::STATUS_DELIVERED);
@@ -164,7 +164,7 @@ class Order
 
     public function cancel(): void
     {
-        if ($this->status === self::STATUS_DELIVERED) {
+        if (self::STATUS_DELIVERED === $this->status) {
             throw new \LogicException('Delivered orders cannot be cancelled');
         }
         $this->setStatus(self::STATUS_CANCELLED);
@@ -172,27 +172,27 @@ class Order
 
     public function isPending(): bool
     {
-        return $this->status === self::STATUS_PENDING;
+        return self::STATUS_PENDING === $this->status;
     }
 
     public function isConfirmed(): bool
     {
-        return $this->status === self::STATUS_CONFIRMED;
+        return self::STATUS_CONFIRMED === $this->status;
     }
 
     public function isShipped(): bool
     {
-        return $this->status === self::STATUS_SHIPPED;
+        return self::STATUS_SHIPPED === $this->status;
     }
 
     public function isDelivered(): bool
     {
-        return $this->status === self::STATUS_DELIVERED;
+        return self::STATUS_DELIVERED === $this->status;
     }
 
     public function isCancelled(): bool
     {
-        return $this->status === self::STATUS_CANCELLED;
+        return self::STATUS_CANCELLED === $this->status;
     }
 
     public function getCreatedAt(): \DateTimeImmutable
@@ -212,7 +212,7 @@ class Order
 
     private function generateOrderNumber(): string
     {
-        return 'ORD-' . date('Ymd') . '-' . strtoupper(substr(Uuid::v4()->toRfc4122(), 0, 8));
+        return 'ORD-'.date('Ymd').'-'.strtoupper(substr(Uuid::v4()->toRfc4122(), 0, 8));
     }
 
     public static function createFromCart(Cart $cart): self

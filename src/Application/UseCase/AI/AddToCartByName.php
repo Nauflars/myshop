@@ -10,31 +10,32 @@ use App\Domain\Repository\CartRepositoryInterface;
 use App\Domain\Repository\ProductRepositoryInterface;
 
 /**
- * AddToCartByName Use Case - Add product to cart by name
- * 
+ * AddToCartByName Use Case - Add product to cart by name.
+ *
  * Adds a product to the user's shopping cart using the product name.
  * Performs case-insensitive search and ensures exact match.
  * Creates a new cart if one doesn't exist.
- * 
+ *
  * Architecture: Application layer (use case)
  * DDD Role: Application Service - orchestrates domain logic
- * 
+ *
  * @author AI Shopping Assistant Team
  */
 final class AddToCartByName
 {
     public function __construct(
         private readonly CartRepositoryInterface $cartRepository,
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
-    
+
     /**
-     * Execute the use case
+     * Execute the use case.
      *
-     * @param User $user Authenticated user
+     * @param User   $user        Authenticated user
      * @param string $productName Product name
-     * @param int $quantity Quantity to add (default: 1)
+     * @param int    $quantity    Quantity to add (default: 1)
+     *
      * @return array{
      *     success: bool,
      *     message: string,
@@ -54,20 +55,20 @@ final class AddToCartByName
                 'currency' => 'USD',
             ];
         }
-        
+
         // Search for product by name
         $products = $this->productRepository->search(trim($productName), null, null, null);
-        
+
         // Find exact case-insensitive match
         $product = null;
         foreach ($products as $p) {
-            if (strcasecmp($p->getName(), trim($productName)) === 0) {
+            if (0 === strcasecmp($p->getName(), trim($productName))) {
                 $product = $p;
                 break;
             }
         }
-        
-        if ($product === null) {
+
+        if (null === $product) {
             return [
                 'success' => false,
                 'message' => sprintf('Product "%s" not found.', $productName),
@@ -76,7 +77,7 @@ final class AddToCartByName
                 'currency' => 'USD',
             ];
         }
-        
+
         // Check stock
         if (!$product->isInStock()) {
             return [
@@ -87,7 +88,7 @@ final class AddToCartByName
                 'currency' => 'USD',
             ];
         }
-        
+
         if ($product->getStock() < $quantity) {
             return [
                 'success' => false,
@@ -102,13 +103,13 @@ final class AddToCartByName
                 'currency' => 'USD',
             ];
         }
-        
+
         // Find or create cart
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null) {
+        if (null === $cart) {
             $cart = new Cart($user);
         }
-        
+
         // Add product to cart (with currency validation)
         try {
             $cart->addProduct($product, $quantity);
@@ -121,7 +122,7 @@ final class AddToCartByName
                     $firstItem = $cart->getItems()->first();
                     $cartCurrency = $firstItem->getPriceSnapshot()->getCurrency();
                 }
-                
+
                 return [
                     'success' => false,
                     'message' => sprintf(
@@ -135,25 +136,25 @@ final class AddToCartByName
                     'currency' => $cartCurrency,
                 ];
             }
-            
+
             // Re-throw if it's a different validation error
             throw $e;
         }
-        
+
         // Calculate totals
         $totalItems = 0;
         $totalAmountInCents = 0;
         $currency = 'USD';
-        
+
         foreach ($cart->getItems() as $item) {
             $totalItems += $item->getQuantity();
             $itemPrice = $item->getProduct()->getPrice();
             $totalAmountInCents += $itemPrice->getAmountInCents() * $item->getQuantity();
             $currency = $itemPrice->getCurrency();
         }
-        
+
         $totalAmount = $totalAmountInCents / 100;
-        
+
         return [
             'success' => true,
             'message' => sprintf(

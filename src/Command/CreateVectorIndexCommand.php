@@ -15,8 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * CreateVectorIndexCommand - Create MongoDB vector search index
- * 
+ * CreateVectorIndexCommand - Create MongoDB vector search index.
+ *
  * Implements spec-010 T009: Vector index for efficient similarity search
  * Creates compound index on productId and embedding field
  */
@@ -30,7 +30,7 @@ class CreateVectorIndexCommand extends Command
         private readonly MongoDBEmbeddingRepository $repository,
         private readonly Client $mongoClient,
         private readonly LoggerInterface $logger,
-        private readonly string $databaseName
+        private readonly string $databaseName,
     ) {
         parent::__construct();
     }
@@ -74,6 +74,7 @@ class CreateVectorIndexCommand extends Command
         // Check if index already exists
         if ($this->repository->hasVectorIndex()) {
             $io->success(sprintf('Vector index "%s" already exists!', $indexName));
+
             return Command::SUCCESS;
         }
 
@@ -123,9 +124,8 @@ class CreateVectorIndexCommand extends Command
             ]);
 
             return Command::SUCCESS;
-
         } catch (MongoException $e) {
-            $io->error('Failed to create vector index: ' . $e->getMessage());
+            $io->error('Failed to create vector index: '.$e->getMessage());
 
             $this->logger->error('Vector index creation failed', [
                 'collection' => $collectionName,

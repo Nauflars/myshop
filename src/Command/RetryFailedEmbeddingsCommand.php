@@ -16,11 +16,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * T097: Retry Failed Embedding Sync Jobs
- * 
+ * T097: Retry Failed Embedding Sync Jobs.
+ *
  * Processes dead letter queue and retries failed embedding sync operations
  * Implements exponential backoff and automatic abandonment after max retries
- * 
+ *
  * Usage:
  *   php bin/console app:retry-failed-embeddings
  *   php bin/console app:retry-failed-embeddings --limit=50
@@ -36,7 +36,7 @@ class RetryFailedEmbeddingsCommand extends Command
         private readonly FailedJobRegistry $failedJobRegistry,
         private readonly SyncProductEmbedding $syncUseCase,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
     }
@@ -79,7 +79,7 @@ HELP
 
         // Display statistics
         $stats = $this->failedJobRegistry->getStatistics();
-        
+
         $io->title('Failed Embedding Jobs Statistics');
         $io->table(
             ['Status', 'Count'],
@@ -96,8 +96,9 @@ HELP
             return Command::SUCCESS;
         }
 
-        if ($stats['failed'] === 0) {
+        if (0 === $stats['failed']) {
             $io->success('No failed jobs to retry');
+
             return Command::SUCCESS;
         }
 
@@ -105,8 +106,9 @@ HELP
         $jobs = $this->failedJobRegistry->getJobsReadyForRetry($limit);
         $jobCount = count($jobs);
 
-        if ($jobCount === 0) {
+        if (0 === $jobCount) {
             $io->info('No jobs are ready for retry at this time (waiting for backoff period)');
+
             return Command::SUCCESS;
         }
 
@@ -130,9 +132,9 @@ HELP
                 // Fetch product from database
                 $product = $this->productRepository->findById($productId);
 
-                if ($product === null) {
+                if (null === $product) {
                     $io->warning("Product {$productId} not found, skipping job {$jobId}");
-                    $skippedCount++;
+                    ++$skippedCount;
                     $this->failedJobRegistry->markAsResolved($jobId); // Resolve since product no longer exists
                     $io->progressAdvance();
                     continue;
@@ -148,7 +150,7 @@ HELP
 
                 // Success - mark as resolved
                 $this->failedJobRegistry->markAsResolved($jobId);
-                $successCount++;
+                ++$successCount;
 
                 $this->logger->info('Successfully retried failed job', [
                     'job_id' => $jobId,
@@ -156,11 +158,10 @@ HELP
                     'operation' => $operation,
                     'attempts' => $attempts,
                 ]);
-
             } catch (\Exception $e) {
                 // Failure - update attempts and schedule next retry
                 $this->failedJobRegistry->updateAfterRetryFailure($jobId, $attempts);
-                $failureCount++;
+                ++$failureCount;
 
                 $this->logger->error('Failed to retry job', [
                     'job_id' => $jobId,
@@ -178,7 +179,7 @@ HELP
 
         // Summary
         $io->newLine();
-        $io->success("Retry completed:");
+        $io->success('Retry completed:');
         $io->listing([
             "✓ Successful: {$successCount}",
             "✗ Failed: {$failureCount}",

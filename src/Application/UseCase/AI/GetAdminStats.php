@@ -8,8 +8,8 @@ use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 
 /**
- * GetAdminStats Use Case
- * 
+ * GetAdminStats Use Case.
+ *
  * Provides business statistics and metrics for administrators only.
  * Returns sales totals, top products, active users, and pending orders.
  */
@@ -18,12 +18,13 @@ final class GetAdminStats
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 
     /**
      * @param User $admin The authenticated admin user
+     *
      * @return array{success: bool, stats: array|null, message: string}
      */
     public function execute(User $admin): array
@@ -56,7 +57,7 @@ final class GetAdminStats
             return [
                 'success' => false,
                 'stats' => null,
-                'message' => 'Error al cargar estadísticas: ' . $e->getMessage(),
+                'message' => 'Error al cargar estadísticas: '.$e->getMessage(),
             ];
         }
     }
@@ -68,7 +69,7 @@ final class GetAdminStats
         $total = 0.0;
 
         foreach ($orders as $order) {
-            if ($order->getCreatedAt()->format('Y-m') === $currentMonth && $order->getStatus() === 'completed') {
+            if ($order->getCreatedAt()->format('Y-m') === $currentMonth && 'completed' === $order->getStatus()) {
                 $total += $order->getTotalInCents() / 100;
             }
         }
@@ -105,7 +106,7 @@ final class GetAdminStats
             $orders = $this->orderRepository->findAll();
             foreach ($orders as $order) {
                 if ($order->getUser()->getId() === $user->getId() && $order->getCreatedAt() >= $thirtyDaysAgo) {
-                    $activeCount++;
+                    ++$activeCount;
                     break;
                 }
             }
@@ -120,8 +121,8 @@ final class GetAdminStats
         $pendingCount = 0;
 
         foreach ($orders as $order) {
-            if ($order->getStatus() === 'pending') {
-                $pendingCount++;
+            if ('pending' === $order->getStatus()) {
+                ++$pendingCount;
             }
         }
 
@@ -134,7 +135,7 @@ final class GetAdminStats
         $total = 0.0;
 
         foreach ($orders as $order) {
-            if ($order->getStatus() === 'completed') {
+            if ('completed' === $order->getStatus()) {
                 $total += $order->getTotalInCents() / 100;
             }
         }
@@ -148,12 +149,12 @@ final class GetAdminStats
         $completedOrders = [];
 
         foreach ($orders as $order) {
-            if ($order->getStatus() === 'completed') {
+            if ('completed' === $order->getStatus()) {
                 $completedOrders[] = $order;
             }
         }
 
-        if (count($completedOrders) === 0) {
+        if (0 === count($completedOrders)) {
             return 0.0;
         }
 

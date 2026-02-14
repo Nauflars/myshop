@@ -15,7 +15,7 @@ use App\Domain\ValueObject\Money;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests for AddToCartByName use case
+ * Unit tests for AddToCartByName use case.
  */
 class AddToCartByNameTest extends TestCase
 {
@@ -36,23 +36,23 @@ class AddToCartByNameTest extends TestCase
     {
         $product = new Product('Laptop', 'Gaming laptop', new Money(150000, 'USD'), 5, 'Electronics');
         $cart = new Cart($this->user);
-        
+
         $this->productRepository->expects($this->once())
             ->method('search')
             ->with('Laptop', null, null, null)
             ->willReturn([$product]);
-        
+
         $this->cartRepository->expects($this->once())
             ->method('findByUser')
             ->with($this->user)
             ->willReturn($cart);
-        
+
         $this->cartRepository->expects($this->once())
             ->method('save')
             ->with($cart);
-        
+
         $result = $this->useCase->execute($this->user, 'Laptop', 1);
-        
+
         $this->assertTrue($result['success']);
         $this->assertEquals(1, $result['totalItems']);
         $this->assertStringContainsString('Laptop', $result['message']);
@@ -61,23 +61,23 @@ class AddToCartByNameTest extends TestCase
     public function testExecuteCreatesNewCartIfNotExists(): void
     {
         $product = new Product('Mouse', 'Gaming mouse', new Money(5000, 'USD'), 10, 'Electronics');
-        
+
         $this->productRepository->expects($this->once())
             ->method('search')
             ->with('Mouse', null, null, null)
             ->willReturn([$product]);
-        
+
         $this->cartRepository->expects($this->once())
             ->method('findByUser')
             ->with($this->user)
             ->willReturn(null);
-        
+
         $this->cartRepository->expects($this->once())
             ->method('save')
             ->with($this->isInstanceOf(Cart::class));
-        
+
         $result = $this->useCase->execute($this->user, 'Mouse', 2);
-        
+
         $this->assertTrue($result['success']);
         $this->assertEquals(2, $result['totalItems']);
     }
@@ -88,12 +88,12 @@ class AddToCartByNameTest extends TestCase
             ->method('search')
             ->with('NonExistent', null, null, null)
             ->willReturn([]);
-        
+
         $this->cartRepository->expects($this->never())
             ->method('save');
-        
+
         $result = $this->useCase->execute($this->user, 'NonExistent', 1);
-        
+
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('not found', $result['message']);
     }
@@ -101,7 +101,7 @@ class AddToCartByNameTest extends TestCase
     public function testExecuteFailsWhenQuantityIsInvalid(): void
     {
         $result = $this->useCase->execute($this->user, 'Laptop', 0);
-        
+
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('greater than zero', $result['message']);
     }

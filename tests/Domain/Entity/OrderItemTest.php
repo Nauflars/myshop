@@ -26,7 +26,7 @@ class OrderItemTest extends TestCase
     {
         $price = new Money(1500, 'USD');
         $orderItem = new OrderItem($this->order, $this->product, 2, $price);
-        
+
         $this->assertNotEmpty($orderItem->getId());
         $this->assertSame($this->order, $orderItem->getOrder());
         $this->assertSame($this->product, $orderItem->getProduct());
@@ -38,7 +38,7 @@ class OrderItemTest extends TestCase
     {
         $price = new Money(1500, 'USD');
         $orderItem = new OrderItem($this->order, $this->product, 1, $price);
-        
+
         $itemPrice = $orderItem->getPrice();
         $this->assertEquals(1500, $itemPrice->getAmountInCents());
         $this->assertEquals('USD', $itemPrice->getCurrency());
@@ -48,7 +48,7 @@ class OrderItemTest extends TestCase
     {
         $price = new Money(1500, 'USD');
         $orderItem = new OrderItem($this->order, $this->product, 3, $price);
-        
+
         $subtotal = $orderItem->getSubtotal();
         $this->assertEquals(4500, $subtotal->getAmountInCents()); // 1500 * 3
         $this->assertEquals('USD', $subtotal->getCurrency());
@@ -58,7 +58,7 @@ class OrderItemTest extends TestCase
     {
         $price = new Money(1500, 'USD');
         $orderItem = new OrderItem($this->order, $this->product, 1, $price);
-        
+
         // Even if product name changes, order item should keep snapshot
         $this->assertEquals('Test Product', $orderItem->getProductName());
     }
@@ -68,7 +68,7 @@ class OrderItemTest extends TestCase
         // Create order item with different price than current product price
         $snapshotPrice = new Money(1200, 'USD');
         $orderItem = new OrderItem($this->order, $this->product, 1, $snapshotPrice);
-        
+
         // Order item should have snapshot price, not current product price
         $this->assertEquals(1200, $orderItem->getPrice()->getAmountInCents());
         $this->assertNotEquals($this->product->getPrice()->getAmountInCents(), $orderItem->getPrice()->getAmountInCents());

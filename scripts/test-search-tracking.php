@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
 use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
@@ -15,11 +15,11 @@ $container = $kernel->getContainer();
 
 // Get services
 $entityManager = $container->get('doctrine')->getManager();
-$searchHistoryRepo = $entityManager->getRepository(\App\Entity\SearchHistory::class);
-$profileRepo = $container->get(\App\Infrastructure\Repository\MongoDBUserProfileRepository::class);
+$searchHistoryRepo = $entityManager->getRepository(App\Entity\SearchHistory::class);
+$profileRepo = $container->get(App\Infrastructure\Repository\MongoDBUserProfileRepository::class);
 
 // Find the test user
-$userRepo = $entityManager->getRepository(\App\Domain\Entity\User::class);
+$userRepo = $entityManager->getRepository(App\Domain\Entity\User::class);
 $user = $userRepo->findOneBy(['email' => 'testmongo@test.com']);
 
 if (!$user) {
@@ -40,7 +40,7 @@ $searches = [
 ];
 
 foreach ($searches as $searchData) {
-    $searchHistory = new \App\Entity\SearchHistory(
+    $searchHistory = new App\Entity\SearchHistory(
         $user,
         $searchData['query'],
         $searchData['mode']
@@ -70,24 +70,24 @@ if (!$profile) {
     echo "  ✓ Profile found\n";
     $createdAt = $profile->getCreatedAt();
     $updatedAt = $profile->getUpdatedAt();
-    echo "  📅 Created: " . ($createdAt instanceof \DateTimeInterface ? $createdAt->format('Y-m-d H:i:s') : $createdAt) . "\n";
-    echo "  📅 Updated: " . ($updatedAt instanceof \DateTimeInterface ? $updatedAt->format('Y-m-d H:i:s') : $updatedAt) . "\n";
+    echo '  📅 Created: '.($createdAt instanceof DateTimeInterface ? $createdAt->format('Y-m-d H:i:s') : $createdAt)."\n";
+    echo '  📅 Updated: '.($updatedAt instanceof DateTimeInterface ? $updatedAt->format('Y-m-d H:i:s') : $updatedAt)."\n";
 
     $snapshot = $profile->getDataSnapshot();
     echo "\n📦 Data Snapshot:\n";
-    echo "  - Recent Purchases: " . count($snapshot->getRecentPurchases()) . " items\n";
+    echo '  - Recent Purchases: '.count($snapshot->getRecentPurchases())." items\n";
     if (count($snapshot->getRecentPurchases()) > 0) {
-        echo "    " . implode(", ", array_slice($snapshot->getRecentPurchases(), 0, 3)) . "\n";
+        echo '    '.implode(', ', array_slice($snapshot->getRecentPurchases(), 0, 3))."\n";
     }
-    echo "  - Recent Searches: " . count($snapshot->getRecentSearches()) . " items\n";
+    echo '  - Recent Searches: '.count($snapshot->getRecentSearches())." items\n";
     if (count($snapshot->getRecentSearches()) > 0) {
-        echo "    " . implode(", ", array_slice($snapshot->getRecentSearches(), 0, 5)) . "\n";
+        echo '    '.implode(', ', array_slice($snapshot->getRecentSearches(), 0, 5))."\n";
     }
-    echo "  - Dominant Categories: " . count($snapshot->getDominantCategories()) . " items\n";
+    echo '  - Dominant Categories: '.count($snapshot->getDominantCategories())." items\n";
     if (count($snapshot->getDominantCategories()) > 0) {
-        echo "    " . implode(", ", $snapshot->getDominantCategories()) . "\n";
+        echo '    '.implode(', ', $snapshot->getDominantCategories())."\n";
     }
-    echo "  - Embedding Vector: " . count($profile->getEmbeddingVector()) . " dimensions\n";
+    echo '  - Embedding Vector: '.count($profile->getEmbeddingVector())." dimensions\n";
 }
 
 // 5. Clear recommendation cache
@@ -101,4 +101,3 @@ echo "\n✅ Search history created! Now:\n";
 echo "   1. Go to http://localhost:8080/products and make a search as testmongo@test.com\n";
 echo "   2. This will trigger profile update automatically\n";
 echo "   3. Then visit http://localhost:8080/ to see personalized recommendations\n";
-

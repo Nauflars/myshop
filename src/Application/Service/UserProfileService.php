@@ -10,8 +10,8 @@ use App\Infrastructure\AI\Service\OpenAIEmbeddingService;
 use Psr\Log\LoggerInterface;
 
 /**
- * Service for managing user profiles and embeddings
- * 
+ * Service for managing user profiles and embeddings.
+ *
  * Orchestrates profile generation, updating, and retrieval
  */
 class UserProfileService
@@ -25,7 +25,7 @@ class UserProfileService
         UserProfileRepositoryInterface $repository,
         ProfileAggregationService $aggregationService,
         OpenAIEmbeddingService $embeddingService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->repository = $repository;
         $this->aggregationService = $aggregationService;
@@ -34,9 +34,9 @@ class UserProfileService
     }
 
     /**
-     * Refresh user profile by regenerating embedding from current data
-     * 
-     * @param User $user The user whose profile to refresh
+     * Refresh user profile by regenerating embedding from current data.
+     *
+     * @param User                 $user          The user whose profile to refresh
      * @param ProfileSnapshot|null $forceSnapshot Optional pre-built snapshot (for new users without activity)
      */
     public function refreshProfile(User $user, ?ProfileSnapshot $forceSnapshot = null): ?UserProfile
@@ -47,7 +47,7 @@ class UserProfileService
             ]);
 
             // Step 1: Aggregate user data (or use provided snapshot)
-            if ($forceSnapshot !== null) {
+            if (null !== $forceSnapshot) {
                 $snapshot = $forceSnapshot;
                 $this->logger->info('Using provided snapshot for new user', [
                     'userId' => $user->getId(),
@@ -61,6 +61,7 @@ class UserProfileService
                 $this->logger->warning('User has no activity data, skipping profile generation', [
                     'userId' => $user->getId(),
                 ]);
+
                 return null;
             }
 
@@ -74,6 +75,7 @@ class UserProfileService
                 $this->logger->error('Failed to generate embedding', [
                     'userId' => $user->getId(),
                 ]);
+
                 return null;
             }
 
@@ -110,13 +112,14 @@ class UserProfileService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
 
     /**
-     * Generate embedding vector from text
-     * 
+     * Generate embedding vector from text.
+     *
      * @return float[] Array of 1536 floats
      */
     public function generateEmbedding(string $text): array
@@ -124,17 +127,19 @@ class UserProfileService
         try {
             if (empty(trim($text))) {
                 $this->logger->warning('Empty text provided for embedding generation');
+
                 return [];
             }
 
             $result = $this->embeddingService->generateEmbedding($text);
 
             // Validate embedding dimensions
-            if (count($result) !== 1536) {
+            if (1536 !== count($result)) {
                 $this->logger->error('Invalid embedding dimensions', [
                     'expected' => 1536,
                     'actual' => count($result),
                 ]);
+
                 return [];
             }
 
@@ -143,12 +148,13 @@ class UserProfileService
             $this->logger->error('Failed to generate embedding', [
                 'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
 
     /**
-     * Get user profile, creating if not exists
+     * Get user profile, creating if not exists.
      */
     public function getOrCreateProfile(User $user): ?UserProfile
     {
@@ -162,7 +168,7 @@ class UserProfileService
     }
 
     /**
-     * Get user profile (read-only)
+     * Get user profile (read-only).
      */
     public function getProfile(User $user): ?UserProfile
     {
@@ -170,7 +176,7 @@ class UserProfileService
     }
 
     /**
-     * Check if user profile exists
+     * Check if user profile exists.
      */
     public function hasProfile(User $user): bool
     {
@@ -178,13 +184,13 @@ class UserProfileService
     }
 
     /**
-     * Delete user profile (for GDPR compliance)
+     * Delete user profile (for GDPR compliance).
      */
     public function deleteProfile(User $user): void
     {
         try {
             $this->repository->delete($user->getId());
-            
+
             $this->logger->info('User profile deleted', [
                 'userId' => $user->getId(),
             ]);
@@ -198,8 +204,8 @@ class UserProfileService
     }
 
     /**
-     * Get stale profiles that need refresh
-     * 
+     * Get stale profiles that need refresh.
+     *
      * @return UserProfile[]
      */
     public function getStaleProfiles(int $daysOld = 30): array
@@ -208,7 +214,7 @@ class UserProfileService
     }
 
     /**
-     * Get profile statistics
+     * Get profile statistics.
      */
     public function getStatistics(): array
     {

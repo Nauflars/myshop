@@ -10,15 +10,16 @@ use App\Domain\Repository\OrderRepositoryInterface;
 final class ListPreviousOrders
 {
     public function __construct(
-        private readonly OrderRepositoryInterface $orderRepository
+        private readonly OrderRepositoryInterface $orderRepository,
     ) {
     }
 
     /**
-     * List previous orders for authenticated user with human-friendly references
+     * List previous orders for authenticated user with human-friendly references.
      *
-     * @param User $user The authenticated user
-     * @param int $limit Maximum number of orders to return
+     * @param User $user  The authenticated user
+     * @param int  $limit Maximum number of orders to return
+     *
      * @return array List of orders with human-friendly data
      */
     public function execute(User $user, int $limit = 10): array

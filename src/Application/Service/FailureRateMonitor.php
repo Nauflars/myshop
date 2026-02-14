@@ -8,11 +8,11 @@ use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * T096: High Failure Rate Alerting
- * 
+ * T096: High Failure Rate Alerting.
+ *
  * Monitors embedding sync failure rates and triggers alerts
  * when threshold is exceeded (>10% failures in 5 minutes)
- * 
+ *
  * Uses sliding window counter in Redis cache
  */
 class FailureRateMonitor
@@ -26,12 +26,12 @@ class FailureRateMonitor
 
     public function __construct(
         private readonly CacheItemPoolInterface $cache,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Record a successful embedding sync
+     * Record a successful embedding sync.
      */
     public function recordSuccess(): void
     {
@@ -40,7 +40,7 @@ class FailureRateMonitor
 
     /**
      * Record a failed embedding sync
-     * Triggers alert if failure rate exceeds threshold
+     * Triggers alert if failure rate exceeds threshold.
      */
     public function recordFailure(string $productId, string $operation, \Throwable $error): void
     {
@@ -55,8 +55,8 @@ class FailureRateMonitor
     }
 
     /**
-     * Get failure rate statistics
-     * 
+     * Get failure rate statistics.
+     *
      * @return array ['success_count' => int, 'failure_count' => int, 'total_count' => int, 'failure_rate' => float]
      */
     public function getStatistics(): array
@@ -65,8 +65,8 @@ class FailureRateMonitor
         $failureCount = $this->getCounter(self::CACHE_KEY_FAILURE);
         $totalCount = $successCount + $failureCount;
 
-        $failureRate = $totalCount > 0 
-            ? ($failureCount / $totalCount) * 100 
+        $failureRate = $totalCount > 0
+            ? ($failureCount / $totalCount) * 100
             : 0.0;
 
         return [
@@ -80,7 +80,7 @@ class FailureRateMonitor
     }
 
     /**
-     * Reset failure rate counters (for testing or manual intervention)
+     * Reset failure rate counters (for testing or manual intervention).
      */
     public function reset(): void
     {
@@ -90,7 +90,6 @@ class FailureRateMonitor
             $this->cache->deleteItem(self::CACHE_KEY_LAST_ALERT);
 
             $this->logger->info('Failure rate monitor counters reset');
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to reset failure rate counters', [
                 'error' => $e->getMessage(),
@@ -99,7 +98,7 @@ class FailureRateMonitor
     }
 
     /**
-     * Increment a counter in cache with sliding window
+     * Increment a counter in cache with sliding window.
      */
     private function incrementCounter(string $cacheKey): void
     {
@@ -107,12 +106,11 @@ class FailureRateMonitor
             $item = $this->cache->getItem($cacheKey);
             $count = $item->isHit() ? (int) $item->get() : 0;
 
-            $count++;
+            ++$count;
 
             $item->set($count);
             $item->expiresAfter(self::WINDOW_SECONDS);
             $this->cache->save($item);
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to increment counter', [
                 'cache_key' => $cacheKey,
@@ -122,14 +120,14 @@ class FailureRateMonitor
     }
 
     /**
-     * Get counter value from cache
+     * Get counter value from cache.
      */
     private function getCounter(string $cacheKey): int
     {
         try {
             $item = $this->cache->getItem($cacheKey);
-            return $item->isHit() ? (int) $item->get() : 0;
 
+            return $item->isHit() ? (int) $item->get() : 0;
         } catch (\Exception $e) {
             $this->logger->error('Failed to get counter', [
                 'cache_key' => $cacheKey,
@@ -142,14 +140,14 @@ class FailureRateMonitor
 
     /**
      * Trigger critical alert for high failure rate
-     * Implements cooldown to prevent alert spam
+     * Implements cooldown to prevent alert spam.
      */
     private function triggerAlert(array $stats, string $productId, string $operation, \Throwable $error): void
     {
         // Check alert cooldown
         try {
             $lastAlertItem = $this->cache->getItem(self::CACHE_KEY_LAST_ALERT);
-            
+
             if ($lastAlertItem->isHit()) {
                 $lastAlertTime = $lastAlertItem->get();
                 $elapsed = time() - $lastAlertTime;
@@ -162,8 +160,8 @@ class FailureRateMonitor
 
             // Log critical alert
             $this->logger->critical('HIGH FAILURE RATE ALERT: Embedding sync failing at critical rate', [
-                'failure_rate' => $stats['failure_rate'] . '%',
-                'threshold' => self::THRESHOLD_PERCENT . '%',
+                'failure_rate' => $stats['failure_rate'].'%',
+                'threshold' => self::THRESHOLD_PERCENT.'%',
                 'total_operations' => $stats['total_count'],
                 'failed_operations' => $stats['failure_count'],
                 'window_seconds' => self::WINDOW_SECONDS,
@@ -180,7 +178,6 @@ class FailureRateMonitor
             $lastAlertItem->set(time());
             $lastAlertItem->expiresAfter(self::ALERT_COOLDOWN_SECONDS);
             $this->cache->save($lastAlertItem);
-
         } catch (\Exception $e) {
             $this->logger->error('Failed to trigger alert', [
                 'error' => $e->getMessage(),

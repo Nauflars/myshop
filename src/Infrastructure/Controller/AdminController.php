@@ -10,8 +10,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Base admin controller for spec-006: Unanswered Questions Tracking & Admin Panel
- * 
+ * Base admin controller for spec-006: Unanswered Questions Tracking & Admin Panel.
+ *
  * Provides common functionality for all admin controllers.
  * All routes require ROLE_ADMIN access.
  */
@@ -20,8 +20,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminController extends AbstractController
 {
     /**
-     * Admin dashboard home page
-     * 
+     * Admin dashboard home page.
+     *
      * Displays summary cards with:
      * - Total unanswered questions by status
      * - Recent unanswered questions (last 10)

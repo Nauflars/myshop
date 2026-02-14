@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\ValueObject;
 
-use DateTimeImmutable;
-
 /**
- * Admin conversation context
- * 
+ * Admin conversation context.
+ *
  * Tracks conversation state for admin assistant interactions
  * to enable multi-step operations with context retention.
- * 
+ *
  * Context Attributes:
  * - adminId: Unique admin user identifier
  * - flow: Current admin flow (inventory_management, order_reviews, user_management, analytics)
@@ -29,11 +27,11 @@ class AdminConversationContext extends ConversationContext
         string $flow,
         ?string $lastTool,
         int $turnCount,
-        DateTimeImmutable $createdAt,
-        DateTimeImmutable $updatedAt,
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $updatedAt,
         private array $activeEntities = [],
         private string $timePeriod = self::DEFAULT_TIME_PERIOD,
-        private array $pendingActions = []
+        private array $pendingActions = [],
     ) {
         parent::__construct($userId, $flow, $lastTool, $turnCount, $createdAt, $updatedAt);
     }
@@ -59,7 +57,7 @@ class AdminConversationContext extends ConversationContext
         if (!isset($this->activeEntities[$entityType])) {
             $this->activeEntities[$entityType] = [];
         }
-        
+
         if (!in_array($entityId, $this->activeEntities[$entityType], true)) {
             $this->activeEntities[$entityType][] = $entityId;
             $this->touch();
@@ -68,7 +66,7 @@ class AdminConversationContext extends ConversationContext
 
     public function clearActiveEntities(?string $entityType = null): void
     {
-        if ($entityType === null) {
+        if (null === $entityType) {
             $this->activeEntities = [];
         } else {
             unset($this->activeEntities[$entityType]);
@@ -97,7 +95,7 @@ class AdminConversationContext extends ConversationContext
         $this->pendingActions[] = [
             'type' => $actionType,
             'data' => $actionData,
-            'addedAt' => (new DateTimeImmutable())->format(\DateTimeInterface::RFC3339)
+            'addedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::RFC3339),
         ];
         $this->touch();
     }
@@ -115,6 +113,7 @@ class AdminConversationContext extends ConversationContext
                 return true;
             }
         }
+
         return false;
     }
 
@@ -125,6 +124,7 @@ class AdminConversationContext extends ConversationContext
                 return $action;
             }
         }
+
         return null;
     }
 
@@ -132,7 +132,7 @@ class AdminConversationContext extends ConversationContext
     {
         $this->pendingActions = array_filter(
             $this->pendingActions,
-            fn($action) => $action['type'] !== $actionType
+            fn ($action) => $action['type'] !== $actionType
         );
         $this->pendingActions = array_values($this->pendingActions); // Re-index array
         $this->touch();
@@ -160,8 +160,8 @@ class AdminConversationContext extends ConversationContext
             flow: $data['flow'],
             lastTool: $data['lastTool'] ?? null,
             turnCount: $data['turnCount'] ?? 1,
-            createdAt: new DateTimeImmutable($data['createdAt']),
-            updatedAt: new DateTimeImmutable($data['updatedAt']),
+            createdAt: new \DateTimeImmutable($data['createdAt']),
+            updatedAt: new \DateTimeImmutable($data['updatedAt']),
             activeEntities: $data['activeEntities'] ?? [],
             timePeriod: $data['timePeriod'] ?? self::DEFAULT_TIME_PERIOD,
             pendingActions: $data['pendingActions'] ?? []
@@ -174,11 +174,11 @@ class AdminConversationContext extends ConversationContext
         $context .= "- Admin ID: {$this->userId}\n";
         $context .= "- Current Flow: {$this->flow}\n";
         $context .= "- Turn Count: {$this->turnCount}\n";
-        
+
         if ($this->lastTool) {
             $context .= "- Last Tool Used: {$this->lastTool}\n";
         }
-        
+
         if (!empty($this->activeEntities)) {
             $context .= "- Active Entities:\n";
             foreach ($this->activeEntities as $type => $ids) {
@@ -186,25 +186,26 @@ class AdminConversationContext extends ConversationContext
                 $context .= "  * {$type}: [{$idList}]\n";
             }
         }
-        
+
         $context .= "- Time Period: {$this->timePeriod}\n";
-        
+
         if (!empty($this->pendingActions)) {
             $context .= "- Pending Actions:\n";
             foreach ($this->pendingActions as $action) {
                 $context .= "  * {$action['type']} (added at {$action['addedAt']})\n";
             }
         }
-        
+
         return $context;
     }
 
     /**
-     * Create a fresh context for a new admin conversation
+     * Create a fresh context for a new admin conversation.
      */
     public static function createFresh(string $adminId): self
     {
-        $now = new DateTimeImmutable();
+        $now = new \DateTimeImmutable();
+
         return new self(
             userId: $adminId,
             flow: 'general',

@@ -86,7 +86,7 @@ class ProductTest extends TestCase
     public function testIsInStock(): void
     {
         $this->assertTrue($this->product->isInStock());
-        
+
         $this->product->setStock(0);
         $this->assertFalse($this->product->isInStock());
     }
@@ -95,10 +95,10 @@ class ProductTest extends TestCase
     {
         $this->product->setStock(5);
         $this->assertTrue($this->product->isLowStock());
-        
+
         $this->product->setStock(15);
         $this->assertFalse($this->product->isLowStock());
-        
+
         $this->product->setStock(0);
         $this->assertFalse($this->product->isLowStock());
     }

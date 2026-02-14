@@ -8,8 +8,8 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\ConversationRepositoryInterface;
 
 /**
- * SaveConversation Use Case
- * 
+ * SaveConversation Use Case.
+ *
  * Creates or updates a conversation with new messages.
  * If a conversation ID is provided, adds the message to that conversation.
  * Otherwise, creates a new conversation for the user.
@@ -17,16 +17,17 @@ use App\Domain\Repository\ConversationRepositoryInterface;
 final class SaveConversation
 {
     public function __construct(
-        private readonly ConversationRepositoryInterface $conversationRepository
+        private readonly ConversationRepositoryInterface $conversationRepository,
     ) {
     }
 
     /**
-     * @param User $user The authenticated user
+     * @param User        $user           The authenticated user
      * @param string|null $conversationId Existing conversation ID or null for new
-     * @param string $role Message role (user, assistant, system)
-     * @param string $content Message content
-     * @param array|null $toolCalls Optional tool calls metadata
+     * @param string      $role           Message role (user, assistant, system)
+     * @param string      $content        Message content
+     * @param array|null  $toolCalls      Optional tool calls metadata
+     *
      * @return array{success: bool, conversationId: string, messageId: string, message: string}
      */
     public function execute(
@@ -34,15 +35,15 @@ final class SaveConversation
         ?string $conversationId,
         string $role,
         string $content,
-        ?array $toolCalls = null
+        ?array $toolCalls = null,
     ): array {
         try {
             // Find existing conversation or create new one
-            if ($conversationId !== null) {
+            if (null !== $conversationId) {
                 $conversation = $this->conversationRepository->findById($conversationId);
-                
+
                 // Verify ownership
-                if ($conversation === null || $conversation->getUser()->getId() !== $user->getId()) {
+                if (null === $conversation || $conversation->getUser()->getId() !== $user->getId()) {
                     // Create new conversation if not found or not owned
                     $conversation = new Conversation($user);
                 }
@@ -55,7 +56,7 @@ final class SaveConversation
             $conversation->addMessage($message);
 
             // Generate title from first user message if still default
-            if ($conversation->getTitle() === 'Nueva conversación' && $role === 'user') {
+            if ('Nueva conversación' === $conversation->getTitle() && 'user' === $role) {
                 $conversation->setTitle($conversation->generateTitle());
             }
 
@@ -73,7 +74,7 @@ final class SaveConversation
                 'success' => false,
                 'conversationId' => $conversationId ?? '',
                 'messageId' => '',
-                'message' => 'Error al guardar el mensaje: ' . $e->getMessage(),
+                'message' => 'Error al guardar el mensaje: '.$e->getMessage(),
             ];
         }
     }

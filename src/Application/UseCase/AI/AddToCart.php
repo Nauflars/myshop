@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\AI;
 
+use App\Domain\Entity\Cart;
 use App\Domain\Repository\CartRepositoryInterface;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
-use App\Domain\Entity\Cart;
 
 /**
- * AddToCart Use Case - AI Feature
- * 
+ * AddToCart Use Case - AI Feature.
+ *
  * Adds a product to the user's shopping cart with specified quantity.
  * Creates a new cart if one doesn't exist.
- * 
+ *
  * Architecture: Application layer (use case)
  * DDD Role: Application Service - orchestrates domain logic
- * 
+ *
  * @author AI Shopping Assistant Team
  */
 final class AddToCart
@@ -25,16 +25,17 @@ final class AddToCart
     public function __construct(
         private readonly CartRepositoryInterface $cartRepository,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
-    
+
     /**
-     * Execute the use case
+     * Execute the use case.
      *
-     * @param string $userId User UUID
+     * @param string $userId    User UUID
      * @param string $productId Product UUID
-     * @param int $quantity Quantity to add (default: 1)
+     * @param int    $quantity  Quantity to add (default: 1)
+     *
      * @return array{
      *     success: bool,
      *     cartId: string|null,
@@ -56,10 +57,10 @@ final class AddToCart
                 'currency' => 'USD',
             ];
         }
-        
+
         // Find user
         $user = $this->userRepository->findById($userId);
-        if ($user === null) {
+        if (null === $user) {
             return [
                 'success' => false,
                 'cartId' => null,
@@ -69,10 +70,10 @@ final class AddToCart
                 'currency' => 'USD',
             ];
         }
-        
+
         // Find product
         $product = $this->productRepository->findById($productId);
-        if ($product === null) {
+        if (null === $product) {
             return [
                 'success' => false,
                 'cartId' => null,
@@ -82,7 +83,7 @@ final class AddToCart
                 'currency' => 'USD',
             ];
         }
-        
+
         // Check stock
         if (!$product->isInStock()) {
             return [
@@ -94,7 +95,7 @@ final class AddToCart
                 'currency' => 'USD',
             ];
         }
-        
+
         if ($product->getStock() < $quantity) {
             return [
                 'success' => false,
@@ -110,17 +111,17 @@ final class AddToCart
                 'currency' => 'USD',
             ];
         }
-        
+
         // Find or create cart
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null) {
+        if (null === $cart) {
             $cart = new Cart($user);
         }
-        
+
         // Add product to cart
         $cart->addProduct($product, $quantity);
         $this->cartRepository->save($cart);
-        
+
         // Calculate totals
         $totalItems = 0;
         $totalAmount = 0.0;
@@ -128,7 +129,7 @@ final class AddToCart
             $totalItems += $item->getQuantity();
             $totalAmount += $item->getProduct()->getPrice() * $item->getQuantity();
         }
-        
+
         return [
             'success' => true,
             'cartId' => $cart->getId(),

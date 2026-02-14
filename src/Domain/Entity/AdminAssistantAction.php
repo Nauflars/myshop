@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * AdminAssistantAction - Audit log of actions performed via admin assistant
- * 
+ * AdminAssistantAction - Audit log of actions performed via admin assistant.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Tracks all administrative actions for compliance and security auditing
  */
@@ -98,7 +98,7 @@ class AdminAssistantAction
     public function __construct(
         User $adminUser,
         string $actionType,
-        ?AdminAssistantConversation $conversation = null
+        ?AdminAssistantConversation $conversation = null,
     ) {
         $this->id = Uuid::v4()->toRfc4122();
         $this->adminUser = $adminUser;
@@ -139,7 +139,7 @@ class AdminAssistantAction
 
     public function addAffectedEntity(string $type, string $id): void
     {
-        if ($this->affectedEntities === null) {
+        if (null === $this->affectedEntities) {
             $this->affectedEntities = [];
         }
 

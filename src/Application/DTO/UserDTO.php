@@ -9,7 +9,7 @@ final readonly class UserDTO
         public string $name,
         public string $email,
         public array $roles,
-        public string $createdAt
+        public string $createdAt,
     ) {
     }
 }

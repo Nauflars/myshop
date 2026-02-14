@@ -9,6 +9,10 @@ RUN rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_shovel rabbit
 COPY rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 COPY definitions.json /etc/rabbitmq/definitions.json
 
+# Copy custom entrypoint that fixes permissions at runtime
+COPY docker-entrypoint.sh /usr/local/bin/custom-entrypoint.sh
+RUN chmod +x /usr/local/bin/custom-entrypoint.sh
+
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
   CMD rabbitmq-diagnostics -q ping
@@ -16,5 +20,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
 # Expose AMQP and management ports
 EXPOSE 5672 15672
 
-# Use default command from base image
+# Use custom entrypoint
+ENTRYPOINT ["/usr/local/bin/custom-entrypoint.sh"]
 CMD ["rabbitmq-server"]

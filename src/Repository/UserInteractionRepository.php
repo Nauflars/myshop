@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Repository;
@@ -16,7 +17,7 @@ class UserInteractionRepository extends ServiceEntityRepository
 
     public function save(UserInteraction $interaction, bool $flush = false): void
     {
-        $this->getEntityManager()->persist($interaction);        
+        $this->getEntityManager()->persist($interaction);
         if ($flush) {
             $this->getEntityManager()->flush();
         }

@@ -16,8 +16,8 @@ use Doctrine\ORM\Events;
 use Psr\Log\LoggerInterface;
 
 /**
- * ProductEmbeddingListener - Sync product changes to MongoDB embeddings
- * 
+ * ProductEmbeddingListener - Sync product changes to MongoDB embeddings.
+ *
  * Implements spec-010 FR-004: Auto-sync on product CRUD operations
  * Listens to Doctrine events and triggers embedding sync
  */
@@ -30,12 +30,12 @@ class ProductEmbeddingListener
         private readonly SyncProductEmbedding $syncUseCase,
         private readonly LoggerInterface $logger,
         private readonly FailedJobRegistry $failedJobRegistry,
-        private readonly FailureRateMonitor $failureRateMonitor
+        private readonly FailureRateMonitor $failureRateMonitor,
     ) {
     }
 
     /**
-     * Handle product creation
+     * Handle product creation.
      */
     public function postPersist(PostPersistEventArgs $args): void
     {
@@ -54,14 +54,13 @@ class ProductEmbeddingListener
 
             // T096: Record successful sync for failure rate monitoring
             $this->failureRateMonitor->recordSuccess();
-
         } catch (\Exception $e) {
             // T095: Record failure in dead letter queue for later retry
             $this->failedJobRegistry->recordFailure($entity, 'create', $e);
-            
+
             // T096: Record failure for high failure rate alerting
             $this->failureRateMonitor->recordFailure($entity->getId(), 'create', $e);
-            
+
             // Log error but don't throw - allow transaction to complete
             $this->logger->error('Failed to sync embedding on product creation', [
                 'product_id' => $entity->getId(),
@@ -71,7 +70,7 @@ class ProductEmbeddingListener
     }
 
     /**
-     * Handle product update
+     * Handle product update.
      */
     public function postUpdate(PostUpdateEventArgs $args): void
     {
@@ -90,14 +89,13 @@ class ProductEmbeddingListener
 
             // T096: Record successful sync for failure rate monitoring
             $this->failureRateMonitor->recordSuccess();
-
         } catch (\Exception $e) {
             // T095: Record failure in dead letter queue for later retry
             $this->failedJobRegistry->recordFailure($entity, 'update', $e);
-            
+
             // T096: Record failure for high failure rate alerting
             $this->failureRateMonitor->recordFailure($entity->getId(), 'update', $e);
-            
+
             $this->logger->error('Failed to sync embedding on product update', [
                 'product_id' => $entity->getId(),
                 'error' => $e->getMessage(),
@@ -106,7 +104,7 @@ class ProductEmbeddingListener
     }
 
     /**
-     * Handle product deletion
+     * Handle product deletion.
      */
     public function postRemove(PostRemoveEventArgs $args): void
     {
@@ -125,14 +123,13 @@ class ProductEmbeddingListener
 
             // T096: Record successful sync for failure rate monitoring
             $this->failureRateMonitor->recordSuccess();
-
         } catch (\Exception $e) {
             // T095: Record failure in dead letter queue for later retry
             $this->failedJobRegistry->recordFailure($entity, 'delete', $e);
-            
+
             // T096: Record failure for high failure rate alerting
             $this->failureRateMonitor->recordFailure($entity->getId(), 'delete', $e);
-            
+
             $this->logger->error('Failed to remove embedding on product deletion', [
                 'product_id' => $entity->getId(),
                 'error' => $e->getMessage(),

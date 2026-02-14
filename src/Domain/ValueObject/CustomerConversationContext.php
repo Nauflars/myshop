@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\ValueObject;
 
-use DateTimeImmutable;
-
 /**
- * Customer conversation context  
- * 
+ * Customer conversation context.
+ *
  * Tracks conversation state for customer chatbot interactions
  * to enable natural follow-up questions and context-aware responses.
- * 
+ *
  * Context Attributes:
  * - userId: Unique customer identifier
  * - flow: Current conversation flow (product_browsing, cart_management, checkout, order_tracking)
@@ -29,11 +27,11 @@ class CustomerConversationContext extends ConversationContext
         string $flow,
         ?string $lastTool,
         int $turnCount,
-        DateTimeImmutable $createdAt,
-        DateTimeImmutable $updatedAt,
+        \DateTimeImmutable $createdAt,
+        \DateTimeImmutable $updatedAt,
         private array $selectedProducts = [],
         private array $cartSnapshot = [],
-        private string $language = self::DEFAULT_LANGUAGE
+        private string $language = self::DEFAULT_LANGUAGE,
     ) {
         parent::__construct($userId, $flow, $lastTool, $turnCount, $createdAt, $updatedAt);
     }
@@ -107,8 +105,8 @@ class CustomerConversationContext extends ConversationContext
             flow: $data['flow'],
             lastTool: $data['lastTool'] ?? null,
             turnCount: $data['turnCount'] ?? 1,
-            createdAt: new DateTimeImmutable($data['createdAt']),
-            updatedAt: new DateTimeImmutable($data['updatedAt']),
+            createdAt: new \DateTimeImmutable($data['createdAt']),
+            updatedAt: new \DateTimeImmutable($data['updatedAt']),
             selectedProducts: $data['selectedProducts'] ?? [],
             cartSnapshot: $data['cartSnapshot'] ?? [],
             language: $data['language'] ?? self::DEFAULT_LANGUAGE
@@ -121,32 +119,33 @@ class CustomerConversationContext extends ConversationContext
         $context .= "- User ID: {$this->userId}\n";
         $context .= "- Current Flow: {$this->flow}\n";
         $context .= "- Turn Count: {$this->turnCount}\n";
-        
+
         if ($this->lastTool) {
             $context .= "- Last Tool Used: {$this->lastTool}\n";
         }
-        
+
         if (!empty($this->selectedProducts)) {
             $productList = implode(', ', $this->selectedProducts);
             $context .= "- Recently Viewed Products: [{$productList}]\n";
         }
-        
+
         if (!empty($this->cartSnapshot)) {
             $itemCount = array_sum(array_column($this->cartSnapshot, 'quantity'));
             $context .= "- Cart Items: {$itemCount} item(s)\n";
         }
-        
+
         $context .= "- Language: {$this->language}\n";
-        
+
         return $context;
     }
 
     /**
-     * Create a fresh context for a new conversation
+     * Create a fresh context for a new conversation.
      */
     public static function createFresh(string $userId, string $language = self::DEFAULT_LANGUAGE): self
     {
-        $now = new DateTimeImmutable();
+        $now = new \DateTimeImmutable();
+
         return new self(
             userId: $userId,
             flow: 'browsing',

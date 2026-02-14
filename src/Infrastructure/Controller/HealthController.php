@@ -16,8 +16,8 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * HealthController - Health check endpoints for monitoring
- * 
+ * HealthController - Health check endpoints for monitoring.
+ *
  * T087: Health check endpoint for MongoDB, Redis, and OpenAI connectivity
  */
 class HealthController extends AbstractController
@@ -28,7 +28,7 @@ class HealthController extends AbstractController
         private readonly ?EmbeddingServiceInterface $embeddingService = null,
         private readonly ?CacheItemPoolInterface $cache = null,
         private readonly ?LoggerInterface $logger = null,
-        private readonly ?string $mongoDatabaseName = null
+        private readonly ?string $mongoDatabaseName = null,
     ) {
     }
 
@@ -51,13 +51,13 @@ class HealthController extends AbstractController
             $health['database_error'] = $e->getMessage();
         }
 
-        $statusCode = $health['status'] === 'ok' ? 200 : 503;
+        $statusCode = 'ok' === $health['status'] ? 200 : 503;
 
         return $this->json($health, $statusCode);
     }
-    
+
     /**
-     * T087: Detailed health check including all semantic search dependencies
+     * T087: Detailed health check including all semantic search dependencies.
      */
     #[Route('/health/detailed', name: 'health_check_detailed', methods: ['GET'])]
     public function detailedHealth(): JsonResponse
@@ -79,15 +79,15 @@ class HealthController extends AbstractController
     }
 
     /**
-     * Readiness probe - returns 200 when app is ready to serve traffic
+     * Readiness probe - returns 200 when app is ready to serve traffic.
      */
     #[Route('/health/ready', name: 'health_ready', methods: ['GET'])]
     public function ready(): JsonResponse
     {
         // Check only critical dependencies for readiness
-        $mysqlHealthy = $this->checkMySQL()['status'] === 'healthy';
-        $mongoHealthy = $this->mongoClient !== null ? $this->checkMongoDB()['status'] === 'healthy' : true;
-        $redisHealthy = $this->cache !== null ? $this->checkRedis()['status'] === 'healthy' : true;
+        $mysqlHealthy = 'healthy' === $this->checkMySQL()['status'];
+        $mongoHealthy = null !== $this->mongoClient ? 'healthy' === $this->checkMongoDB()['status'] : true;
+        $redisHealthy = null !== $this->cache ? 'healthy' === $this->checkRedis()['status'] : true;
 
         $ready = $mysqlHealthy && $mongoHealthy && $redisHealthy;
 
@@ -98,7 +98,7 @@ class HealthController extends AbstractController
     }
 
     /**
-     * Liveness probe - returns 200 if app is alive (not deadlocked)
+     * Liveness probe - returns 200 if app is alive (not deadlocked).
      */
     #[Route('/health/live', name: 'health_live', methods: ['GET'])]
     public function live(): JsonResponse
@@ -132,7 +132,7 @@ class HealthController extends AbstractController
 
     private function checkMongoDB(): array
     {
-        if ($this->mongoClient === null || $this->mongoDatabaseName === null) {
+        if (null === $this->mongoClient || null === $this->mongoDatabaseName) {
             return [
                 'service' => 'mongodb',
                 'status' => 'not_configured',
@@ -141,14 +141,14 @@ class HealthController extends AbstractController
 
         try {
             $startTime = microtime(true);
-            
+
             $database = $this->mongoClient->selectDatabase($this->mongoDatabaseName);
             $result = $database->command(['ping' => 1]);
-            
+
             $responseTime = (microtime(true) - $startTime) * 1000;
 
             $collections = iterator_to_array($database->listCollections());
-            $hasEmbeddings = !empty(array_filter($collections, fn($c) => $c->getName() === 'product_embeddings'));
+            $hasEmbeddings = !empty(array_filter($collections, fn ($c) => 'product_embeddings' === $c->getName()));
 
             return [
                 'service' => 'mongodb',
@@ -157,7 +157,6 @@ class HealthController extends AbstractController
                 'database' => $this->mongoDatabaseName,
                 'has_embeddings_collection' => $hasEmbeddings,
             ];
-
         } catch (\Exception $e) {
             $this->logger?->error('MongoDB health check failed', ['error' => $e->getMessage()]);
 
@@ -171,7 +170,7 @@ class HealthController extends AbstractController
 
     private function checkRedis(): array
     {
-        if ($this->cache === null) {
+        if (null === $this->cache) {
             return [
                 'service' => 'redis',
                 'status' => 'not_configured',
@@ -180,20 +179,20 @@ class HealthController extends AbstractController
 
         try {
             $startTime = microtime(true);
-            
-            $testKey = 'health_check_' . uniqid();
+
+            $testKey = 'health_check_'.uniqid();
             $testValue = ['timestamp' => time()];
-            
+
             $item = $this->cache->getItem($testKey);
             $item->set($testValue);
             $item->expiresAfter(5);
             $this->cache->save($item);
-            
+
             $readItem = $this->cache->getItem($testKey);
             $readValue = $readItem->isHit() ? $readItem->get() : null;
-            
+
             $this->cache->deleteItem($testKey);
-            
+
             $responseTime = (microtime(true) - $startTime) * 1000;
 
             if ($readValue !== $testValue) {
@@ -205,7 +204,6 @@ class HealthController extends AbstractController
                 'status' => 'healthy',
                 'response_time_ms' => round($responseTime, 2),
             ];
-
         } catch (\Exception $e) {
             $this->logger?->error('Redis health check failed', ['error' => $e->getMessage()]);
 
@@ -219,7 +217,7 @@ class HealthController extends AbstractController
 
     private function checkOpenAI(): array
     {
-        if ($this->embeddingService === null || $this->cache === null) {
+        if (null === $this->embeddingService || null === $this->cache) {
             return [
                 'service' => 'openai',
                 'status' => 'not_configured',
@@ -229,7 +227,7 @@ class HealthController extends AbstractController
         try {
             // Check circuit breaker state
             $cbItem = $this->cache->getItem('openai_circuit_breaker');
-            
+
             if ($cbItem->isHit()) {
                 $cbState = $cbItem->get();
                 if ($cbState['is_open'] ?? false) {
@@ -250,7 +248,6 @@ class HealthController extends AbstractController
                 'model' => $modelName,
                 'note' => 'Configuration check only (no API call)',
             ];
-
         } catch (\Exception $e) {
             $this->logger?->error('OpenAI health check failed', ['error' => $e->getMessage()]);
 

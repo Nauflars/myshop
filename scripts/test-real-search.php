@@ -52,7 +52,7 @@ echo "  ✓ Profile update triggered\n";
 // Verify saved
 $newCount = $searchHistoryRepo->countByUser($user);
 echo "\n📊 New search history count: $newCount\n";
-echo "✅ Difference: +" . ($newCount - $count) . "\n";
+echo '✅ Difference: +'.($newCount - $count)."\n";
 
 // Wait a moment for async profile update
 sleep(2);
@@ -64,9 +64,9 @@ $profile = $mongoRepo->findByUserId((string) $user->getId());
 if ($profile) {
     $snapshot = $profile->getSnapshot();
     echo "\n📦 MongoDB Profile:\n";
-    echo "  - Recent Searches: " . count($snapshot->getRecentSearches()) . " items\n";
+    echo '  - Recent Searches: '.count($snapshot->getRecentSearches())." items\n";
     if (!empty($snapshot->getRecentSearches())) {
-        echo "    Latest: " . $snapshot->getRecentSearches()[0] . "\n";
+        echo '    Latest: '.$snapshot->getRecentSearches()[0]."\n";
     }
 } else {
     echo "\n❌ MongoDB profile not found!\n";

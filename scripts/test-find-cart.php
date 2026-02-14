@@ -22,8 +22,8 @@ if (!$user) {
     exit(1);
 }
 
-echo "User found: " . $user->getEmail() . "\n";
-echo "User ID: " . $user->getId() . "\n\n";
+echo 'User found: '.$user->getEmail()."\n";
+echo 'User ID: '.$user->getId()."\n\n";
 
 // Try method 1: Using repository
 echo "=== Method 1: Using repository ===\n";
@@ -31,10 +31,10 @@ $cart = $cartRepository->findByUser($user);
 
 if ($cart && is_object($cart) && $cart instanceof App\Domain\Entity\Cart) {
     echo "✓ Cart FOUND!\n";
-    echo "Cart ID: " . $cart->getId() . "\n";
+    echo 'Cart ID: '.$cart->getId()."\n";
 } else {
     echo "✗ Cart NOT found or invalid type\n";
-    echo "Type: " . (is_object($cart) ? get_class($cart) : gettype($cart)) . "\n";
+    echo 'Type: '.(is_object($cart) ? get_class($cart) : gettype($cart))."\n";
 }
 
 // Try method 2: Using EntityManager directly
@@ -49,12 +49,12 @@ $cart2 = $qb->getQuery()->getOneOrNullResult();
 
 if ($cart2 && is_object($cart2) && $cart2 instanceof App\Domain\Entity\Cart) {
     echo "✓ Cart FOUND!\n";
-    echo "Cart ID: " . $cart2->getId() . "\n";
-    echo "Items count: " . $cart2->getItems()->count() . "\n";
+    echo 'Cart ID: '.$cart2->getId()."\n";
+    echo 'Items count: '.$cart2->getItems()->count()."\n";
     foreach ($cart2->getItems() as $item) {
-        echo "  - " . $item->getProduct()->getName() . " x " . $item->getQuantity() . "\n";
+        echo '  - '.$item->getProduct()->getName().' x '.$item->getQuantity()."\n";
     }
 } else {
     echo "✗ Cart NOT found or invalid type\n";
-    echo "Type: " . (is_object($cart2) ? get_class($cart2) : gettype($cart2)) . "\n";
+    echo 'Type: '.(is_object($cart2) ? get_class($cart2) : gettype($cart2))."\n";
 }

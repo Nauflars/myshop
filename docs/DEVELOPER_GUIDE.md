@@ -4,6 +4,8 @@
 **Version**: 1.0  
 **Audience**: Backend Developers, Technical Architects
 
+> **Development Standards**: This guide follows the project's [Constitution](../.specify/memory/constitution.md), which mandates TDD, DDD, SOLID principles, Clean Code, and Test Coverage Excellence.
+
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)

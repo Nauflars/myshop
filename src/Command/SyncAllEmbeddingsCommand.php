@@ -15,8 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * SyncAllEmbeddingsCommand - Manual re-sync of product embeddings
- * 
+ * SyncAllEmbeddingsCommand - Manual re-sync of product embeddings.
+ *
  * Implements spec-010 T026: Console command for manual embedding sync
  */
 #[AsCommand(
@@ -27,7 +27,7 @@ class SyncAllEmbeddingsCommand extends Command
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly ProductEmbeddingSyncService $syncService
+        private readonly ProductEmbeddingSyncService $syncService,
     ) {
         parent::__construct();
     }
@@ -86,7 +86,7 @@ class SyncAllEmbeddingsCommand extends Command
         }
 
         // Sync specific product
-        if ($productId !== null) {
+        if (null !== $productId) {
             return $this->syncSingleProduct($io, $productId, $force, $dryRun);
         }
 
@@ -98,14 +98,15 @@ class SyncAllEmbeddingsCommand extends Command
         SymfonyStyle $io,
         string $productId,
         bool $force,
-        bool $dryRun
+        bool $dryRun,
     ): int {
         $io->section('Syncing single product');
 
         $product = $this->productRepository->find($productId);
 
-        if ($product === null) {
+        if (null === $product) {
             $io->error(sprintf('Product not found: %s', $productId));
+
             return Command::FAILURE;
         }
 
@@ -117,6 +118,7 @@ class SyncAllEmbeddingsCommand extends Command
 
         if ($dryRun) {
             $io->success('Would sync this product (dry run)');
+
             return Command::SUCCESS;
         }
 
@@ -127,14 +129,15 @@ class SyncAllEmbeddingsCommand extends Command
 
             if ($success) {
                 $io->success('Product embedding synced successfully');
-                return Command::SUCCESS;
-            } else {
-                $io->error('Failed to sync product embedding');
-                return Command::FAILURE;
-            }
 
+                return Command::SUCCESS;
+            }
+            $io->error('Failed to sync product embedding');
+
+            return Command::FAILURE;
         } catch (\Exception $e) {
-            $io->error('Exception during sync: ' . $e->getMessage());
+            $io->error('Exception during sync: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
@@ -142,15 +145,16 @@ class SyncAllEmbeddingsCommand extends Command
     private function syncAllProducts(
         SymfonyStyle $io,
         bool $force,
-        bool $dryRun
+        bool $dryRun,
     ): int {
         $io->section('Syncing all products');
 
         $products = $this->productRepository->findAll();
         $totalProducts = count($products);
 
-        if ($totalProducts === 0) {
+        if (0 === $totalProducts) {
             $io->warning('No products found in database');
+
             return Command::SUCCESS;
         }
 
@@ -160,8 +164,8 @@ class SyncAllEmbeddingsCommand extends Command
             $io->table(
                 ['ID', 'Name', 'Category'],
                 array_map(
-                    fn($p) => [
-                        substr($p->getId(), 0, 8) . '...',
+                    fn ($p) => [
+                        substr($p->getId(), 0, 8).'...',
                         substr($p->getName(), 0, 30),
                         $p->getCategory(),
                     ],
@@ -174,6 +178,7 @@ class SyncAllEmbeddingsCommand extends Command
             }
 
             $io->success('Would sync these products (dry run)');
+
             return Command::SUCCESS;
         }
 
@@ -188,18 +193,17 @@ class SyncAllEmbeddingsCommand extends Command
                 $success = $this->syncService->updateEmbedding($product);
 
                 if ($success) {
-                    $successCount++;
+                    ++$successCount;
                 } else {
-                    $failureCount++;
+                    ++$failureCount;
                     $errors[] = sprintf(
                         'Product %s (%s) - Sync failed',
                         $product->getId(),
                         $product->getName()
                     );
                 }
-
             } catch (\Exception $e) {
-                $failureCount++;
+                ++$failureCount;
                 $errors[] = sprintf(
                     'Product %s (%s) - Exception: %s',
                     $product->getId(),
@@ -235,15 +239,17 @@ class SyncAllEmbeddingsCommand extends Command
             }
         }
 
-        if ($failureCount === 0) {
+        if (0 === $failureCount) {
             $io->success('All products synced successfully!');
+
             return Command::SUCCESS;
         } elseif ($successCount > 0) {
             $io->warning('Some products failed to sync');
-            return Command::FAILURE;
-        } else {
-            $io->error('All products failed to sync');
+
             return Command::FAILURE;
         }
+        $io->error('All products failed to sync');
+
+        return Command::FAILURE;
     }
 }

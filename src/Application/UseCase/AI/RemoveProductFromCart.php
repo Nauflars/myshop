@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace App\Application\UseCase\AI;
 
-use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\Entity\Cart;
+use App\Domain\Repository\ProductRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class RemoveProductFromCart
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
-     * Remove product from cart by product name
+     * Remove product from cart by product name.
      *
-     * @param Cart $cart The user's cart
+     * @param Cart   $cart        The user's cart
      * @param string $productName The name of the product to remove
+     *
      * @return array Result with success status and message
      */
     public function execute(Cart $cart, string $productName): array
@@ -30,13 +31,13 @@ final class RemoveProductFromCart
         // Find product by name (case-insensitive)
         $targetProduct = null;
         foreach ($products as $product) {
-            if (strcasecmp($product->getName(), $productName) === 0) {
+            if (0 === strcasecmp($product->getName(), $productName)) {
                 $targetProduct = $product;
                 break;
             }
         }
 
-        if ($targetProduct === null) {
+        if (null === $targetProduct) {
             return [
                 'success' => false,
                 'message' => "No se encontró el producto '{$productName}' en el catálogo.",
@@ -62,11 +63,11 @@ final class RemoveProductFromCart
                 'message' => "Se eliminó '{$productName}' del carrito.",
                 'cartItemCount' => $cart->getItems()->count(),
             ];
-        } else {
-            return [
-                'success' => false,
-                'message' => "El producto '{$productName}' no estaba en tu carrito.",
-            ];
         }
+
+        return [
+            'success' => false,
+            'message' => "El producto '{$productName}' no estaba en tu carrito.",
+        ];
     }
 }

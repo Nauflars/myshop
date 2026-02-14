@@ -2,18 +2,18 @@
 
 namespace App\Application\Service;
 
-use App\Domain\Entity\User;
 use App\Domain\Entity\Product;
-use App\Domain\ValueObject\RecommendationResult;
+use App\Domain\Entity\User;
 use App\Domain\Repository\UserEmbeddingRepositoryInterface;
+use App\Domain\ValueObject\RecommendationResult;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * Service for retrieving personalized product recommendations
- * 
+ * Service for retrieving personalized product recommendations.
+ *
  * Uses MongoDB vector similarity search to find products similar
  * to user's embedding from user_embeddings collection (spec-014)
  */
@@ -32,7 +32,7 @@ class RecommendationService
         UserEmbeddingRepositoryInterface $embeddingRepository,
         EntityManagerInterface $entityManager,
         CacheInterface $cache,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->embeddingRepository = $embeddingRepository;
         $this->entityManager = $entityManager;
@@ -41,8 +41,8 @@ class RecommendationService
     }
 
     /**
-     * Get personalized recommendations for user
-     * 
+     * Get personalized recommendations for user.
+     *
      * Returns RecommendationResult with products ordered by similarity
      * Falls back to default recommendations if no profile exists
      */
@@ -69,13 +69,13 @@ class RecommendationService
     }
 
     /**
-     * Generate recommendations (cache miss path)
+     * Generate recommendations (cache miss path).
      */
     private function generateRecommendations(User $user, int $limit): RecommendationResult
     {
         // Use UUID directly - no conversion needed
         $userId = $user->getId();
-        
+
         // Get user embedding
         $embedding = $this->embeddingRepository->findByUserId($userId);
 
@@ -83,6 +83,7 @@ class RecommendationService
             $this->logger->warning('No embedding found, using fallback recommendations', [
                 'userId' => $userId,
             ]);
+
             return $this->getFallbackRecommendations($limit);
         }
 
@@ -107,12 +108,13 @@ class RecommendationService
             $this->logger->warning('Vector search returned no results', [
                 'userId' => $user->getId(),
             ]);
+
             return $this->getFallbackRecommendations($limit);
         }
 
         // Extract product IDs and scores
-        $productIds = array_map(fn($item) => $item['productId'], $similarProducts);
-        $scores = array_map(fn($item) => $item['score'], $similarProducts);
+        $productIds = array_map(fn ($item) => $item['productId'], $similarProducts);
+        $scores = array_map(fn ($item) => $item['score'], $similarProducts);
 
         // Filter by minimum similarity score
         $filteredData = $this->filterByMinScore($productIds, $scores);
@@ -122,6 +124,7 @@ class RecommendationService
                 'userId' => $user->getId(),
                 'minScore' => self::MIN_SIMILARITY_SCORE,
             ]);
+
             return $this->getFallbackRecommendations($limit);
         }
 
@@ -152,7 +155,7 @@ class RecommendationService
     }
 
     /**
-     * Filter product IDs and scores by minimum similarity
+     * Filter product IDs and scores by minimum similarity.
      */
     private function filterByMinScore(array $productIds, array $scores): array
     {
@@ -169,9 +172,10 @@ class RecommendationService
     }
 
     /**
-     * Enrich product IDs with full Product entities from MySQL
-     * 
+     * Enrich product IDs with full Product entities from MySQL.
+     *
      * @param string[] $productIds UUID strings from MongoDB
+     *
      * @return Product[]
      */
     private function enrichWithMySQLData(array $productIds): array
@@ -184,7 +188,7 @@ class RecommendationService
             // Query products one by one since IN clause doesn't work reliably with UUID binary
             $products = [];
             $productRepo = $this->entityManager->getRepository(Product::class);
-            
+
             foreach ($productIds as $id) {
                 $product = $productRepo->find($id);
                 if ($product && $product->getStock() > 0) {
@@ -199,13 +203,14 @@ class RecommendationService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }
 
     /**
-     * Get fallback recommendations (popular/featured products)
-     * 
+     * Get fallback recommendations (popular/featured products).
+     *
      * Used when user has no profile or vector search fails
      */
     public function getFallbackRecommendations(int $limit = self::RECOMMENDATION_LIMIT): RecommendationResult
@@ -243,12 +248,12 @@ class RecommendationService
     }
 
     /**
-     * Clear cached recommendations for user
+     * Clear cached recommendations for user.
      */
     public function clearCache(User $user): void
     {
         try {
-            $cacheKey = "recommendations_{$user->getId()}_" . self::RECOMMENDATION_LIMIT;
+            $cacheKey = "recommendations_{$user->getId()}_".self::RECOMMENDATION_LIMIT;
             $this->cache->delete($cacheKey);
 
             $this->logger->info('Recommendation cache cleared', [

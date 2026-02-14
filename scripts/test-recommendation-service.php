@@ -18,7 +18,7 @@ $cache = $container->get('cache.app');
 $logger = $container->get('logger');
 
 // Manually create the service
-$recommendationService = new \App\Application\Service\RecommendationService(
+$recommendationService = new App\Application\Service\RecommendationService(
     $embeddingRepo,
     $em,
     $cache,
@@ -44,15 +44,15 @@ if (!$user) {
     }
 }
 
-echo "Testing recommendations for user: " . $user->getId() . "\n";
-echo "User email: " . $user->getEmail() . "\n\n";
+echo 'Testing recommendations for user: '.$user->getId()."\n";
+echo 'User email: '.$user->getEmail()."\n\n";
 
 $result = $recommendationService->getRecommendationsForUser($user, 20);
 
 echo "Recommendations generated!\n";
-echo "Total products: " . count($result->products) . "\n";
-echo "Average score: " . number_format($result->averageScore, 4) . "\n";
-echo "Is personalized: " . ($result->isPersonalized ? 'YES' : 'NO (fallback)') . "\n\n";
+echo 'Total products: '.count($result->products)."\n";
+echo 'Average score: '.number_format($result->averageScore, 4)."\n";
+echo 'Is personalized: '.($result->isPersonalized ? 'YES' : 'NO (fallback)')."\n\n";
 
 if (count($result->products) > 0) {
     echo "TOP RECOMMENDATIONS:\n\n";

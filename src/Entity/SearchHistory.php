@@ -40,7 +40,7 @@ class SearchHistory
         User $user,
         string $query,
         string $mode = 'semantic',
-        ?string $category = null
+        ?string $category = null,
     ) {
         $this->id = Uuid::v4()->toRfc4122();
         $this->user = $user;

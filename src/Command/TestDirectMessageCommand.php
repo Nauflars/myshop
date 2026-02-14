@@ -20,7 +20,7 @@ use Symfony\Component\Messenger\Stamp\TransportNamesStamp;
 final class TestDirectMessageCommand extends Command
 {
     public function __construct(
-        private readonly MessageBusInterface $messageBus
+        private readonly MessageBusInterface $messageBus,
     ) {
         parent::__construct();
     }
@@ -28,7 +28,7 @@ final class TestDirectMessageCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Creating test message...');
-        
+
         $message = UpdateUserEmbeddingMessage::fromDomainEvent(
             userId: 999,
             eventType: EventType::SEARCH,
@@ -39,17 +39,17 @@ final class TestDirectMessageCommand extends Command
         );
 
         $output->writeln('Dispatching message with TransportNamesStamp...');
-        
+
         try {
             $this->messageBus->dispatch($message, [
-                new TransportNamesStamp(['user_embedding_updates'])
+                new TransportNamesStamp(['user_embedding_updates']),
             ]);
-            
+
             $output->writeln('<info>✅ Message dispatched successfully!</info>');
-            
         } catch (\Throwable $e) {
-            $output->writeln('<error>❌ Error: ' . $e->getMessage() . '</error>');
-            $output->writeln('<error>   ' . $e->getTraceAsString() . '</error>');
+            $output->writeln('<error>❌ Error: '.$e->getMessage().'</error>');
+            $output->writeln('<error>   '.$e->getTraceAsString().'</error>');
+
             return Command::FAILURE;
         }
 

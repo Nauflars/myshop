@@ -11,7 +11,7 @@ final readonly class CartItemDTO
         public string $price,
         public int $priceInCents,
         public string $subtotal,
-        public int $subtotalInCents
+        public int $subtotalInCents,
     ) {
     }
 }

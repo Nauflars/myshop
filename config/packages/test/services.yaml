@@ -1,0 +1,46 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true # Make all services public in test environment
+
+    # Make test.service_container available
+    test.service_container:
+        alias: service_container
+        public: true
+
+    # Explicitly expose services needed for integration tests
+    App\Infrastructure\MessageHandler\UpdateUserEmbeddingHandler:
+        public: true
+
+    App\Infrastructure\Persistence\UserEmbeddingRepository:
+        public: true
+
+    App\Application\Service\UserEmbeddingService:
+        public: true
+
+    App\Infrastructure\OpenAI\OpenAIEmbeddingService:
+        public: true
+
+    # Semantic search dependencies
+    App\Application\Service\SemanticSearchService:
+        public: true
+
+    App\Application\Service\ProductEmbeddingSyncService:
+        public: true
+
+    App\Domain\Repository\ProductRepositoryInterface:
+        public: true
+
+    App\Infrastructure\Repository\MongoDBEmbeddingRepository:
+        public: true
+
+    # Make all Application services public
+    App\Application\:
+        resource: '../../src/Application'
+        public: true
+
+    # Make all Infrastructure services public
+    App\Infrastructure\:
+        resource: '../../src/Infrastructure'
+        public: true

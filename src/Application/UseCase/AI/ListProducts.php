@@ -9,15 +9,16 @@ use App\Domain\Repository\ProductRepositoryInterface;
 final class ListProducts
 {
     public function __construct(
-        private readonly ProductRepositoryInterface $productRepository
+        private readonly ProductRepositoryInterface $productRepository,
     ) {
     }
 
     /**
-     * List all products with optional filters
+     * List all products with optional filters.
      *
-     * @param string|null $category Filter by category
-     * @param bool|null $availableOnly Show only available products
+     * @param string|null $category      Filter by category
+     * @param bool|null   $availableOnly Show only available products
+     *
      * @return array Array of products with name, description, price, availability
      */
     public function execute(?string $category = null, ?bool $availableOnly = true): array
@@ -27,7 +28,7 @@ final class ListProducts
         $result = [];
         foreach ($products as $product) {
             // Apply category filter
-            if ($category !== null && $product->getCategory() !== $category) {
+            if (null !== $category && $product->getCategory() !== $category) {
                 continue;
             }
 

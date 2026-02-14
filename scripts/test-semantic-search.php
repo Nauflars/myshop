@@ -9,7 +9,7 @@ use Symfony\Component\Dotenv\Dotenv;
 (new Dotenv())->bootEnv(__DIR__.'/.env');
 
 // Boot Symfony kernel
-$kernel = new \App\Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
+$kernel = new App\Kernel($_ENV['APP_ENV'], (bool) $_ENV['APP_DEBUG']);
 $kernel->boot();
 $container = $kernel->getContainer();
 
@@ -35,9 +35,9 @@ echo "==========================================================\n\n";
 
 foreach ($queries as $index => $query) {
     echo "-----------------------------------------------------------\n";
-    echo "Query #" . ($index + 1) . ": \"$query\"\n";
+    echo 'Query #'.($index + 1).": \"$query\"\n";
     echo "-----------------------------------------------------------\n";
-    
+
     try {
         // Call the tool directly
         $result = $searchTool->__invoke(
@@ -47,23 +47,23 @@ foreach ($queries as $index => $query) {
             category: null,
             minSimilarity: 0.5
         );
-        
-        echo "Success: " . ($result['success'] ? 'YES' : 'NO') . "\n";
-        echo "Count: " . $result['count'] . "\n";
-        echo "Mode: " . ($result['search_mode'] ?? 'N/A') . "\n";
-        echo "Execution Time: " . ($result['execution_time_ms'] ?? 'N/A') . " ms\n";
-        
+
+        echo 'Success: '.($result['success'] ? 'YES' : 'NO')."\n";
+        echo 'Count: '.$result['count']."\n";
+        echo 'Mode: '.($result['search_mode'] ?? 'N/A')."\n";
+        echo 'Execution Time: '.($result['execution_time_ms'] ?? 'N/A')." ms\n";
+
         if ($result['count'] > 0) {
             echo "\nProducts Found:\n";
             foreach ($result['products'] as $idx => $product) {
-                echo "  " . ($idx + 1) . ". {$product['name']}\n";
+                echo '  '.($idx + 1).". {$product['name']}\n";
                 echo "     - Price: \${$product['price']} {$product['currency']}\n";
                 echo "     - Category: {$product['category']}\n";
                 echo "     - Stock: {$product['stock']}\n";
                 echo "     - Similarity Score: {$product['similarity_score']}\n";
                 if (!empty($product['description'])) {
                     $shortDesc = substr($product['description'], 0, 80);
-                    echo "     - Description: $shortDesc" . (strlen($product['description']) > 80 ? '...' : '') . "\n";
+                    echo "     - Description: $shortDesc".(strlen($product['description']) > 80 ? '...' : '')."\n";
                 }
                 echo "\n";
             }
@@ -76,12 +76,11 @@ foreach ($queries as $index => $query) {
                 }
             }
         }
-        
-    } catch (\Exception $e) {
-        echo "❌ ERROR: " . $e->getMessage() . "\n";
-        echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
+    } catch (Exception $e) {
+        echo '❌ ERROR: '.$e->getMessage()."\n";
+        echo "Stack trace:\n".$e->getTraceAsString()."\n";
     }
-    
+
     echo "\n";
 }
 

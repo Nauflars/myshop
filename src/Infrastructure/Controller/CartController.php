@@ -13,8 +13,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 #[Route('/api/cart')]
 class CartController extends AbstractController
@@ -23,7 +21,7 @@ class CartController extends AbstractController
         private readonly CartRepositoryInterface $cartRepository,
         private readonly ProductRepositoryInterface $productRepository,
         private readonly AddProductToCart $addProductToCart,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 
@@ -31,7 +29,7 @@ class CartController extends AbstractController
     public function view(Request $request): JsonResponse
     {
         $user = $this->getUser();
-        
+
         // For non-authenticated users, return empty cart
         if (!$user) {
             return $this->json([
@@ -62,7 +60,7 @@ class CartController extends AbstractController
     public function addItem(Request $request): JsonResponse
     {
         $user = $this->getUser();
-        
+
         if (!$user) {
             return $this->json(['error' => 'Please login to add items to cart'], Response::HTTP_UNAUTHORIZED);
         }

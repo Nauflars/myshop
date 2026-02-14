@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\ValueObject;
 
-use DateTimeImmutable;
-use InvalidArgumentException;
-
 /**
- * UserEmbedding - Domain value object encapsulating user embedding vector with operations
- * 
+ * UserEmbedding - Domain value object encapsulating user embedding vector with operations.
+ *
  * Implements spec-014 data model: Immutable user embedding with update logic
  * Vector is always L2-normalized for cosine similarity calculations
  */
@@ -19,46 +16,45 @@ final readonly class UserEmbedding
     private const EPSILON = 1e-10; // Prevent division by zero
 
     /**
-     * @param string $userId User UUID identifier
-     * @param array<int, float> $vector 1536-dimensional normalized vector
-     * @param DateTimeImmutable $lastUpdatedAt Timestamp of most recent update
-     * @param int $version Optimistic locking version
+     * @param string             $userId        User UUID identifier
+     * @param array<int, float>  $vector        1536-dimensional normalized vector
+     * @param \DateTimeImmutable $lastUpdatedAt Timestamp of most recent update
+     * @param int                $version       Optimistic locking version
      */
     public function __construct(
         public string $userId,
         public array $vector,
-        public DateTimeImmutable $lastUpdatedAt,
-        public int $version = 1
+        public \DateTimeImmutable $lastUpdatedAt,
+        public int $version = 1,
     ) {
         if (empty($userId)) {
-            throw new InvalidArgumentException('User ID cannot be empty');
+            throw new \InvalidArgumentException('User ID cannot be empty');
         }
 
-        if (count($vector) !== self::DIMENSIONS) {
-            throw new InvalidArgumentException(
-                sprintf('Embedding must be %d dimensions, got %d', self::DIMENSIONS, count($vector))
-            );
+        if (self::DIMENSIONS !== count($vector)) {
+            throw new \InvalidArgumentException(sprintf('Embedding must be %d dimensions, got %d', self::DIMENSIONS, count($vector)));
         }
 
         if ($version < 1) {
-            throw new InvalidArgumentException('Version must be at least 1');
+            throw new \InvalidArgumentException('Version must be at least 1');
         }
     }
 
     /**
-     * Create initial embedding from first event
-     * 
-     * @param string $userId User UUID identifier
-     * @param array<int, float> $eventEmbedding Raw 1536-dimensional vector
-     * @param EventType $eventType Type of event
-     * @param DateTimeImmutable $occurredAt Event occurrence time
+     * Create initial embedding from first event.
+     *
+     * @param string             $userId         User UUID identifier
+     * @param array<int, float>  $eventEmbedding Raw 1536-dimensional vector
+     * @param EventType          $eventType      Type of event
+     * @param \DateTimeImmutable $occurredAt     Event occurrence time
+     *
      * @return self Normalized user embedding
      */
     public static function fromEventEmbedding(
         string $userId,
         array $eventEmbedding,
         EventType $eventType,
-        DateTimeImmutable $occurredAt
+        \DateTimeImmutable $occurredAt,
     ): self {
         return new self(
             userId: $userId,
@@ -69,31 +65,30 @@ final readonly class UserEmbedding
     }
 
     /**
-     * Update embedding with new event using weighted average with temporal decay
-     * 
+     * Update embedding with new event using weighted average with temporal decay.
+     *
      * Formula: new_vector = (current_vector * decay_factor + event_vector * event_weight) / (decay_factor + event_weight)
      * Then normalize to unit length
-     * 
-     * @param array<int, float> $eventEmbedding New event embedding (1536-dim, pre-normalized)
-     * @param EventType $eventType Type of event (determines weight)
-     * @param DateTimeImmutable $occurredAt When event occurred
-     * @param EmbeddingWeights $weights Configuration for decay and weighting
+     *
+     * @param array<int, float>  $eventEmbedding New event embedding (1536-dim, pre-normalized)
+     * @param EventType          $eventType      Type of event (determines weight)
+     * @param \DateTimeImmutable $occurredAt     When event occurred
+     * @param EmbeddingWeights   $weights        Configuration for decay and weighting
+     *
      * @return self New immutable embedding with updated vector
      */
     public function updateWith(
         array $eventEmbedding,
         EventType $eventType,
-        DateTimeImmutable $occurredAt,
-        EmbeddingWeights $weights
+        \DateTimeImmutable $occurredAt,
+        EmbeddingWeights $weights,
     ): self {
-        if (count($eventEmbedding) !== self::DIMENSIONS) {
-            throw new InvalidArgumentException(
-                sprintf('Event embedding must be %d dimensions', self::DIMENSIONS)
-            );
+        if (self::DIMENSIONS !== count($eventEmbedding)) {
+            throw new \InvalidArgumentException(sprintf('Event embedding must be %d dimensions', self::DIMENSIONS));
         }
 
         if ($occurredAt < $this->lastUpdatedAt) {
-            throw new InvalidArgumentException('Event timestamp cannot be before last update');
+            throw new \InvalidArgumentException('Event timestamp cannot be before last update');
         }
 
         // Get event weight from event type
@@ -105,7 +100,7 @@ final readonly class UserEmbedding
 
         // Weighted average with decay
         $newVector = [];
-        for ($i = 0; $i < self::DIMENSIONS; $i++) {
+        for ($i = 0; $i < self::DIMENSIONS; ++$i) {
             $newVector[$i] = (
                 $this->vector[$i] * $decayFactor +
                 $eventEmbedding[$i] * $eventWeight
@@ -121,39 +116,39 @@ final readonly class UserEmbedding
     }
 
     /**
-     * L2-normalize vector to unit length
-     * 
+     * L2-normalize vector to unit length.
+     *
      * @param array<int, float> $vector Input vector
+     *
      * @return array<int, float> Normalized unit vector
      */
     private static function normalize(array $vector): array
     {
-        $magnitude = sqrt(array_sum(array_map(fn($v) => $v ** 2, $vector)));
+        $magnitude = sqrt(array_sum(array_map(fn ($v) => $v ** 2, $vector)));
 
         // Prevent division by zero for zero vectors
         if ($magnitude < self::EPSILON) {
-            throw new InvalidArgumentException('Cannot normalize zero vector');
+            throw new \InvalidArgumentException('Cannot normalize zero vector');
         }
 
-        return array_map(fn($v) => $v / $magnitude, $vector);
+        return array_map(fn ($v) => $v / $magnitude, $vector);
     }
 
     /**
-     * Calculate cosine similarity with query vector
-     * 
+     * Calculate cosine similarity with query vector.
+     *
      * @param array<int, float> $queryVector Query embedding vector
+     *
      * @return float Similarity score (-1.0 to 1.0)
      */
     public function cosineSimilarity(array $queryVector): float
     {
-        if (count($queryVector) !== self::DIMENSIONS) {
-            throw new InvalidArgumentException(
-                sprintf('Query vector must be %d dimensions', self::DIMENSIONS)
-            );
+        if (self::DIMENSIONS !== count($queryVector)) {
+            throw new \InvalidArgumentException(sprintf('Query vector must be %d dimensions', self::DIMENSIONS));
         }
 
         $dotProduct = 0.0;
-        for ($i = 0; $i < self::DIMENSIONS; $i++) {
+        for ($i = 0; $i < self::DIMENSIONS; ++$i) {
             $dotProduct += $this->vector[$i] * $queryVector[$i];
         }
 
@@ -162,8 +157,8 @@ final readonly class UserEmbedding
     }
 
     /**
-     * Get vector as array for MongoDB storage
-     * 
+     * Get vector as array for MongoDB storage.
+     *
      * @return array<int, float>
      */
     public function toArray(): array
@@ -172,7 +167,7 @@ final readonly class UserEmbedding
     }
 
     /**
-     * Get vector dimension count
+     * Get vector dimension count.
      */
     public static function getDimensions(): int
     {
@@ -180,14 +175,15 @@ final readonly class UserEmbedding
     }
 
     /**
-     * Check if embedding is stale (old update)
-     * 
+     * Check if embedding is stale (old update).
+     *
      * @param int $maxDaysOld Maximum acceptable age in Atdays
+     *
      * @return bool True if embedding hasn't been updated recently
      */
     public function isStale(int $maxDaysOld = 90): bool
     {
-        $now = new DateTimeImmutable();
+        $now = new \DateTimeImmutable();
         $daysSinceUpdate = $now->diff($this->lastUpdated)->days;
 
         return $daysSinceUpdate > $maxDaysOld;

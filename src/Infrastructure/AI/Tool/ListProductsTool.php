@@ -16,21 +16,21 @@ final class ListProductsTool
 {
     public function __construct(
         private readonly ListProducts $listProducts,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
     /**
-     * @param string|null $category Filtrar por categoría (opcional)
-     * @param bool $availableOnly Mostrar solo productos disponibles (por defecto: true)
+     * @param string|null $category      Filtrar por categoría (opcional)
+     * @param bool        $availableOnly Mostrar solo productos disponibles (por defecto: true)
      */
     public function __invoke(?string $category = null, bool $availableOnly = true): array
     {
         $this->aiToolsLogger->info('📋 ListProductsTool called', [
             'category' => $category,
-            'available_only' => $availableOnly
+            'available_only' => $availableOnly,
         ]);
-        
+
         try {
             $products = $this->listProducts->execute($category, $availableOnly);
 
@@ -55,9 +55,9 @@ final class ListProductsTool
 
             $this->aiToolsLogger->info('✅ Products listed', [
                 'count' => count($products),
-                'category' => $category
+                'category' => $category,
             ]);
-            
+
             return [
                 'success' => true,
                 'products' => $products,
@@ -66,8 +66,9 @@ final class ListProductsTool
             ];
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ ListProductsTool failed', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [
                 'success' => false,
                 'products' => [],

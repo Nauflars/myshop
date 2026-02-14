@@ -45,26 +45,26 @@ class DoctrineProductRepository extends ServiceEntityRepository implements Produ
         ?string $query = null,
         ?string $category = null,
         ?int $minPrice = null,
-        ?int $maxPrice = null
+        ?int $maxPrice = null,
     ): array {
         $qb = $this->createQueryBuilder('p');
 
-        if ($query !== null && $query !== '') {
+        if (null !== $query && '' !== $query) {
             $qb->andWhere('p.name LIKE :query OR p.description LIKE :query')
-                ->setParameter('query', '%' . $query . '%');
+                ->setParameter('query', '%'.$query.'%');
         }
 
-        if ($category !== null && $category !== '') {
+        if (null !== $category && '' !== $category) {
             $qb->andWhere('p.category = :category')
                 ->setParameter('category', $category);
         }
 
-        if ($minPrice !== null) {
+        if (null !== $minPrice) {
             $qb->andWhere('p.priceInCents >= :minPrice')
                 ->setParameter('minPrice', $minPrice);
         }
 
-        if ($maxPrice !== null) {
+        if (null !== $maxPrice) {
             $qb->andWhere('p.priceInCents <= :maxPrice')
                 ->setParameter('maxPrice', $maxPrice);
         }

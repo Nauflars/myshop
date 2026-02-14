@@ -31,7 +31,7 @@ class GenerateStatsTest extends TestCase
 
         $user1 = new User('User 1', new Email('user1@example.com'), 'hash');
         $user2 = new User('User 2', new Email('user2@example.com'), 'hash');
-        
+
         $userRepository->expects($this->once())
             ->method('findAll')
             ->willReturn([$user1, $user2]);

@@ -34,7 +34,7 @@ class ConversationMessage
         Conversation $conversation,
         string $role,
         string $content,
-        ?array $toolCalls = null
+        ?array $toolCalls = null,
     ) {
         $this->id = Uuid::v4()->toRfc4122();
         $this->conversation = $conversation;
@@ -86,16 +86,16 @@ class ConversationMessage
 
     public function isFromUser(): bool
     {
-        return $this->role === 'user';
+        return 'user' === $this->role;
     }
 
     public function isFromAssistant(): bool
     {
-        return $this->role === 'assistant';
+        return 'assistant' === $this->role;
     }
 
     public function isFromSystem(): bool
     {
-        return $this->role === 'system';
+        return 'system' === $this->role;
     }
 }

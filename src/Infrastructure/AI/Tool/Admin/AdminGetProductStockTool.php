@@ -17,14 +17,14 @@ final class AdminGetProductStockTool
 {
     public function __construct(
         private readonly GetProductStock $getProductStock,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
     /**
-     * Get current stock information for a product
+     * Get current stock information for a product.
      *
-     * @param string|null $productId UUID del producto (si se conoce)
+     * @param string|null $productId  UUID del producto (si se conoce)
      * @param string|null $searchTerm Término de búsqueda por nombre (si no se conoce el ID)
      */
     public function __invoke(?string $productId = null, ?string $searchTerm = null): array
@@ -39,7 +39,7 @@ final class AdminGetProductStockTool
         }
 
         // Both parameters are empty
-        if ($productId === null && $searchTerm === null) {
+        if (null === $productId && null === $searchTerm) {
             return [
                 'success' => false,
                 'error' => 'You must provide a product ID or search term.',
@@ -48,9 +48,9 @@ final class AdminGetProductStockTool
 
         try {
             // If we have a product ID, get that specific product
-            if ($productId !== null) {
+            if (null !== $productId) {
                 $result = $this->getProductStock->execute($productId);
-                
+
                 $statusText = match ($result['status']) {
                     'out_of_stock' => 'OUT OF STOCK',
                     'low_stock' => 'LOW STOCK',
@@ -74,7 +74,7 @@ final class AdminGetProductStockTool
             // Otherwise, search by name
             $result = $this->getProductStock->searchByName($searchTerm);
 
-            if ($result['count'] === 0) {
+            if (0 === $result['count']) {
                 return [
                     'success' => false,
                     'error' => "No products found matching '{$searchTerm}'.",
@@ -116,7 +116,7 @@ final class AdminGetProductStockTool
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => 'Error checking stock: ' . $e->getMessage(),
+                'error' => 'Error checking stock: '.$e->getMessage(),
             ];
         }
     }

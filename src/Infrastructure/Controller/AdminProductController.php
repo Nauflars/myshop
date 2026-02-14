@@ -15,8 +15,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Admin controller for managing products from spec-006
- * 
+ * Admin controller for managing products from spec-006.
+ *
  * Implements FR-019 to FR-025: Admin product management
  * - List all products with sorting and filtering
  * - Create new products
@@ -30,13 +30,13 @@ class AdminProductController extends AbstractController
 {
     public function __construct(
         private readonly DoctrineProductRepository $productRepository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
-     * List all products with sorting and filtering
-     * 
+     * List all products with sorting and filtering.
+     *
      * Implements FR-019: Display list of all products
      * Implements FR-023: Sort by name, price, stock, category
      * Implements FR-024: Filter by category and availability
@@ -59,7 +59,7 @@ class AdminProductController extends AbstractController
         // Apply sorting
         $allowedSortFields = ['name', 'price', 'stock', 'category'];
         if (in_array($sortBy, $allowedSortFields)) {
-            $queryBuilder->orderBy('p.' . $sortBy, strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC');
+            $queryBuilder->orderBy('p.'.$sortBy, 'DESC' === strtoupper($sortOrder) ? 'DESC' : 'ASC');
         }
 
         $products = $queryBuilder->getQuery()->getResult();
@@ -74,8 +74,8 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * Show form to create a new product
-     * 
+     * Show form to create a new product.
+     *
      * Implements FR-020: Create new product with required fields
      */
     #[Route('/create', name: 'admin_products_create', methods: ['GET', 'POST'])]
@@ -117,7 +117,7 @@ class AdminProductController extends AbstractController
                 $product = new Product(
                     name: $name,
                     description: $description,
-                    price: new Money((int)((float)$price * 100), 'USD'),
+                    price: new Money((int) ((float) $price * 100), 'USD'),
                     stock: (int) $stock,
                     category: $category
                 );
@@ -126,11 +126,11 @@ class AdminProductController extends AbstractController
                 $this->entityManager->flush();
 
                 $this->addFlash('success', 'Producto creado correctamente.');
+
                 return $this->redirectToRoute('admin_products_list');
-            } else {
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error);
-                }
+            }
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
             }
         }
 
@@ -140,8 +140,8 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * Show form to edit an existing product
-     * 
+     * Show form to edit an existing product.
+     *
      * Implements FR-021: Edit product details
      */
     #[Route('/{id}/edit', name: 'admin_products_edit', methods: ['GET', 'POST'])]
@@ -151,6 +151,7 @@ class AdminProductController extends AbstractController
 
         if (!$product) {
             $this->addFlash('error', 'Producto no encontrado.');
+
             return $this->redirectToRoute('admin_products_list');
         }
 
@@ -185,7 +186,7 @@ class AdminProductController extends AbstractController
 
             if (empty($errors)) {
                 $product->setName($name);
-                $product->setPrice(new Money((int)((float)$price * 100), 'USD'));
+                $product->setPrice(new Money((int) ((float) $price * 100), 'USD'));
                 $product->setStock((int) $stock);
                 $product->setDescription($description);
                 $product->setCategory($category);
@@ -193,11 +194,11 @@ class AdminProductController extends AbstractController
                 $this->entityManager->flush();
 
                 $this->addFlash('success', 'Producto actualizado correctamente.');
+
                 return $this->redirectToRoute('admin_products_list');
-            } else {
-                foreach ($errors as $error) {
-                    $this->addFlash('error', $error);
-                }
+            }
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
             }
         }
 
@@ -208,8 +209,8 @@ class AdminProductController extends AbstractController
     }
 
     /**
-     * Delete a product with confirmation
-     * 
+     * Delete a product with confirmation.
+     *
      * Implements FR-022: Delete product with confirmation dialog
      */
     #[Route('/{id}/delete', name: 'admin_products_delete', methods: ['POST'])]
@@ -219,13 +220,15 @@ class AdminProductController extends AbstractController
 
         if (!$product) {
             $this->addFlash('error', 'Producto no encontrado.');
+
             return $this->redirectToRoute('admin_products_list');
         }
 
         // Verify CSRF token for delete action
         $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete-product-' . $id, $token)) {
+        if (!$this->isCsrfTokenValid('delete-product-'.$id, $token)) {
             $this->addFlash('error', 'Token de seguridad inválido.');
+
             return $this->redirectToRoute('admin_products_list');
         }
 
@@ -234,6 +237,7 @@ class AdminProductController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', sprintf('Producto "%s" eliminado correctamente.', $productName));
+
         return $this->redirectToRoute('admin_products_list');
     }
 }

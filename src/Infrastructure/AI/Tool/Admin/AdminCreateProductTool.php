@@ -9,7 +9,6 @@ use App\Application\UseCase\Admin\CreateProduct;
 use App\Domain\Entity\User;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 #[AsTool(
     'AdminCreateProductTool',
@@ -20,20 +19,20 @@ final class AdminCreateProductTool
     public function __construct(
         private readonly CreateProduct $createProduct,
         private readonly AdminAssistantLogger $logger,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
     /**
-     * Create a new product
+     * Create a new product.
      *
-     * @param string $name Nombre del producto (obligatorio)
-     * @param string $description Descripción del producto (obligatorio)
-     * @param float $price Precio en USD (debe ser positivo)
-     * @param int $stock Cantidad en inventario (no puede ser negativo)
-     * @param string $category Categoría del producto (obligatorio)
-     * @param string|null $nameEs Nombre en español (opcional)
-     * @param bool $confirmed Confirmación explícita del administrador (requerida)
+     * @param string      $name        Nombre del producto (obligatorio)
+     * @param string      $description Descripción del producto (obligatorio)
+     * @param float       $price       Precio en USD (debe ser positivo)
+     * @param int         $stock       Cantidad en inventario (no puede ser negativo)
+     * @param string      $category    Categoría del producto (obligatorio)
+     * @param string|null $nameEs      Nombre en español (opcional)
+     * @param bool        $confirmed   Confirmación explícita del administrador (requerida)
      */
     public function __invoke(
         string $name,
@@ -42,7 +41,7 @@ final class AdminCreateProductTool
         int $stock,
         string $category,
         ?string $nameEs = null,
-        bool $confirmed = false
+        bool $confirmed = false,
     ): array {
         // Verify admin role
         $user = $this->security->getUser();
@@ -56,16 +55,17 @@ final class AdminCreateProductTool
         // Check if confirmation is required
         if (!$confirmed) {
             $priceFormatted = number_format($price, 2);
+
             return [
                 'success' => false,
                 'requires_confirmation' => true,
-                'message' => "Resumen del producto a crear:\n" .
-                    "• Nombre: {$name}\n" .
-                    "• Descripción: {$description}\n" .
-                    "• Precio: \${$priceFormatted} USD\n" .
-                    "• Stock: {$stock} unidades\n" .
-                    "• Categoría: {$category}\n" .
-                    ($nameEs ? "• Nombre en español: {$nameEs}\n" : "") .
+                'message' => "Resumen del producto a crear:\n".
+                    "• Nombre: {$name}\n".
+                    "• Descripción: {$description}\n".
+                    "• Precio: \${$priceFormatted} USD\n".
+                    "• Stock: {$stock} unidades\n".
+                    "• Categoría: {$category}\n".
+                    ($nameEs ? "• Nombre en español: {$nameEs}\n" : '').
                     "\n¿Confirmas la creación de este producto? Responde 'sí', 'confirmar' o 'adelante'.",
             ];
         }
@@ -80,7 +80,7 @@ final class AdminCreateProductTool
                 'category' => $category,
             ];
 
-            if ($nameEs !== null) {
+            if (null !== $nameEs) {
                 $data['nameEs'] = $nameEs;
             }
 
@@ -88,14 +88,14 @@ final class AdminCreateProductTool
             $missingFields = CreateProduct::getMissingFields($data);
             if (!empty($missingFields)) {
                 $fieldNames = array_map(
-                    fn($field) => CreateProduct::getFieldNameInSpanish($field),
+                    fn ($field) => CreateProduct::getFieldNameInSpanish($field),
                     $missingFields
                 );
-                
+
                 return [
                     'success' => false,
                     'missing_fields' => $missingFields,
-                    'message' => 'Missing required fields: ' . implode(', ', $fieldNames) . '. Please provide them.',
+                    'message' => 'Missing required fields: '.implode(', ', $fieldNames).'. Please provide them.',
                 ];
             }
 
@@ -117,7 +117,6 @@ final class AdminCreateProductTool
                 'price' => $product->getPrice(),
                 'stock' => $product->getStock(),
             ];
-
         } catch (\InvalidArgumentException $e) {
             // Log failed action
             $this->logger->logFailedAction(

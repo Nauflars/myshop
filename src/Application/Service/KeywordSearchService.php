@@ -11,8 +11,8 @@ use App\Domain\ValueObject\SearchResult;
 use Psr\Log\LoggerInterface;
 
 /**
- * KeywordSearchService - Traditional keyword-based search using MySQL
- * 
+ * KeywordSearchService - Traditional keyword-based search using MySQL.
+ *
  * Implements spec-010 T040-T041: MySQL LIKE queries for keyword search
  */
 class KeywordSearchService
@@ -20,12 +20,12 @@ class KeywordSearchService
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
         private readonly LoggerInterface $logger,
-        private readonly ?SearchMetricsCollector $metricsCollector = null
+        private readonly ?SearchMetricsCollector $metricsCollector = null,
     ) {
     }
 
     /**
-     * Search products using keyword matching
+     * Search products using keyword matching.
      */
     public function search(SearchQuery $searchQuery): SearchResult
     {
@@ -67,7 +67,7 @@ class KeywordSearchService
             ]);
 
             // Record metrics for monitoring
-            if ($this->metricsCollector !== null) {
+            if (null !== $this->metricsCollector) {
                 $this->metricsCollector->recordSearch(
                     responseTimeMs: $executionTime,
                     searchMode: 'keyword',
@@ -78,7 +78,6 @@ class KeywordSearchService
             }
 
             return $result;
-
         } catch (\Exception $e) {
             $this->logger->error('Keyword search failed', [
                 'query' => $searchQuery->getQuery(),
@@ -90,15 +89,15 @@ class KeywordSearchService
     }
 
     /**
-     * Perform MySQL LIKE queries
-     * 
+     * Perform MySQL LIKE queries.
+     *
      * @return array<Product>
      */
     private function searchByKeyword(
         string $query,
         int $limit,
         int $offset,
-        ?string $category
+        ?string $category,
     ): array {
         // This would ideally use a custom repository method
         // For now, we'll use findAll and filter in memory
@@ -106,10 +105,10 @@ class KeywordSearchService
 
         $allProducts = $this->productRepository->findAll();
         $searchTerm = strtolower($query);
-        
+
         $filtered = array_filter($allProducts, function (Product $product) use ($searchTerm, $category) {
             // Category filter
-            if ($category !== null && $product->getCategory() !== $category) {
+            if (null !== $category && $product->getCategory() !== $category) {
                 return false;
             }
 
@@ -122,6 +121,7 @@ class KeywordSearchService
 
         // Apply pagination
         $filtered = array_values($filtered);
+
         return array_slice($filtered, $offset, $limit);
     }
 }

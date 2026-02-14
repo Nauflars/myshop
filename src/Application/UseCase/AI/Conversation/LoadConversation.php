@@ -6,21 +6,22 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\ConversationRepositoryInterface;
 
 /**
- * LoadConversation Use Case
- * 
+ * LoadConversation Use Case.
+ *
  * Loads a conversation with all messages for the authenticated user.
  * Returns formatted message history for AI context.
  */
 final class LoadConversation
 {
     public function __construct(
-        private readonly ConversationRepositoryInterface $conversationRepository
+        private readonly ConversationRepositoryInterface $conversationRepository,
     ) {
     }
 
     /**
-     * @param User $user The authenticated user
+     * @param User   $user           The authenticated user
      * @param string $conversationId The conversation to load
+     *
      * @return array{success: bool, conversation: array|null, messages: array, message: string}
      */
     public function execute(User $user, string $conversationId): array
@@ -29,7 +30,7 @@ final class LoadConversation
             $conversation = $this->conversationRepository->findById($conversationId);
 
             // Verify existence and ownership
-            if ($conversation === null) {
+            if (null === $conversation) {
                 return [
                     'success' => false,
                     'conversation' => null,
@@ -76,7 +77,7 @@ final class LoadConversation
                 'success' => false,
                 'conversation' => null,
                 'messages' => [],
-                'message' => 'Error al cargar la conversación: ' . $e->getMessage(),
+                'message' => 'Error al cargar la conversación: '.$e->getMessage(),
             ];
         }
     }

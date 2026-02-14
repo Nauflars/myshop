@@ -53,7 +53,7 @@ class ProductFixtures extends Fixture
             $manager->persist($product);
 
             // Create some low-stock scenarios
-            if ($index % 5 === 0) {
+            if (0 === $index % 5) {
                 $product->setStock(5); // Low stock
             }
 

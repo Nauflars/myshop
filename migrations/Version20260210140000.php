@@ -36,10 +36,10 @@ final class Version20260210140000 extends AbstractMigration
                 CONSTRAINT FK_user_interactions_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE SET NULL
             ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         ');
-        
+
         // Note: CHECK constraints simplified due to MySQL limitations
         // - Cannot use foreign key columns in CHECK constraints
-        // - Cannot use functions like NOW() in CHECK constraints  
+        // - Cannot use functions like NOW() in CHECK constraints
         // - Application layer validates business rules
     }
 

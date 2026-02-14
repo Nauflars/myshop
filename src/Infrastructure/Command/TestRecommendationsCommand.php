@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Command;
 
-use App\Domain\Entity\User;
 use App\Application\Service\RecommendationService;
+use App\Domain\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -23,7 +23,7 @@ class TestRecommendationsCommand extends Command
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        RecommendationService $recommendationService
+        RecommendationService $recommendationService,
     ) {
         parent::__construct();
         $this->entityManager = $entityManager;
@@ -47,6 +47,7 @@ class TestRecommendationsCommand extends Command
 
         if (!$userId) {
             $io->error('Please provide --user-id');
+
             return Command::INVALID;
         }
 
@@ -54,6 +55,7 @@ class TestRecommendationsCommand extends Command
 
         if (!$user) {
             $io->error("User not found: {$userId}");
+
             return Command::FAILURE;
         }
 
@@ -64,25 +66,25 @@ class TestRecommendationsCommand extends Command
             $recommendations = $this->recommendationService->getRecommendationsForUser($user, 12);
 
             $io->writeln('Step 2: Checking result object...');
-            $io->writeln('  - Result class: ' . get_class($recommendations));
-            $io->writeln('  - Count: ' . $recommendations->count());
-            $io->writeln('  - Is empty: ' . ($recommendations->isEmpty() ? 'yes' : 'no'));
-            $io->writeln('  - Average score: ' . $recommendations->getAverageScore());
+            $io->writeln('  - Result class: '.get_class($recommendations));
+            $io->writeln('  - Count: '.$recommendations->count());
+            $io->writeln('  - Is empty: '.($recommendations->isEmpty() ? 'yes' : 'no'));
+            $io->writeln('  - Average score: '.$recommendations->getAverageScore());
             $io->newLine();
 
             $io->writeln('Step 3: Checking products...');
             $products = $recommendations->getProducts();
-            $io->writeln('  - Products array count: ' . count($products));
-            
+            $io->writeln('  - Products array count: '.count($products));
+
             if (count($products) > 0) {
-                $io->writeln('  - First product class: ' . get_class($products[0]));
-                $io->writeln('  - First product name: ' . $products[0]->getName());
+                $io->writeln('  - First product class: '.get_class($products[0]));
+                $io->writeln('  - First product name: '.$products[0]->getName());
             }
             $io->newLine();
 
             $io->section('Recommendation Results');
-            $io->writeln("Total recommendations: " . $recommendations->count());
-            $io->writeln("Average similarity score: " . round($recommendations->getAverageScore(), 4));
+            $io->writeln('Total recommendations: '.$recommendations->count());
+            $io->writeln('Average similarity score: '.round($recommendations->getAverageScore(), 4));
             $io->newLine();
 
             if ($recommendations->count() > 0) {
@@ -105,9 +107,10 @@ class TestRecommendationsCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Failed to get recommendations: ' . $e->getMessage());
+            $io->error('Failed to get recommendations: '.$e->getMessage());
             $io->writeln('Stack trace:');
             $io->writeln($e->getTraceAsString());
+
             return Command::FAILURE;
         }
     }

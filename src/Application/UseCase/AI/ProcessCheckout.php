@@ -11,13 +11,13 @@ use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 
 /**
- * ProcessCheckout Use Case - AI Feature
- * 
+ * ProcessCheckout Use Case - AI Feature.
+ *
  * Processes checkout: validates cart, creates order, updates stock, and clears cart.
- * 
+ *
  * Architecture: Application layer (use case)
  * DDD Role: Application Service - orchestrates domain logic
- * 
+ *
  * @author AI Shopping Assistant Team
  */
 final class ProcessCheckout
@@ -26,14 +26,15 @@ final class ProcessCheckout
         private readonly CartRepositoryInterface $cartRepository,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
-    
+
     /**
-     * Execute the use case
+     * Execute the use case.
      *
      * @param string $userId User UUID
+     *
      * @return array{
      *     success: bool,
      *     orderId: string|null,
@@ -48,7 +49,7 @@ final class ProcessCheckout
     {
         // Find user
         $user = $this->userRepository->findById($userId);
-        if ($user === null) {
+        if (null === $user) {
             return [
                 'success' => false,
                 'orderId' => null,
@@ -59,10 +60,10 @@ final class ProcessCheckout
                 'message' => 'User not found.',
             ];
         }
-        
+
         // Find cart
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null || $cart->isEmpty()) {
+        if (null === $cart || $cart->isEmpty()) {
             return [
                 'success' => false,
                 'orderId' => null,
@@ -73,7 +74,7 @@ final class ProcessCheckout
                 'message' => 'Cart is empty. Cannot proceed with checkout.',
             ];
         }
-        
+
         // Validate stock for all items
         foreach ($cart->getItems() as $cartItem) {
             $product = $cartItem->getProduct();
@@ -94,23 +95,23 @@ final class ProcessCheckout
                 ];
             }
         }
-        
+
         // Create order from cart
         $order = Order::createFromCart($cart);
-        
+
         // Decrement stock for each product
         foreach ($order->getItems() as $orderItem) {
             $product = $orderItem->getProduct();
             $product->decrementStock($orderItem->getQuantity());
             $this->productRepository->save($product);
         }
-        
+
         // Save order
         $this->orderRepository->save($order);
-        
+
         // Clear cart
         $this->cartRepository->delete($cart);
-        
+
         // Calculate order details
         $totalAmount = 0.0;
         $itemCount = 0;
@@ -118,7 +119,7 @@ final class ProcessCheckout
             $totalAmount += $item->getPrice() * $item->getQuantity();
             $itemCount += $item->getQuantity();
         }
-        
+
         return [
             'success' => true,
             'orderId' => $order->getId(),

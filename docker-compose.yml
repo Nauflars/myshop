@@ -104,19 +104,15 @@ services:
 
   # RabbitMQ - Message Queue
   rabbitmq:
-    build:
-      context: ./docker/rabbitmq
-      dockerfile: Dockerfile
+    image: rabbitmq:3-management-alpine
     container_name: myshop_rabbitmq
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-myshop_user}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-myshop_pass}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
     ports:
       - "5672:5672"     # AMQP protocol
       - "15672:15672"   # Management UI
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - myshop_network
     healthcheck:

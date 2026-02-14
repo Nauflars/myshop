@@ -7,11 +7,11 @@ namespace App\Domain\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * UnansweredQuestion - Domain Entity
- * 
+ * UnansweredQuestion - Domain Entity.
+ *
  * Represents a chatbot question that could not be answered by the AI agent.
  * Used for continuous improvement and identifying missing capabilities.
- * 
+ *
  * Spec: 006-unanswered-questions-admin
  */
 #[ORM\Entity(repositoryClass: 'App\Infrastructure\Repository\UnansweredQuestionRepository')]
@@ -72,7 +72,7 @@ class UnansweredQuestion
         ?User $user,
         string $userRole,
         string $reasonCategory,
-        ?string $conversationId = null
+        ?string $conversationId = null,
     ) {
         $this->questionText = $questionText;
         $this->user = $user;
@@ -129,7 +129,7 @@ class UnansweredQuestion
             self::STATUS_NEW,
             self::STATUS_REVIEWED,
             self::STATUS_PLANNED,
-            self::STATUS_RESOLVED
+            self::STATUS_RESOLVED,
         ])) {
             throw new \InvalidArgumentException("Invalid status: $status");
         }
@@ -137,10 +137,10 @@ class UnansweredQuestion
         $this->status = $status;
 
         // Auto-set timestamps based on status changes
-        if ($status === self::STATUS_REVIEWED && $this->reviewedAt === null) {
+        if (self::STATUS_REVIEWED === $status && null === $this->reviewedAt) {
             $this->reviewedAt = new \DateTime();
         }
-        if ($status === self::STATUS_RESOLVED && $this->resolvedAt === null) {
+        if (self::STATUS_RESOLVED === $status && null === $this->resolvedAt) {
             $this->resolvedAt = new \DateTime();
         }
 
@@ -155,6 +155,7 @@ class UnansweredQuestion
     public function setAdminNotes(?string $adminNotes): self
     {
         $this->adminNotes = $adminNotes;
+
         return $this;
     }
 
@@ -170,22 +171,22 @@ class UnansweredQuestion
 
     public function isNew(): bool
     {
-        return $this->status === self::STATUS_NEW;
+        return self::STATUS_NEW === $this->status;
     }
 
     public function isReviewed(): bool
     {
-        return $this->status === self::STATUS_REVIEWED;
+        return self::STATUS_REVIEWED === $this->status;
     }
 
     public function isPlanned(): bool
     {
-        return $this->status === self::STATUS_PLANNED;
+        return self::STATUS_PLANNED === $this->status;
     }
 
     public function isResolved(): bool
     {
-        return $this->status === self::STATUS_RESOLVED;
+        return self::STATUS_RESOLVED === $this->status;
     }
 
     public static function getValidReasons(): array

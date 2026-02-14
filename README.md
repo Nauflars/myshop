@@ -1,5 +1,7 @@
 # MyShop E-commerce Application
 
+[![Quality Gates](https://github.com/YOUR_USERNAME/myshop/actions/workflows/quality-gates.yml/badge.svg)](https://github.com/YOUR_USERNAME/myshop/actions/workflows/quality-gates.yml)
+
 A Symfony 7 e-commerce application built with Domain-Driven Design (DDD) architecture, Docker, and an AI-powered chatbot.
 
 ## Features
@@ -687,12 +689,126 @@ docker-compose exec php php bin/console cache:clear
 
 Proprietary - All rights reserved
 
+## Development Principles
+
+This project follows strict development principles defined in [.specify/memory/constitution.md](.specify/memory/constitution.md) v1.1.0:
+
+- **Test-Driven Development (TDD)**: Tests written first, implementation follows (NON-NEGOTIABLE)
+- **Domain-Driven Design (DDD)**: Strict layer separation (Domain → Application → Infrastructure)
+- **SOLID Principles**: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
+- **Clean Code**: Intention-revealing names, small focused functions, DRY principle
+- **Test Coverage Excellence**: Maintain/increase coverage with every feature (Domain 90%+, Application 85%+, Infrastructure 70%+)
+
+### Running Tests
+
+```bash
+# Run all tests
+make test
+# or
+docker exec myshop_php php vendor/bin/phpunit
+
+# Generate coverage report (HTML)
+make test-coverage
+docker exec myshop_php php vendor/bin/phpunit --coverage-html var/coverage
+# Open var/coverage/index.html in browser
+
+# Generate coverage report (text)
+make test-coverage-text
+docker exec myshop_php php vendor/bin/phpunit --coverage-text
+
+# Run specific test
+make test-filter TEST=UserTest
+```
+
+### Test Pyramid
+
+- **Unit Tests** (70%): Domain entities, value objects, use cases
+- **Integration Tests** (25%): Repositories, API endpoints, message consumers
+- **E2E Tests** (5%): Complete user journeys with Playwright
+
+### Quality Gates (Pre-Push Validation)
+
+Before pushing code, run the comprehensive quality gates check:
+
+```bash
+# Run ALL quality gates defined in Constitution v1.1.0
+make quality-gates
+
+# Or run individual checks:
+make qa-tests           # All tests
+make qa-coverage        # Coverage report
+make qa-phpstan         # Static analysis
+make qa-cs-fixer        # Code style check
+make qa-composer-audit  # Security vulnerabilities
+make qa-lint-all        # Symfony validators (container, yaml, twig, router)
+make qa-full            # All checks except coverage report
+```
+
+The quality gates validate:
+- ✅ All tests pass (unit + integration + E2E)
+- ✅ Test coverage meets thresholds
+- ✅ PHPStan static analysis passes
+- ✅ Code style (PSR-12) compliant
+- ✅ No security vulnerabilities (composer audit)
+- ✅ Symfony container, YAML, Twig, and router valid
+- ✅ No secrets or credentials in code
+- ✅ No debug statements (var_dump, dd, console.log)
+- ✅ No commented-out code
+
+**Resources**:
+- **Setup Guide**: [docs/QUALITY_GATES_SETUP.md](docs/QUALITY_GATES_SETUP.md) - Prerequisites and configuration
+- **Usage Guide**: [docs/QUALITY_GATES.md](docs/QUALITY_GATES.md) - Detailed usage and troubleshooting
+- **Validation Script**: [scripts/quality-gates.sh](scripts/quality-gates.sh)
+
 ## Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Run tests: `make test`
-4. Submit a pull request
+### Development Workflow
+
+1. **Review the Constitution**: Read [.specify/memory/constitution.md](.specify/memory/constitution.md) for mandatory development practices
+2. **Create a feature branch**: Following DDD layer separation
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Write tests FIRST** (TDD principle):
+   - Write failing tests based on acceptance criteria
+   - Verify tests fail (Red phase)
+4. **Implement to make tests pass** (Green phase):
+   - Write minimum code to pass tests
+   - Follow DDD structure (Domain/Application/Infrastructure)
+5. **Refactor while keeping tests green** (Refactor phase):
+   - Apply SOLID principles
+   - Follow Clean Code practices
+6. **Run Quality Gates**:
+   ```bash
+   make quality-gates
+   ```
+   This validates ALL mandatory requirements before pushing
+7. **Commit and push**:
+   ```bash
+   git add .
+   git commit -m "feat: your feature description"
+   git push origin feature/your-feature-name
+   ```
+8. **Create Pull Request**:
+   - Fill out the PR template at [.github/pull_request_template.md](.github/pull_request_template.md)
+   - Complete all Constitution Compliance checklists
+   - Verify all Quality Gates passed
+9. **Code Review**: Wait for approval and CI/CD validation
+10. **Merge**: After all checks pass and approval received
+
+### Pull Request Requirements
+
+Every PR must include:
+- ✅ Tests demonstrating functionality
+- ✅ Coverage report showing no decrease
+- ✅ SOLID compliance verification
+- ✅ DDD layer boundary verification (no improper dependencies)
+- ✅ Functional verification that feature/fix works as expected
+- ✅ No regressions introduced
+
+For detailed Pull Request quality gates, see:
+- **Constitution**: [.specify/memory/constitution.md](.specify/memory/constitution.md) (Section: Quality Gates)
+- **PR Template**: [.github/pull_request_template.md](.github/pull_request_template.md)
 
 ---
 

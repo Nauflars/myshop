@@ -8,11 +8,11 @@ use App\Domain\Entity\OrderItem;
 use App\Domain\Repository\OrderRepositoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/orders')]
 #[IsGranted('ROLE_CUSTOMER')]
@@ -20,7 +20,7 @@ class OrderController extends AbstractController
 {
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly Checkout $checkout
+        private readonly Checkout $checkout,
     ) {
     }
 
@@ -29,7 +29,7 @@ class OrderController extends AbstractController
     {
         try {
             $order = $this->checkout->execute($user);
-            
+
             return $this->json($this->serializeOrder($order), Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);

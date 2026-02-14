@@ -8,8 +8,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * T095: Dead Letter Queue for failed embedding sync jobs
- * 
+ * T095: Dead Letter Queue for failed embedding sync jobs.
+ *
  * Creates failed_embedding_jobs table to track embedding sync failures
  * Enables retry mechanism and failure analysis
  */

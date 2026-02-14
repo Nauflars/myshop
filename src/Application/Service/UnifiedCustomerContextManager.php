@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Service;
 
-use App\Infrastructure\Repository\UnifiedConversationStorage;
 use App\Domain\ValueObject\CustomerConversationContext;
+use App\Infrastructure\Repository\UnifiedConversationStorage;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * Manages customer conversation context (spec-012 compliant)
- * 
+ * Manages customer conversation context (spec-012 compliant).
+ *
  * Refactored to use UnifiedConversationStorage with:
  * - Separate history/state/meta in Redis
  * - FIFO history management (max 10 messages)
@@ -20,54 +20,54 @@ use Symfony\Component\Uid\Uuid;
 class UnifiedCustomerContextManager
 {
     private const ROLE = 'client';
-    
+
     public function __construct(
         private readonly UnifiedConversationStorage $storage,
         private readonly LoggerInterface $logger,
-        private readonly int $ttl
+        private readonly int $ttl,
     ) {
     }
 
     /**
-     * Get or create conversation for customer
-     * 
+     * Get or create conversation for customer.
+     *
      * Returns conversationId (UUID) and loads state from Redis
      */
     public function getOrCreateConversation(string $userId, ?string $conversationId = null): array
     {
         // If conversationId provided, try to load it
-        if ($conversationId !== null && $this->storage->exists(self::ROLE, $userId, $conversationId)) {
+        if (null !== $conversationId && $this->storage->exists(self::ROLE, $userId, $conversationId)) {
             $state = $this->storage->getState(self::ROLE, $userId, $conversationId);
             $history = $this->storage->getHistory(self::ROLE, $userId, $conversationId);
-            
+
             $this->logger->debug('Existing conversation loaded', [
                 'userId' => $userId,
                 'conversationId' => $conversationId,
                 'historyCount' => count($history),
             ]);
-            
+
             return [
                 'conversationId' => $conversationId,
                 'state' => $state ?? $this->getDefaultState(),
                 'history' => $history,
             ];
         }
-        
+
         // Create new conversation
         $conversationId = Uuid::v4()->toRfc4122();
         $defaultState = $this->getDefaultState();
-        
+
         // Initialize metadata
         $this->storage->initializeMeta(self::ROLE, $userId, $conversationId, $this->ttl);
-        
+
         // Initialize state
         $this->storage->setState(self::ROLE, $userId, $conversationId, $defaultState, $this->ttl);
-        
+
         $this->logger->info('New conversation created', [
             'userId' => $userId,
             'conversationId' => $conversationId,
         ]);
-        
+
         return [
             'conversationId' => $conversationId,
             'state' => $defaultState,
@@ -76,13 +76,13 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Add message to conversation history
+     * Add message to conversation history.
      */
     public function addMessage(
         string $userId,
         string $conversationId,
         string $role,
-        string $content
+        string $content,
     ): bool {
         $result = $this->storage->addMessageToHistory(
             self::ROLE,
@@ -92,15 +92,15 @@ class UnifiedCustomerContextManager
             $content,
             $this->ttl
         );
-        
+
         // Refresh TTL
         $this->storage->refreshTtl(self::ROLE, $userId, $conversationId, $this->ttl);
-        
+
         return $result;
     }
 
     /**
-     * Get conversation history (últimos 10 mensajes)
+     * Get conversation history (últimos 10 mensajes).
      */
     public function getHistory(string $userId, string $conversationId): array
     {
@@ -108,16 +108,17 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Get conversation state
+     * Get conversation state.
      */
     public function getState(string $userId, string $conversationId): array
     {
         $state = $this->storage->getState(self::ROLE, $userId, $conversationId);
+
         return $state ?? $this->getDefaultState();
     }
 
     /**
-     * Update conversation state
+     * Update conversation state.
      */
     public function updateState(string $userId, string $conversationId, array $state): bool
     {
@@ -125,20 +126,20 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Update state after tool execution
+     * Update state after tool execution.
      */
     public function updateAfterToolExecution(
         string $userId,
         string $conversationId,
         string $toolName,
-        array $toolResult
+        array $toolResult,
     ): bool {
         $state = $this->getState($userId, $conversationId);
-        
+
         // Update flow based on tool
         if (str_contains($toolName, 'Product') || str_contains($toolName, 'Search')) {
             $state['flow'] = 'product_browsing';
-            
+
             // Extract product IDs from result if available
             if (isset($toolResult['products']) && is_array($toolResult['products'])) {
                 $productIds = array_column($toolResult['products'], 'id');
@@ -148,10 +149,10 @@ class UnifiedCustomerContextManager
             }
         } elseif (str_contains($toolName, 'Cart')) {
             $state['flow'] = 'cart_management';
-            
+
             // Update cart snapshot if available
             if (isset($toolResult['items']) && is_array($toolResult['items'])) {
-                $state['cart_items'] = array_map(function($item) {
+                $state['cart_items'] = array_map(function ($item) {
                     return [
                         'product_id' => $item['product_id'] ?? $item['id'] ?? null,
                         'quantity' => $item['quantity'] ?? 1,
@@ -162,29 +163,29 @@ class UnifiedCustomerContextManager
             $state['flow'] = 'order_tracking';
         } elseif (str_contains($toolName, 'Checkout') || str_contains($toolName, 'Collect')) {
             $state['flow'] = 'checkout';
-            
+
             if (isset($toolResult['step'])) {
                 $state['checkout_step'] = $toolResult['step'];
             }
         }
-        
+
         // Update last tool and turn count
         $state['last_tool'] = $toolName;
         $state['turn_count'] = ($state['turn_count'] ?? 0) + 1;
-        
+
         $this->logger->debug('State updated after tool execution', [
             'userId' => $userId,
             'conversationId' => $conversationId,
             'tool' => $toolName,
             'flow' => $state['flow'],
         ]);
-        
+
         return $this->updateState($userId, $conversationId, $state);
     }
 
     /**
-     * Build MessageBag-ready history with state context
-     * 
+     * Build MessageBag-ready history with state context.
+     *
      * Returns array suitable for Symfony AI Agent MessageBag construction:
      * [
      *   ['role' => 'system', 'content' => 'State context...'],
@@ -196,16 +197,16 @@ class UnifiedCustomerContextManager
     public function buildMessageBagContext(string $userId, string $conversationId): array
     {
         $messages = [];
-        
+
         // Add state as system message
         $state = $this->getState($userId, $conversationId);
         $stateContext = $this->formatStateForPrompt($state);
-        
+
         $messages[] = [
             'role' => 'system',
             'content' => $stateContext,
         ];
-        
+
         // Add history
         $history = $this->getHistory($userId, $conversationId);
         foreach ($history as $msg) {
@@ -214,62 +215,62 @@ class UnifiedCustomerContextManager
                 'content' => $msg['content'],
             ];
         }
-        
+
         return $messages;
     }
 
     /**
-     * Format state as prompt context
+     * Format state as prompt context.
      */
     private function formatStateForPrompt(array $state): string
     {
         $context = "**Current Conversation State:**\n\n";
-        
-        $context .= "- Flow: " . ($state['flow'] ?? 'browsing') . "\n";
-        $context .= "- Turn count: " . ($state['turn_count'] ?? 0) . "\n";
-        
+
+        $context .= '- Flow: '.($state['flow'] ?? 'browsing')."\n";
+        $context .= '- Turn count: '.($state['turn_count'] ?? 0)."\n";
+
         if (!empty($state['last_tool'])) {
-            $context .= "- Last action: " . $state['last_tool'] . "\n";
+            $context .= '- Last action: '.$state['last_tool']."\n";
         }
-        
+
         if (!empty($state['selected_products'])) {
             $productList = implode(', ', $state['selected_products']);
-            $context .= "- Recently viewed products: " . $productList . "\n";
+            $context .= '- Recently viewed products: '.$productList."\n";
         }
-        
+
         if (!empty($state['cart_items'])) {
             $itemCount = array_sum(array_column($state['cart_items'], 'quantity'));
-            $context .= "- Cart: " . $itemCount . " items\n";
+            $context .= '- Cart: '.$itemCount." items\n";
         }
-        
+
         if (!empty($state['checkout_step'])) {
-            $context .= "- Checkout step: " . $state['checkout_step'] . "\n";
+            $context .= '- Checkout step: '.$state['checkout_step']."\n";
         }
-        
+
         $context .= "\nUse this context to provide natural follow-up responses.";
-        
+
         return $context;
     }
 
     /**
-     * Delete conversation
+     * Delete conversation.
      */
     public function deleteConversation(string $userId, string $conversationId): bool
     {
         $result = $this->storage->delete(self::ROLE, $userId, $conversationId);
-        
+
         if ($result) {
             $this->logger->info('Conversation deleted', [
                 'userId' => $userId,
                 'conversationId' => $conversationId,
             ]);
         }
-        
+
         return $result;
     }
 
     /**
-     * Refresh TTL
+     * Refresh TTL.
      */
     public function refreshTtl(string $userId, string $conversationId): bool
     {
@@ -277,7 +278,7 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Check if conversation exists
+     * Check if conversation exists.
      */
     public function exists(string $userId, string $conversationId): bool
     {
@@ -285,7 +286,7 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Get default state for new conversations
+     * Get default state for new conversations.
      */
     private function getDefaultState(): array
     {
@@ -304,7 +305,7 @@ class UnifiedCustomerContextManager
     // These methods maintain compatibility with old CustomerContextManager API
 
     /**
-     * Load context (legacy compatibility)
+     * Load context (legacy compatibility).
      */
     public function loadContext(string $userId): ?CustomerConversationContext
     {
@@ -313,12 +314,12 @@ class UnifiedCustomerContextManager
         $this->logger->warning('Deprecated loadContext() called - use getOrCreateConversation() instead', [
             'userId' => $userId,
         ]);
-        
+
         return null;
     }
 
     /**
-     * Save context (legacy compatibility)
+     * Save context (legacy compatibility).
      */
     public function saveContext(CustomerConversationContext $context): void
     {
@@ -328,26 +329,26 @@ class UnifiedCustomerContextManager
     }
 
     /**
-     * Get or create context (legacy compatibility)
+     * Get or create context (legacy compatibility).
      */
     public function getOrCreateContext(string $userId, string $language = 'en'): CustomerConversationContext
     {
         $this->logger->warning('Deprecated getOrCreateContext() called - use getOrCreateConversation() instead', [
             'userId' => $userId,
         ]);
-        
+
         return CustomerConversationContext::createFresh($userId, $language);
     }
 
     /**
-     * Delete context (legacy compatibility)
+     * Delete context (legacy compatibility).
      */
     public function deleteContext(string $userId): bool
     {
         $this->logger->warning('Deprecated deleteContext() called - use deleteConversation() instead', [
             'userId' => $userId,
         ]);
-        
+
         return false;
     }
 }

@@ -2,7 +2,6 @@
 
 require __DIR__.'/vendor/autoload.php';
 
-use App\Infrastructure\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 
 (new Dotenv())->bootEnv(__DIR__.'/.env');
@@ -26,13 +25,13 @@ if (empty($cartItems)) {
     echo "No cart items found in database.\n";
 } else {
     foreach ($cartItems as $item) {
-        echo "Cart ID: " . $item->getCart()->getId() . "\n";
-        echo "Product ID: " . $item->getProduct()->getId() . "\n";
-        echo "Product Name: " . $item->getProduct()->getName() . "\n";
-        echo "Quantity: " . $item->getQuantity() . "\n";
-        echo "Price Snapshot: " . $item->getPriceSnapshot()->format() . " (" . $item->getPriceSnapshot()->getAmountInCents() . " cents)\n";
-        echo "Subtotal: " . $item->getSubtotal()->format() . " (" . $item->getSubtotal()->getAmountInCents() . " cents)\n";
-        echo "Currency: " . $item->getPriceSnapshot()->getCurrency() . "\n";
+        echo 'Cart ID: '.$item->getCart()->getId()."\n";
+        echo 'Product ID: '.$item->getProduct()->getId()."\n";
+        echo 'Product Name: '.$item->getProduct()->getName()."\n";
+        echo 'Quantity: '.$item->getQuantity()."\n";
+        echo 'Price Snapshot: '.$item->getPriceSnapshot()->format().' ('.$item->getPriceSnapshot()->getAmountInCents()." cents)\n";
+        echo 'Subtotal: '.$item->getSubtotal()->format().' ('.$item->getSubtotal()->getAmountInCents()." cents)\n";
+        echo 'Currency: '.$item->getPriceSnapshot()->getCurrency()."\n";
         echo "---\n";
     }
 }
@@ -41,9 +40,9 @@ echo "\n=== CARTS ===\n\n";
 
 $carts = $entityManager->getRepository(App\Domain\Entity\Cart::class)->findAll();
 foreach ($carts as $cart) {
-    echo "Cart ID: " . $cart->getId() . "\n";
-    echo "User: " . $cart->getUser()->getEmail() . "\n";
-    echo "Items count: " . $cart->getItemCount() . "\n";
-    echo "Total: " . $cart->calculateTotal()->format() . "\n";
+    echo 'Cart ID: '.$cart->getId()."\n";
+    echo 'User: '.$cart->getUser()->getEmail()."\n";
+    echo 'Items count: '.$cart->getItemCount()."\n";
+    echo 'Total: '.$cart->calculateTotal()->format()."\n";
     echo "---\n";
 }

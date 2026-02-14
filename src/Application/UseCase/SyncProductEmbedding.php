@@ -9,20 +9,20 @@ use App\Domain\Entity\Product;
 use Psr\Log\LoggerInterface;
 
 /**
- * SyncProductEmbedding - Use case for syncing product to embedding store
- * 
+ * SyncProductEmbedding - Use case for syncing product to embedding store.
+ *
  * Implements spec-010 US2: Automatic embedding generation on product changes
  */
 class SyncProductEmbedding
 {
     public function __construct(
         private readonly ProductEmbeddingSyncService $syncService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Execute sync for product creation
+     * Execute sync for product creation.
      */
     public function onCreate(Product $product): void
     {
@@ -34,7 +34,7 @@ class SyncProductEmbedding
     }
 
     /**
-     * Execute sync for product update
+     * Execute sync for product update.
      */
     public function onUpdate(Product $product): void
     {
@@ -46,7 +46,7 @@ class SyncProductEmbedding
     }
 
     /**
-     * Execute sync for product deletion
+     * Execute sync for product deletion.
      */
     public function onDelete(Product $product): void
     {

@@ -96,7 +96,7 @@ class AdminAssistantRepository extends ServiceEntityRepository
     }
 
     /**
-     * Get conversations with message statistics
+     * Get conversations with message statistics.
      *
      * @return array<array{conversation: AdminAssistantConversation, messageCount: int, lastMessageAt: \DateTimeImmutable|null}>
      */

@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Add name_es column to products table for Spanish product names
+ * Add name_es column to products table for Spanish product names.
  */
 final class Version20260206131936 extends AbstractMigration
 {
@@ -20,7 +20,7 @@ final class Version20260206131936 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->addSql('ALTER TABLE products ADD name_es VARCHAR(255) DEFAULT NULL');
-        
+
         // Populate with some common Spanish translations
         $this->addSql("UPDATE products SET name_es = 'Portátil Pro 15\"' WHERE name = 'Laptop Pro 15\"'");
         $this->addSql("UPDATE products SET name_es = 'Hub USB-C' WHERE name = 'USB-C Hub'");

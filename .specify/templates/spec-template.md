@@ -18,6 +18,9 @@
   - Tested independently
   - Deployed independently
   - Demonstrated to users independently
+  
+  TDD REQUIREMENT: These acceptance scenarios will be converted to failing tests FIRST,
+  before any implementation code is written. This ensures requirements are testable and clear.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)

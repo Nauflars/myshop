@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\ValueObject;
 
 /**
- * SearchQuery - Value object for search queries
- * 
+ * SearchQuery - Value object for search queries.
+ *
  * Implements spec-010 T030: Encapsulates search query parameters
  */
 class SearchQuery
@@ -19,7 +19,7 @@ class SearchQuery
         private readonly int $limit = 10,
         private readonly int $offset = 0,
         private readonly float $minSimilarity = 0.6,
-        private readonly ?string $category = null
+        private readonly ?string $category = null,
     ) {
         $this->validate();
     }
@@ -51,7 +51,7 @@ class SearchQuery
 
     public function hasCategory(): bool
     {
-        return $this->category !== null && $this->category !== '';
+        return null !== $this->category && '' !== $this->category;
     }
 
     private function validate(): void
@@ -59,15 +59,11 @@ class SearchQuery
         $queryLength = mb_strlen(trim($this->query));
 
         if ($queryLength < self::MIN_QUERY_LENGTH) {
-            throw new \InvalidArgumentException(
-                sprintf('Query must be at least %d characters long', self::MIN_QUERY_LENGTH)
-            );
+            throw new \InvalidArgumentException(sprintf('Query must be at least %d characters long', self::MIN_QUERY_LENGTH));
         }
 
         if ($queryLength > self::MAX_QUERY_LENGTH) {
-            throw new \InvalidArgumentException(
-                sprintf('Query must not exceed %d characters', self::MAX_QUERY_LENGTH)
-            );
+            throw new \InvalidArgumentException(sprintf('Query must not exceed %d characters', self::MAX_QUERY_LENGTH));
         }
 
         if ($this->limit < 1 || $this->limit > 100) {

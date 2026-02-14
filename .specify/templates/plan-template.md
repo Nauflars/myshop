@@ -31,7 +31,32 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**TDD Compliance**:
+- [ ] Feature has clearly defined acceptance criteria for test creation
+- [ ] Test-first approach is planned in tasks.md (tests before implementation)
+
+**DDD Architecture**:
+- [ ] Clear layer assignment: Domain entities identified
+- [ ] Application use cases defined
+- [ ] Infrastructure concerns isolated
+- [ ] No domain logic leaking into infrastructure
+
+**SOLID Principles**:
+- [ ] Repository interfaces defined for domain layer
+- [ ] Use cases depend on abstractions, not concretions
+- [ ] Single Responsibility verified for new classes
+
+**Test Coverage**:
+- [ ] Unit tests planned for domain entities and use cases
+- [ ] Integration tests planned for infrastructure layer
+- [ ] E2E tests planned for critical user journeys (if applicable)
+- [ ] Coverage maintenance strategy documented
+
+**Clean Code**:
+- [ ] Naming conventions follow intention-revealing standards
+- [ ] Functions are planned to be small and focused
+
+*Document ONLY violations that require justification in Complexity Tracking section below*
 
 ## Project Structure
 

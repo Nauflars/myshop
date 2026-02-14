@@ -8,8 +8,8 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Migration for spec-007: Admin Virtual Assistant
- * 
+ * Migration for spec-007: Admin Virtual Assistant.
+ *
  * Creates three tables:
  * - admin_assistant_conversations: Chat sessions between admin and assistant
  * - admin_assistant_messages: Individual messages in conversations

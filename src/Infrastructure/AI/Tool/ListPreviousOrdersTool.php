@@ -16,7 +16,7 @@ final class ListPreviousOrdersTool
 {
     public function __construct(
         private readonly ListPreviousOrders $listPreviousOrders,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
@@ -28,7 +28,7 @@ final class ListPreviousOrdersTool
         try {
             $user = $this->security->getUser();
 
-            if ($user === null) {
+            if (null === $user) {
                 return [
                     'success' => false,
                     'orders' => [],
@@ -38,7 +38,7 @@ final class ListPreviousOrdersTool
 
             $result = $this->listPreviousOrders->execute($user, $limit);
 
-            if ($result['count'] === 0) {
+            if (0 === $result['count']) {
                 return [
                     'success' => true,
                     'orders' => [],

@@ -8,28 +8,29 @@ use App\Domain\Repository\CartRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 
 /**
- * GetCartItems Use Case - AI Feature
- * 
+ * GetCartItems Use Case - AI Feature.
+ *
  * Returns the current shopping cart contents for a user,
  * including products, quantities, prices, and total amount.
- * 
+ *
  * Architecture: Application layer (use case)
  * DDD Role: Application Service - orchestrates domain logic
- * 
+ *
  * @author AI Shopping Assistant Team
  */
 final class GetCartItems
 {
     public function __construct(
         private readonly CartRepositoryInterface $cartRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
-    
+
     /**
-     * Execute the use case
+     * Execute the use case.
      *
      * @param string $userId User UUID
+     *
      * @return array{
      *     found: bool,
      *     cartId: string|null,
@@ -50,7 +51,7 @@ final class GetCartItems
     {
         // Find user
         $user = $this->userRepository->findById($userId);
-        if ($user === null) {
+        if (null === $user) {
             return [
                 'found' => false,
                 'cartId' => null,
@@ -60,10 +61,10 @@ final class GetCartItems
                 'itemCount' => 0,
             ];
         }
-        
+
         // Find cart
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null || $cart->isEmpty()) {
+        if (null === $cart || $cart->isEmpty()) {
             return [
                 'found' => true,
                 'cartId' => null,
@@ -73,16 +74,16 @@ final class GetCartItems
                 'itemCount' => 0,
             ];
         }
-        
+
         // Build response with cart items
         $items = [];
         $totalAmount = 0.0;
-        
+
         foreach ($cart->getItems() as $cartItem) {
             $product = $cartItem->getProduct();
             $itemTotal = $product->getPrice() * $cartItem->getQuantity();
             $totalAmount += $itemTotal;
-            
+
             $items[] = [
                 'productId' => $product->getId(),
                 'productName' => $product->getName(),
@@ -92,7 +93,7 @@ final class GetCartItems
                 'currency' => 'USD',
             ];
         }
-        
+
         return [
             'found' => true,
             'cartId' => $cart->getId(),

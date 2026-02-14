@@ -9,8 +9,8 @@ use App\Domain\Repository\OrderRepositoryInterface;
 use App\Domain\Repository\ProductRepositoryInterface;
 
 /**
- * DeleteProduct - Admin use case to delete products
- * 
+ * DeleteProduct - Admin use case to delete products.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Validates deletion is safe (no associated orders) before removing product
  */
@@ -18,12 +18,12 @@ class DeleteProduct
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly OrderRepositoryInterface $orderRepository
+        private readonly OrderRepositoryInterface $orderRepository,
     ) {
     }
 
     /**
-     * Check if product can be safely deleted
+     * Check if product can be safely deleted.
      *
      * @return array{can_delete: bool, reason: string|null, order_count: int}
      */
@@ -48,7 +48,7 @@ class DeleteProduct
     }
 
     /**
-     * Delete product
+     * Delete product.
      *
      * @throws \RuntimeException if product cannot be deleted
      */
@@ -66,7 +66,7 @@ class DeleteProduct
     }
 
     /**
-     * Find products by name for deletion
+     * Find products by name for deletion.
      *
      * @return Product[]
      */
@@ -76,7 +76,7 @@ class DeleteProduct
     }
 
     /**
-     * Get product details for confirmation
+     * Get product details for confirmation.
      */
     public function getProductDetails(Product $product): array
     {

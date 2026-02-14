@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * AdminAssistantMessage - Individual message within admin assistant conversation
- * 
+ * AdminAssistantMessage - Individual message within admin assistant conversation.
+ *
  * Part of spec-007: Admin Virtual Assistant
  * Stores messages from both admin user and AI assistant
  */
@@ -58,12 +58,10 @@ class AdminAssistantMessage
     public function __construct(
         AdminAssistantConversation $conversation,
         string $sender,
-        string $messageText
+        string $messageText,
     ) {
         if (!in_array($sender, [self::SENDER_ADMIN, self::SENDER_ASSISTANT], true)) {
-            throw new \InvalidArgumentException(
-                sprintf('Invalid sender "%s". Must be "%s" or "%s"', $sender, self::SENDER_ADMIN, self::SENDER_ASSISTANT)
-            );
+            throw new \InvalidArgumentException(sprintf('Invalid sender "%s". Must be "%s" or "%s"', $sender, self::SENDER_ADMIN, self::SENDER_ASSISTANT));
         }
 
         $this->id = Uuid::v4()->toRfc4122();
@@ -92,12 +90,12 @@ class AdminAssistantMessage
 
     public function isFromAdmin(): bool
     {
-        return $this->sender === self::SENDER_ADMIN;
+        return self::SENDER_ADMIN === $this->sender;
     }
 
     public function isFromAssistant(): bool
     {
-        return $this->sender === self::SENDER_ASSISTANT;
+        return self::SENDER_ASSISTANT === $this->sender;
     }
 
     public function getMessageText(): string
@@ -117,7 +115,7 @@ class AdminAssistantMessage
 
     public function addToolInvocation(string $toolName, array $parameters, mixed $result): void
     {
-        if ($this->toolInvocations === null) {
+        if (null === $this->toolInvocations) {
             $this->toolInvocations = [];
         }
 
@@ -151,6 +149,6 @@ class AdminAssistantMessage
 
     public function hasError(): bool
     {
-        return $this->errorInfo !== null;
+        return null !== $this->errorInfo;
     }
 }

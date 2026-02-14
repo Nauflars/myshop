@@ -14,8 +14,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * BatchSyncEmbeddingsCommand - Initial batch sync for large product catalogs
- * 
+ * BatchSyncEmbeddingsCommand - Initial batch sync for large product catalogs.
+ *
  * Implements spec-010 T027: Batch sync with progress tracking and error handling
  */
 #[AsCommand(
@@ -28,7 +28,7 @@ class BatchSyncEmbeddingsCommand extends Command
 
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly ProductEmbeddingSyncService $syncService
+        private readonly ProductEmbeddingSyncService $syncService,
     ) {
         parent::__construct();
     }
@@ -79,14 +79,16 @@ class BatchSyncEmbeddingsCommand extends Command
 
         if (!$io->confirm('Continue with batch sync?', true)) {
             $io->info('Batch sync cancelled');
+
             return Command::SUCCESS;
         }
 
         $products = $this->productRepository->findAll();
         $totalProducts = count($products);
 
-        if ($totalProducts === 0) {
+        if (0 === $totalProducts) {
             $io->warning('No products found in database');
+
             return Command::SUCCESS;
         }
 
@@ -106,7 +108,7 @@ class BatchSyncEmbeddingsCommand extends Command
         $batchNumber = 0;
 
         foreach ($batches as $batch) {
-            $batchNumber++;
+            ++$batchNumber;
             $batchStartTime = microtime(true);
 
             foreach ($batch as $product) {
@@ -114,18 +116,17 @@ class BatchSyncEmbeddingsCommand extends Command
                     $success = $this->syncService->createEmbedding($product);
 
                     if ($success) {
-                        $successCount++;
+                        ++$successCount;
                     } else {
-                        $failureCount++;
+                        ++$failureCount;
                         $errors[] = [
                             'product_id' => $product->getId(),
                             'name' => $product->getName(),
                             'error' => 'Sync returned false',
                         ];
                     }
-
                 } catch (\Exception $e) {
-                    $failureCount++;
+                    ++$failureCount;
                     $errors[] = [
                         'product_id' => $product->getId(),
                         'name' => $product->getName(),
@@ -177,14 +178,14 @@ class BatchSyncEmbeddingsCommand extends Command
 
         // Show errors if any
         if (!empty($errors)) {
-            $io->section('Errors (' . count($errors) . ' total)');
+            $io->section('Errors ('.count($errors).' total)');
 
             $errorSample = array_slice($errors, 0, 10);
             $io->table(
                 ['Product ID', 'Name', 'Error'],
                 array_map(
-                    fn($e) => [
-                        substr($e['product_id'], 0, 8) . '...',
+                    fn ($e) => [
+                        substr($e['product_id'], 0, 8).'...',
                         substr($e['name'], 0, 30),
                         substr($e['error'], 0, 50),
                     ],
@@ -203,12 +204,13 @@ class BatchSyncEmbeddingsCommand extends Command
             ]);
         }
 
-        if ($failureCount === 0) {
+        if (0 === $failureCount) {
             $io->success(sprintf(
                 'Batch sync completed successfully! %d products synced in %.2f minutes.',
                 $successCount,
                 $totalDuration / 60
             ));
+
             return Command::SUCCESS;
         } elseif ($successCount > 0) {
             $io->warning(sprintf(
@@ -216,10 +218,11 @@ class BatchSyncEmbeddingsCommand extends Command
                 $successCount,
                 $failureCount
             ));
-            return Command::FAILURE;
-        } else {
-            $io->error('Batch sync failed - no products were synced successfully');
+
             return Command::FAILURE;
         }
+        $io->error('Batch sync failed - no products were synced successfully');
+
+        return Command::FAILURE;
     }
 }

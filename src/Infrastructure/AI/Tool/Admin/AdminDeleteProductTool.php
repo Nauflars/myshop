@@ -19,21 +19,21 @@ final class AdminDeleteProductTool
     public function __construct(
         private readonly DeleteProduct $deleteProduct,
         private readonly AdminAssistantLogger $logger,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
     /**
-     * Delete a product from the catalog
+     * Delete a product from the catalog.
      *
-     * @param string $productName Nombre del producto a eliminar
+     * @param string   $productName          Nombre del producto a eliminar
      * @param int|null $disambiguation_index Si hay múltiples productos con el mismo nombre, índice del producto seleccionado (1-based)
-     * @param bool $confirmed Confirmación explícita del administrador (requerida)
+     * @param bool     $confirmed            Confirmación explícita del administrador (requerida)
      */
     public function __invoke(
         string $productName,
         ?int $disambiguation_index = null,
-        bool $confirmed = false
+        bool $confirmed = false,
     ): array {
         // Verify admin role
         $user = $this->security->getUser();
@@ -57,11 +57,11 @@ final class AdminDeleteProductTool
             }
 
             // Handle disambiguation
-            if (count($products) > 1 && $disambiguation_index === null) {
+            if (count($products) > 1 && null === $disambiguation_index) {
                 $productList = [];
                 foreach ($products as $index => $product) {
                     $productList[] = sprintf(
-                        "%d. %s (ID: %s, Precio: $%.2f, Stock: %d, Categoría: %s)",
+                        '%d. %s (ID: %s, Precio: $%.2f, Stock: %d, Categoría: %s)',
                         $index + 1,
                         $product->getName(),
                         $product->getId(),
@@ -74,20 +74,20 @@ final class AdminDeleteProductTool
                 return [
                     'success' => false,
                     'requires_disambiguation' => true,
-                    'message' => "I found " . count($products) . " products with that name:\n\n" .
-                        implode("\n", $productList) .
+                    'message' => 'I found '.count($products)." products with that name:\n\n".
+                        implode("\n", $productList).
                         "\n\n¿Cuál de estos productos deseas eliminar? Responde con el número.",
                     'product_count' => count($products),
                 ];
             }
 
             // Select the product
-            $selectedProductIndex = $disambiguation_index !== null ? $disambiguation_index - 1 : 0;
-            
+            $selectedProductIndex = null !== $disambiguation_index ? $disambiguation_index - 1 : 0;
+
             if (!isset($products[$selectedProductIndex])) {
                 return [
                     'success' => false,
-                    'error' => "Índice inválido. Por favor selecciona un número entre 1 y " . count($products),
+                    'error' => 'Índice inválido. Por favor selecciona un número entre 1 y '.count($products),
                 ];
             }
 
@@ -95,12 +95,12 @@ final class AdminDeleteProductTool
 
             // Check if product can be deleted
             $deleteCheck = $this->deleteProduct->canDelete($product);
-            
+
             if (!$deleteCheck['can_delete']) {
                 return [
                     'success' => false,
                     'error' => 'El producto no puede ser eliminado',
-                    'message' => "⚠️ No se puede eliminar el producto '{$product->getName()}'. " . 
+                    'message' => "⚠️ No se puede eliminar el producto '{$product->getName()}'. ".
                         $deleteCheck['reason'],
                     'order_count' => $deleteCheck['order_count'],
                 ];
@@ -114,12 +114,12 @@ final class AdminDeleteProductTool
                 return [
                     'success' => false,
                     'requires_confirmation' => true,
-                    'message' => "⚠️ Vas a eliminar el siguiente producto:\n" .
-                        "• Nombre: {$productDetails['name']}\n" .
-                        "• Descripción: {$productDetails['description']}\n" .
-                        "• Precio: \${$productDetails['price']}\n" .
-                        "• Stock: {$productDetails['stock']} unidades\n" .
-                        "• Categoría: {$productDetails['category']}\n" .
+                    'message' => "⚠️ Vas a eliminar el siguiente producto:\n".
+                        "• Nombre: {$productDetails['name']}\n".
+                        "• Descripción: {$productDetails['description']}\n".
+                        "• Precio: \${$productDetails['price']}\n".
+                        "• Stock: {$productDetails['stock']} unidades\n".
+                        "• Categoría: {$productDetails['category']}\n".
                         "\n⚠️ Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este producto? Responde 'sí', 'confirmar' o 'adelante'.",
                     'product_details' => $productDetails,
                 ];
@@ -128,7 +128,7 @@ final class AdminDeleteProductTool
             // Execute deletion
             $productName = $product->getName();
             $productId = $product->getId();
-            
+
             $this->deleteProduct->execute($product);
 
             // Log action
@@ -145,7 +145,6 @@ final class AdminDeleteProductTool
                 'product_id' => $productId,
                 'product_name' => $productName,
             ];
-
         } catch (\RuntimeException $e) {
             // Business rule error (e.g., product has orders)
             $this->logger->logFailedAction(

@@ -13,7 +13,7 @@ final class CreateUser
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -23,7 +23,7 @@ final class CreateUser
 
         // Check if user already exists
         $existingUser = $this->userRepository->findByEmail($email);
-        if ($existingUser !== null) {
+        if (null !== $existingUser) {
             throw new \InvalidArgumentException('User with this email already exists');
         }
 

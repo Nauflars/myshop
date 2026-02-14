@@ -16,27 +16,27 @@ final class CollectCheckoutInformationTool
 {
     public function __construct(
         private readonly CollectCheckoutInformation $collectCheckoutInformation,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
     /**
-     * @param string $shippingAddress Dirección completa de envío
-     * @param string $paymentMethod Método de pago (credit_card, paypal, bank_transfer, cash_on_delivery)
-     * @param string $contactEmail Correo electrónico de contacto
-     * @param string|null $contactPhone Teléfono de contacto (opcional)
+     * @param string      $shippingAddress Dirección completa de envío
+     * @param string      $paymentMethod   Método de pago (credit_card, paypal, bank_transfer, cash_on_delivery)
+     * @param string      $contactEmail    Correo electrónico de contacto
+     * @param string|null $contactPhone    Teléfono de contacto (opcional)
      */
     public function __invoke(
         string $shippingAddress,
         string $paymentMethod,
         string $contactEmail,
-        ?string $contactPhone = null
+        ?string $contactPhone = null,
     ): array {
         $this->aiToolsLogger->info('📋 CollectCheckoutInformationTool called', [
             'payment_method' => $paymentMethod,
-            'has_phone' => $contactPhone !== null
+            'has_phone' => null !== $contactPhone,
         ]);
-        
+
         try {
             $result = $this->collectCheckoutInformation->execute(
                 $shippingAddress,
@@ -47,18 +47,19 @@ final class CollectCheckoutInformationTool
 
             if (!$result['valid']) {
                 $this->aiToolsLogger->warning('⚠️ Checkout information validation failed', [
-                    'errors' => $result['errors']
+                    'errors' => $result['errors'],
                 ]);
+
                 return [
                     'success' => false,
                     'valid' => false,
                     'errors' => $result['errors'],
-                    'message' => 'There are errors in the provided information: ' . implode(' ', $result['errors']),
+                    'message' => 'There are errors in the provided information: '.implode(' ', $result['errors']),
                 ];
             }
 
             $this->aiToolsLogger->info('✅ Checkout information validated');
-            
+
             return [
                 'success' => true,
                 'valid' => true,
@@ -67,8 +68,9 @@ final class CollectCheckoutInformationTool
             ];
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ CollectCheckoutInformationTool failed', [
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
+
             return [
                 'success' => false,
                 'valid' => false,

@@ -2,8 +2,8 @@
 
 namespace App\Infrastructure\Command;
 
-use App\Domain\Entity\User;
 use App\Domain\Entity\Order;
+use App\Domain\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -43,6 +43,7 @@ class DebugUserOrdersCommand extends Command
 
         if (!$userId) {
             $io->error('Please provide --user-id');
+
             return Command::INVALID;
         }
 
@@ -50,6 +51,7 @@ class DebugUserOrdersCommand extends Command
 
         if (!$user) {
             $io->error("User not found: {$userId}");
+
             return Command::FAILURE;
         }
 
@@ -59,11 +61,11 @@ class DebugUserOrdersCommand extends Command
         $orderRepository = $this->entityManager->getRepository(Order::class);
         $orders = $orderRepository->findBy(['user' => $user]);
 
-        $io->section("Total orders: " . count($orders));
+        $io->section('Total orders: '.count($orders));
 
         foreach ($orders as $order) {
             $io->writeln("Order {$order->getOrderNumber()} - Status: {$order->getStatus()}");
-            
+
             foreach ($order->getItems() as $item) {
                 $product = $item->getProduct();
                 $io->writeln("  - {$product->getName()} (x{$item->getQuantity()})");
@@ -71,21 +73,23 @@ class DebugUserOrdersCommand extends Command
         }
 
         // Filter shipped/delivered only
-        $shippedOrders = array_filter($orders, function($order) {
+        $shippedOrders = array_filter($orders, function ($order) {
             $status = $order->getStatus();
-            return $status === Order::STATUS_DELIVERED || $status === Order::STATUS_SHIPPED;
+
+            return Order::STATUS_DELIVERED === $status || Order::STATUS_SHIPPED === $status;
         });
 
-        $io->section("Shipped/Delivered orders: " . count($shippedOrders));
+        $io->section('Shipped/Delivered orders: '.count($shippedOrders));
 
         foreach ($shippedOrders as $order) {
             $io->writeln("Order {$order->getOrderNumber()} - Status: {$order->getStatus()}");
-            
+
             foreach ($order->getItems() as $item) {
                 $product = $item->getProduct();
                 $io->writeln("  - {$product->getName()} (x{$item->getQuantity()})");
             }
         }
 
-        return Command::SUCCESS;    }
+        return Command::SUCCESS;
+    }
 }

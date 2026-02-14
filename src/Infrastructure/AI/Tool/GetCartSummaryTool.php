@@ -20,19 +20,20 @@ final class GetCartSummaryTool
         private readonly GetCartSummary $getCartSummary,
         private readonly CartRepositoryInterface $cartRepository,
         private readonly Security $security,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
     public function __invoke(): array
     {
         $this->aiToolsLogger->info('🛒 GetCartSummaryTool called');
-        
+
         try {
             $user = $this->security->getUser();
 
-            if ($user === null) {
+            if (null === $user) {
                 $this->aiToolsLogger->warning('⚠️ GetCartSummaryTool: User not authenticated');
+
                 return [
                     'success' => false,
                     'message' => 'You must log in to view your cart.',
@@ -42,7 +43,7 @@ final class GetCartSummaryTool
 
             $cart = $this->cartRepository->findByUser($user);
 
-            if ($cart === null) {
+            if (null === $cart) {
                 $cart = new \App\Domain\Entity\Cart($user);
                 $this->cartRepository->save($cart);
             }
@@ -51,6 +52,7 @@ final class GetCartSummaryTool
 
             if ($summary['isEmpty']) {
                 $this->aiToolsLogger->info('🛒 Cart is empty');
+
                 return [
                     'success' => true,
                     'cart' => $summary,
@@ -60,9 +62,9 @@ final class GetCartSummaryTool
 
             $this->aiToolsLogger->info('✅ Cart summary retrieved', [
                 'item_count' => $summary['itemCount'],
-                'total' => $summary['total']
+                'total' => $summary['total'],
             ]);
-            
+
             return [
                 'success' => true,
                 'cart' => $summary,
@@ -75,8 +77,9 @@ final class GetCartSummaryTool
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ GetCartSummaryTool failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return [
                 'success' => false,
                 'cart' => null,

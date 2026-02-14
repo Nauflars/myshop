@@ -16,7 +16,7 @@ final readonly class ProductDTO
         public bool $inStock,
         public bool $lowStock,
         public string $createdAt,
-        public string $updatedAt
+        public string $updatedAt,
     ) {
     }
 }

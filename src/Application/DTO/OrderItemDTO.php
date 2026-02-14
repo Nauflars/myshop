@@ -11,7 +11,7 @@ final readonly class OrderItemDTO
         public string $price,
         public int $priceInCents,
         public string $subtotal,
-        public int $subtotalInCents
+        public int $subtotalInCents,
     ) {
     }
 }

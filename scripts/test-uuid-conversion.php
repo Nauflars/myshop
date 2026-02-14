@@ -1,14 +1,14 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 
 use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 
 $dotenv = new Dotenv();
-$dotenv->bootEnv(__DIR__ . '/.env');
+$dotenv->bootEnv(__DIR__.'/.env');
 
-$kernel = new Kernel($_ENV['APP_ENV'] ?? 'dev', (bool)$_ENV['APP_DEBUG'] ?? false);
+$kernel = new Kernel($_ENV['APP_ENV'] ?? 'dev', (bool) $_ENV['APP_DEBUG'] ?? false);
 $kernel->boot();
 $container = $kernel->getContainer();
 
@@ -23,12 +23,12 @@ $mongoUUIDs = [
 
 echo "1. Converting UUID strings to Uuid objects...\n";
 $uuidObjects = array_map(
-    fn($id) => \Symfony\Component\Uid\Uuid::fromString($id),
+    fn ($id) => Symfony\Component\Uid\Uuid::fromString($id),
     $mongoUUIDs
 );
 
-echo "  ✓ Converted " . count($uuidObjects) . " UUIDs\n";
-echo "  - First UUID type: " . get_class($uuidObjects[0]) . "\n\n";
+echo '  ✓ Converted '.count($uuidObjects)." UUIDs\n";
+echo '  - First UUID type: '.get_class($uuidObjects[0])."\n\n";
 
 echo "2. Querying MySQL with Uuid objects...\n";
 $entityManager = $container->get('doctrine.orm.entity_manager');
@@ -41,7 +41,7 @@ $qb->select('p')
 
 $products = $qb->getQuery()->getResult();
 
-echo "  ✓ Found " . count($products) . " products\n\n";
+echo '  ✓ Found '.count($products)." products\n\n";
 
 if (count($products) > 0) {
     echo "3. Products found:\n";

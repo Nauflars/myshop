@@ -19,7 +19,7 @@ if (is_array($env = @include dirname(__DIR__).'/.env.local.php') && (!isset($env
 } else {
     $path = dirname(__DIR__).'/.env';
     $dotenv = new Dotenv();
-    
+
     // load all the .env files
     if (file_exists($path) || file_exists($path.'.local') || file_exists($path.'.dist')) {
         $dotenv->usePutenv(true);

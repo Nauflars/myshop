@@ -8,7 +8,7 @@ use App\Application\DTO\OrderItemDTO;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests for OrderItemDTO
+ * Unit tests for OrderItemDTO.
  */
 class OrderItemDTOTest extends TestCase
 {
@@ -23,7 +23,7 @@ class OrderItemDTOTest extends TestCase
             subtotal: '$1,999.98',
             subtotalInCents: 199998
         );
-        
+
         $this->assertEquals('prod-123', $dto->productId);
         $this->assertEquals('Laptop', $dto->productName);
         $this->assertEquals(2, $dto->quantity);

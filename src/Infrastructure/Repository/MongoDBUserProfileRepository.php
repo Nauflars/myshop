@@ -9,7 +9,7 @@ use MongoDB\Database;
 use Psr\Log\LoggerInterface;
 
 /**
- * MongoDB implementation for UserProfile repository
+ * MongoDB implementation for UserProfile repository.
  */
 class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
 {
@@ -20,7 +20,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
     public function __construct(
         Client $mongoClient,
         string $databaseName,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->database = $mongoClient->selectDatabase($databaseName);
         $this->logger = $logger;
@@ -37,6 +37,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
                     'userId' => $userId,
                     'collection' => $this->collectionName,
                 ]);
+
                 return null;
             }
 
@@ -52,6 +53,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -167,16 +169,16 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
                     'score' => $similarity,
                 ];
 
-                $iteration++;
+                ++$iteration;
             }
 
             // Sort by similarity descending
-            usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+            usort($results, fn ($a, $b) => $b['score'] <=> $a['score']);
 
             $this->logger->info('DEBUG: Results sorted', [
                 'totalResults' => count($results),
                 'topScore' => isset($results[0]) ? $results[0]['score'] : 'N/A',
-                'top3Scores' => array_slice(array_map(fn($r) => $r['score'], $results), 0, 3),
+                'top3Scores' => array_slice(array_map(fn ($r) => $r['score'], $results), 0, 3),
             ]);
 
             // Limit results
@@ -194,12 +196,13 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
                 'trace' => $e->getTraceAsString(),
                 'embeddingLength' => count($embedding),
             ]);
+
             return [];
         }
     }
 
     /**
-     * Calculate cosine similarity between two vectors
+     * Calculate cosine similarity between two vectors.
      */
     private function calculateCosineSimilarity(array $vec1, array $vec2): float
     {
@@ -211,7 +214,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
         $magnitude1 = 0;
         $magnitude2 = 0;
 
-        for ($i = 0; $i < count($vec1); $i++) {
+        for ($i = 0; $i < count($vec1); ++$i) {
             $dotProduct += $vec1[$i] * $vec2[$i];
             $magnitude1 += $vec1[$i] * $vec1[$i];
             $magnitude2 += $vec2[$i] * $vec2[$i];
@@ -220,7 +223,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
         $magnitude1 = sqrt($magnitude1);
         $magnitude2 = sqrt($magnitude2);
 
-        if ($magnitude1 == 0 || $magnitude2 == 0) {
+        if (0 == $magnitude1 || 0 == $magnitude2) {
             return 0.0;
         }
 
@@ -247,6 +250,7 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
             $this->logger->error('Failed to find stale profiles', [
                 'error' => $e->getMessage(),
             ]);
+
             return [];
         }
     }
@@ -255,11 +259,13 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
     {
         try {
             $collection = $this->database->selectCollection($this->collectionName);
+
             return $collection->countDocuments();
         } catch (\Exception $e) {
             $this->logger->error('Failed to count profiles', [
                 'error' => $e->getMessage(),
             ]);
+
             return 0;
         }
     }
@@ -269,12 +275,14 @@ class MongoDBUserProfileRepository implements UserProfileRepositoryInterface
         try {
             $collection = $this->database->selectCollection($this->collectionName);
             $count = $collection->countDocuments(['userId' => $userId], ['limit' => 1]);
+
             return $count > 0;
         } catch (\Exception $e) {
             $this->logger->error('Failed to check profile existence', [
                 'userId' => $userId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }

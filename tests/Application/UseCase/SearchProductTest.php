@@ -13,7 +13,7 @@ class SearchProductTest extends TestCase
     public function testExecuteWithAllParameters(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $expectedProducts = [
             new Product('Product 1', 'Description 1', new Money(1000, 'USD'), 10, 'Electronics'),
             new Product('Product 2', 'Description 2', new Money(2000, 'USD'), 5, 'Electronics'),
@@ -34,7 +34,7 @@ class SearchProductTest extends TestCase
     public function testExecuteWithQueryOnly(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $productRepository->expects($this->once())
             ->method('search')
             ->with('phone', null, null, null)
@@ -49,7 +49,7 @@ class SearchProductTest extends TestCase
     public function testFindByCategory(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $expectedProducts = [
             new Product('Book 1', 'A great book', new Money(1500, 'USD'), 20, 'Books'),
         ];
@@ -69,7 +69,7 @@ class SearchProductTest extends TestCase
     public function testFindAll(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $expectedProducts = [
             new Product('Product 1', 'Description 1', new Money(1000, 'USD'), 10, 'Electronics'),
             new Product('Product 2', 'Description 2', new Money(2000, 'USD'), 5, 'Books'),
@@ -89,7 +89,7 @@ class SearchProductTest extends TestCase
     public function testFindById(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $product = new Product('Test Product', 'A test product', new Money(1000, 'USD'), 10, 'Electronics');
 
         $productRepository->expects($this->once())
@@ -107,7 +107,7 @@ class SearchProductTest extends TestCase
     public function testFindByIdReturnsNull(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $productRepository->expects($this->once())
             ->method('findById')
             ->with('non-existent-id')
@@ -122,7 +122,7 @@ class SearchProductTest extends TestCase
     public function testFindLowStock(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $lowStockProducts = [
             new Product('Low Stock 1', 'Description 1', new Money(1000, 'USD'), 3, 'Electronics'),
             new Product('Low Stock 2', 'Description 2', new Money(2000, 'USD'), 5, 'Books'),
@@ -142,7 +142,7 @@ class SearchProductTest extends TestCase
     public function testFindLowStockWithDefaultThreshold(): void
     {
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
-        
+
         $productRepository->expects($this->once())
             ->method('findLowStock')
             ->with(10) // default threshold

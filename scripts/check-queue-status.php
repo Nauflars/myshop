@@ -2,7 +2,7 @@
 
 require 'vendor/autoload.php';
 
-$conn = \Doctrine\DBAL\DriverManager::getConnection(['url' => 'mysql://root:rootpassword@mysql:3306/myshop']);
+$conn = Doctrine\DBAL\DriverManager::getConnection(['url' => 'mysql://root:rootpassword@mysql:3306/myshop']);
 
 $total = $conn->fetchOne('SELECT COUNT(*) FROM messenger_messages');
 echo "Total messages in queue: $total\n";
@@ -17,9 +17,9 @@ if ($total > 0) {
     echo "\nRecent messages:\n";
     $stmt = $conn->executeQuery('SELECT id, queue_name, delivered_at, created_at FROM messenger_messages ORDER BY created_at DESC LIMIT 5');
     while ($row = $stmt->fetchAssociative()) {
-        echo sprintf("- ID: %d, Queue: %s, Created: %s, Delivered: %s\n", 
-            $row['id'], 
-            $row['queue_name'], 
+        echo sprintf("- ID: %d, Queue: %s, Created: %s, Delivered: %s\n",
+            $row['id'],
+            $row['queue_name'],
             $row['created_at'],
             $row['delivered_at'] ?? 'PENDING'
         );

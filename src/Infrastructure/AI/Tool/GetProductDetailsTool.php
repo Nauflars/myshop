@@ -16,7 +16,7 @@ final class GetProductDetailsTool
 {
     public function __construct(
         private readonly GetProductDetailsByName $getProductDetailsByName,
-        private readonly LoggerInterface $aiToolsLogger
+        private readonly LoggerInterface $aiToolsLogger,
     ) {
     }
 
@@ -26,16 +26,17 @@ final class GetProductDetailsTool
     public function __invoke(string $productName): array
     {
         $this->aiToolsLogger->info('🔍 GetProductDetailsTool called', [
-            'product_name' => $productName
+            'product_name' => $productName,
         ]);
-        
+
         try {
             $product = $this->getProductDetailsByName->execute($productName);
 
-            if ($product === null) {
+            if (null === $product) {
                 $this->aiToolsLogger->warning('⚠️ Product not found', [
-                    'product_name' => $productName
+                    'product_name' => $productName,
                 ]);
+
                 return [
                     'success' => false,
                     'product' => null,
@@ -44,9 +45,9 @@ final class GetProductDetailsTool
             }
 
             $this->aiToolsLogger->info('✅ Product details retrieved', [
-                'product_name' => $productName
+                'product_name' => $productName,
             ]);
-            
+
             return [
                 'success' => true,
                 'product' => $product,
@@ -55,8 +56,9 @@ final class GetProductDetailsTool
         } catch (\Exception $e) {
             $this->aiToolsLogger->error('❌ GetProductDetailsTool failed', [
                 'error' => $e->getMessage(),
-                'product_name' => $productName
+                'product_name' => $productName,
             ]);
+
             return [
                 'success' => false,
                 'product' => null,

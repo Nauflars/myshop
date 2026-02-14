@@ -2,6 +2,7 @@
 
 namespace App\Tests\Application\UseCase;
 
+use App\Application\Port\MessagePublisherInterface;
 use App\Application\UseCase\Checkout;
 use App\Domain\Entity\Cart;
 use App\Domain\Entity\Order;
@@ -28,6 +29,7 @@ class CheckoutTest extends TestCase
         $cartRepository = $this->createMock(CartRepositoryInterface::class);
         $orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $rabbitMQPublisher = $this->createMock(MessagePublisherInterface::class);
 
         $cart = new Cart($this->user);
         $product = new Product('Test Product', 'Description', new Money(1000, 'USD'), 10, 'Electronics');
@@ -50,7 +52,7 @@ class CheckoutTest extends TestCase
             ->method('save')
             ->with($cart);
 
-        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository);
+        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository, $rabbitMQPublisher);
         $order = $useCase->execute($this->user);
 
         $this->assertInstanceOf(Order::class, $order);
@@ -63,6 +65,7 @@ class CheckoutTest extends TestCase
         $cartRepository = $this->createMock(CartRepositoryInterface::class);
         $orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $rabbitMQPublisher = $this->createMock(MessagePublisherInterface::class);
 
         $cart = new Cart($this->user);
         $product = new Product('Test Product', 'Description', new Money(1000, 'USD'), 10, 'Electronics');
@@ -75,10 +78,10 @@ class CheckoutTest extends TestCase
         $productRepository->expects($this->once())
             ->method('save')
             ->with($this->callback(function (Product $savedProduct) {
-                return $savedProduct->getStock() === 7; // 10 - 3
+                return 7 === $savedProduct->getStock(); // 10 - 3
             }));
 
-        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository);
+        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository, $rabbitMQPublisher);
         $useCase->execute($this->user);
     }
 
@@ -87,6 +90,7 @@ class CheckoutTest extends TestCase
         $cartRepository = $this->createMock(CartRepositoryInterface::class);
         $orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $rabbitMQPublisher = $this->createMock(MessagePublisherInterface::class);
 
         $emptyCart = new Cart($this->user);
 
@@ -94,11 +98,11 @@ class CheckoutTest extends TestCase
             ->method('findByUser')
             ->willReturn($emptyCart);
 
-        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository);
+        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository, $rabbitMQPublisher);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Cart is empty');
-        
+
         $useCase->execute($this->user);
     }
 
@@ -107,16 +111,17 @@ class CheckoutTest extends TestCase
         $cartRepository = $this->createMock(CartRepositoryInterface::class);
         $orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $rabbitMQPublisher = $this->createMock(MessagePublisherInterface::class);
 
         $cartRepository->expects($this->once())
             ->method('findByUser')
             ->willReturn(null);
 
-        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository);
+        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository, $rabbitMQPublisher);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Cart is empty');
-        
+
         $useCase->execute($this->user);
     }
 
@@ -125,6 +130,7 @@ class CheckoutTest extends TestCase
         $cartRepository = $this->createMock(CartRepositoryInterface::class);
         $orderRepository = $this->createMock(OrderRepositoryInterface::class);
         $productRepository = $this->createMock(ProductRepositoryInterface::class);
+        $rabbitMQPublisher = $this->createMock(MessagePublisherInterface::class);
 
         $cart = new Cart($this->user);
         $product = new Product('Test Product', 'Description', new Money(1000, 'USD'), 3, 'Electronics');
@@ -132,11 +138,11 @@ class CheckoutTest extends TestCase
 
         $cartRepository->method('findByUser')->willReturn($cart);
 
-        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository);
+        $useCase = new Checkout($cartRepository, $orderRepository, $productRepository, $rabbitMQPublisher);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/Insufficient stock/');
-        
+
         $useCase->execute($this->user);
     }
 }

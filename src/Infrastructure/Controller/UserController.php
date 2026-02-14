@@ -16,7 +16,7 @@ class UserController extends AbstractController
 {
     public function __construct(
         private readonly CreateUser $createUser,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 

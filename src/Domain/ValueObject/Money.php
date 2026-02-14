@@ -2,8 +2,6 @@
 
 namespace App\Domain\ValueObject;
 
-use InvalidArgumentException;
-
 final readonly class Money
 {
     private int $amountInCents;
@@ -12,11 +10,11 @@ final readonly class Money
     public function __construct(int $amountInCents, string $currency = 'USD')
     {
         if ($amountInCents < 0) {
-            throw new InvalidArgumentException('Amount cannot be negative');
+            throw new \InvalidArgumentException('Amount cannot be negative');
         }
 
-        if (strlen($currency) !== 3) {
-            throw new InvalidArgumentException('Currency must be a 3-letter ISO code');
+        if (3 !== strlen($currency)) {
+            throw new \InvalidArgumentException('Currency must be a 3-letter ISO code');
         }
 
         $this->amountInCents = $amountInCents;
@@ -52,18 +50,21 @@ final readonly class Money
         ];
 
         $symbol = $symbols[$this->currency] ?? $this->currency;
+
         return sprintf('%s%.2f', $symbol, $this->getAmountAsDecimal());
     }
 
     public function add(Money $other): self
     {
         $this->assertSameCurrency($other);
+
         return new self($this->amountInCents + $other->amountInCents, $this->currency);
     }
 
     public function subtract(Money $other): self
     {
         $this->assertSameCurrency($other);
+
         return new self($this->amountInCents - $other->amountInCents, $this->currency);
     }
 
@@ -74,14 +75,14 @@ final readonly class Money
 
     public function equals(Money $other): bool
     {
-        return $this->amountInCents === $other->amountInCents 
+        return $this->amountInCents === $other->amountInCents
             && $this->currency === $other->currency;
     }
 
     private function assertSameCurrency(Money $other): void
     {
         if ($this->currency !== $other->currency) {
-            throw new InvalidArgumentException('Cannot operate on different currencies');
+            throw new \InvalidArgumentException('Cannot operate on different currencies');
         }
     }
 

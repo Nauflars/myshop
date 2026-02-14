@@ -2,8 +2,6 @@
 
 namespace App\Domain\ValueObject;
 
-use InvalidArgumentException;
-
 final readonly class Email
 {
     private string $value;
@@ -18,7 +16,7 @@ final readonly class Email
     private function validate(string $email): void
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new InvalidArgumentException(sprintf('"%s" is not a valid email address', $email));
+            throw new \InvalidArgumentException(sprintf('"%s" is not a valid email address', $email));
         }
     }
 

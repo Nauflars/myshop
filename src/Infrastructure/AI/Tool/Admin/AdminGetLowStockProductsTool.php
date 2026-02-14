@@ -17,12 +17,12 @@ final class AdminGetLowStockProductsTool
 {
     public function __construct(
         private readonly GetLowStockProducts $getLowStockProducts,
-        private readonly Security $security
+        private readonly Security $security,
     ) {
     }
 
     /**
-     * Get products with low stock levels
+     * Get products with low stock levels.
      *
      * @param int|null $threshold Umbral de stock bajo (por defecto: 10). Productos con stock menor a este valor se consideran bajos
      */
@@ -40,7 +40,7 @@ final class AdminGetLowStockProductsTool
         try {
             $result = $this->getLowStockProducts->execute($threshold);
 
-            if ($result['count'] === 0) {
+            if (0 === $result['count']) {
                 return [
                     'success' => true,
                     'products' => [],
@@ -77,7 +77,7 @@ final class AdminGetLowStockProductsTool
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'error' => 'Error al consultar productos con stock bajo: ' . $e->getMessage(),
+                'error' => 'Error al consultar productos con stock bajo: '.$e->getMessage(),
             ];
         }
     }

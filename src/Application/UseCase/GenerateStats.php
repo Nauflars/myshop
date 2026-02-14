@@ -13,7 +13,7 @@ final class GenerateStats
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
     ) {
     }
 
@@ -35,7 +35,7 @@ final class GenerateStats
             userCount: $userCount,
             orderCount: $orderCount,
             topProducts: array_map(
-                fn($product) => [
+                fn ($product) => [
                     'id' => $product->getId(),
                     'name' => $product->getName(),
                     'price' => $product->getPrice()->format(),

@@ -3,6 +3,7 @@
 namespace App\Application\UseCase;
 
 use App\Application\Message\UpdateUserEmbeddingMessage;
+use App\Application\Port\MessagePublisherInterface;
 use App\Domain\Entity\Cart;
 use App\Domain\Entity\Order;
 use App\Domain\Entity\User;
@@ -10,7 +11,6 @@ use App\Domain\Repository\CartRepositoryInterface;
 use App\Domain\Repository\OrderRepositoryInterface;
 use App\Domain\Repository\ProductRepositoryInterface;
 use App\Domain\ValueObject\EventType;
-use App\Infrastructure\Queue\RabbitMQPublisher;
 
 final class Checkout
 {
@@ -18,7 +18,7 @@ final class Checkout
         private readonly CartRepositoryInterface $cartRepository,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly ProductRepositoryInterface $productRepository,
-        private readonly RabbitMQPublisher $rabbitMQPublisher
+        private readonly MessagePublisherInterface $rabbitMQPublisher,
     ) {
     }
 
@@ -26,7 +26,7 @@ final class Checkout
     {
         // Get user's cart
         $cart = $this->cartRepository->findByUser($user);
-        if ($cart === null || $cart->isEmpty()) {
+        if (null === $cart || $cart->isEmpty()) {
             throw new \InvalidArgumentException('Cart is empty');
         }
 
@@ -34,14 +34,7 @@ final class Checkout
         foreach ($cart->getItems() as $cartItem) {
             $product = $cartItem->getProduct();
             if ($product->getStock() < $cartItem->getQuantity()) {
-                throw new \InvalidArgumentException(
-                    sprintf(
-                        'Insufficient stock for product "%s". Available: %d, Requested: %d',
-                        $product->getName(),
-                        $product->getStock(),
-                        $cartItem->getQuantity()
-                    )
-                );
+                throw new \InvalidArgumentException(sprintf('Insufficient stock for product "%s". Available: %d, Requested: %d', $product->getName(), $product->getStock(), $cartItem->getQuantity()));
             }
         }
 
@@ -61,7 +54,7 @@ final class Checkout
         // Clear cart
         $cart->clear();
         $this->cartRepository->save($cart);
-        
+
         // spec-014: Publish purchase events to queue for user embedding updates
         try {
             $occurredAt = new \DateTimeImmutable();
@@ -77,7 +70,7 @@ final class Checkout
             }
         } catch (\Exception $e) {
             // Log but don't fail checkout - event publishing is non-critical
-            error_log('Failed to publish purchase events: ' . $e->getMessage());
+            error_log('Failed to publish purchase events: '.$e->getMessage());
         }
 
         return $order;

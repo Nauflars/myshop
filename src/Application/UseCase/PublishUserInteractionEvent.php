@@ -5,16 +5,14 @@ declare(strict_types=1);
 namespace App\Application\UseCase;
 
 use App\Application\Message\UpdateUserEmbeddingMessage;
-use App\Domain\ValueObject\EventType;
 use App\Entity\UserInteraction;
 use App\Infrastructure\Queue\RabbitMQPublisher;
 use App\Repository\UserInteractionRepository;
-use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 
 /**
- * PublishUserInteractionEvent - Use case for saving and publishing user interaction events
- * 
+ * PublishUserInteractionEvent - Use case for saving and publishing user interaction events.
+ *
  * Implements spec-014 US1: Save event to MySQL and publish to RabbitMQ queue
  * Acts as orchestrator between persistence and message queue
  */
@@ -23,13 +21,15 @@ final readonly class PublishUserInteractionEvent
     public function __construct(
         private RabbitMQPublisher $publisher,
         private UserInteractionRepository $userInteractionRepository,
-        private LoggerInterface $logger
-    ) {}
+        private LoggerInterface $logger,
+    ) {
+    }
 
     /**
-     * Execute use case: save interaction and publish to queue
-     * 
+     * Execute use case: save interaction and publish to queue.
+     *
      * @param UserInteraction $interaction User interaction entity
+     *
      * @return bool True if both save and publish succeeded
      */
     public function execute(UserInteraction $interaction): bool
@@ -77,7 +77,6 @@ final readonly class PublishUserInteractionEvent
             ]);
 
             return false;
-
         } catch (\Throwable $e) {
             $this->logger->error('Failed to publish user interaction event', [
                 'user_id' => $interaction->getUserId(),
@@ -91,9 +90,10 @@ final readonly class PublishUserInteractionEvent
     }
 
     /**
-     * Replay unprocessed events from database
-     * 
+     * Replay unprocessed events from database.
+     *
      * @param int $limit Maximum number of events to replay
+     *
      * @return array{success: int, failed: int}
      */
     public function replayUnprocessedEvents(int $limit = 100): array
@@ -117,17 +117,16 @@ final readonly class PublishUserInteractionEvent
                 if ($this->publisher->publish($message)) {
                     $interaction->markAsProcessedToQueue();
                     $this->userInteractionRepository->save($interaction, true);
-                    $success++;
+                    ++$success;
                 } else {
-                    $failed++;
+                    ++$failed;
                 }
-
             } catch (\Throwable $e) {
                 $this->logger->error('Failed to replay event', [
                     'id' => $interaction->getId(),
                     'error' => $e->getMessage(),
                 ]);
-                $failed++;
+                ++$failed;
             }
         }
 

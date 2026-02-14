@@ -9,9 +9,10 @@ use App\Domain\Entity\Cart;
 final class GetCartSummary
 {
     /**
-     * Get detailed cart summary with product names, quantities, and total
+     * Get detailed cart summary with product names, quantities, and total.
      *
      * @param Cart $cart The user's cart
+     *
      * @return array Cart summary with line items and total
      */
     public function execute(Cart $cart): array
@@ -27,7 +28,7 @@ final class GetCartSummary
         }
 
         $items = [];
-        
+
         // Use Cart's calculateTotal() method which handles currency correctly
         $totalMoney = $cart->calculateTotal();
 

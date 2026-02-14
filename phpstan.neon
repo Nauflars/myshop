@@ -1,0 +1,36 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    
+    # Symfony configuration
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    
+    # Exclusions
+    excludePaths:
+        - src/Kernel.php
+        - tests/bootstrap.php
+        - var/*
+        - vendor/*
+    
+    # Ignored errors (baseline - to be fixed gradually)
+    ignoreErrors:
+        # Add specific errors here as needed during initial run
+        # Example:
+        # - '#Call to an undefined method#'
+    
+    # Additional checks
+    reportUnmatchedIgnoredErrors: false
+    
+    # PHPDocs validation
+    checkMissingCallableSignature: true
+    
+    # Performance
+    parallel:
+        maximumNumberOfProcesses: 4
+        processTimeout: 300.0
