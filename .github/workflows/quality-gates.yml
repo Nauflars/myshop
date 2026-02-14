@@ -2,9 +2,9 @@ name: Quality Gates
 
 on:
   pull_request:
-    branches: [master]
+    branches: [main, develop]
   push:
-    branches: [master]
+    branches: [main, develop]
 
 jobs:
   quality-gates:
@@ -84,8 +84,48 @@ jobs:
           php bin/console doctrine:database:create --if-not-exists --env=test
           php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
-      - name: Run Quality Gates
-        run: bash scripts/quality-gates.sh
+      - name: Run PHPUnit Tests
+        run: php vendor/bin/phpunit --coverage-clover=var/coverage/clover.xml
+
+      - name: Check Test Coverage
+        run: php scripts/check-coverage.php var/coverage/clover.xml 80 75
+
+      - name: Run PHPStan Static Analysis
+        run: php vendor/bin/phpstan analyse --configuration=phpstan.neon --error-format=github --memory-limit=512M
+
+      - name: Run PHP CS Fixer
+        run: php vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff --verbose
+
+      - name: Validate Composer
+        run: composer validate --strict
+
+      - name: Check Security Vulnerabilities
+        run: composer audit
+
+      - name: Lint Symfony Container
+        run: php bin/console lint:container
+
+      - name: Lint YAML files
+        run: php bin/console lint:yaml config/
+
+      - name: Lint Twig templates
+        run: php bin/console lint:twig templates/
+
+      - name: Check for Debug Statements
+        run: |
+          if grep -rn --include="*.php" -E "(var_dump|dd\(|dump\(|print_r)" src/ tests/ 2>/dev/null; then
+            echo "❌ Debug statements found"
+            exit 1
+          fi
+          echo "✅ No debug statements found"
+
+      - name: Check for Secrets
+        run: |
+          if grep -rn --include="*.php" -iE "(password\s*=\s*['\"][^'\"]+|api_key\s*=\s*['\"][^'\"]+|secret\s*=\s*['\"][^'\"]+)" src/ config/ 2>/dev/null; then
+            echo "❌ Potential secrets found"
+            exit 1
+          fi
+          echo "✅ No secrets detected"
 
       - name: Upload coverage reports
         if: success()
@@ -95,26 +135,22 @@ jobs:
           flags: unittests
           name: codecov-myshop
           fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Comment PR with results
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            let comment = '## 🔍 Quality Gates Report\n\n';
-            
-            // Read results (simplified, you can enhance this)
-            comment += '✅ All quality gates passed!\n\n';
-            comment += '- Tests: ✓\n';
-            comment += '- Coverage: ✓\n';
-            comment += '- PHPStan: ✓\n';
-            comment += '- Code Style: ✓\n';
-            comment += '- Symfony Lints: ✓\n';
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+      - name: Summary Report
+        if: always()
+        run: |
+          echo "## 🔍 Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Constitution v1.1.0 Compliance Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| PHPUnit Tests | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Coverage | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| PHPStan (Level 8) | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| PHP CS Fixer | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Composer Validate | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Symfony Lints | ${{ job.status == 'success' && '✅ PASS' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
