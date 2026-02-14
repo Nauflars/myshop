@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     librabbitmq-dev \
     zip \
     unzip \
+    gosu \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -44,11 +45,14 @@ RUN echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/docker-ph
 RUN echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/docker-php-opcache.ini
 RUN echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/docker-php-opcache.ini
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
+# Copy entrypoint script
+COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-USER www-data
+# Set permissions for initial structure
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 9000
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["php-fpm"]

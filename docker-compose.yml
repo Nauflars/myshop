@@ -58,7 +58,8 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-myshop_pass}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # Commented out due to Docker Desktop WSL2 bind mount issue
+      # - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     networks:
