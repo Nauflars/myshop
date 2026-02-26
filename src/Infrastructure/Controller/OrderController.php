@@ -31,7 +31,7 @@ class OrderController extends AbstractController
             $order = $this->checkout->execute($user);
 
             return $this->json($this->serializeOrder($order), Response::HTTP_CREATED);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }

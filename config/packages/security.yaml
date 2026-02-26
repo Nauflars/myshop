@@ -16,9 +16,23 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         
+        api:
+            pattern: ^/api/
+            stateless: false
+            provider: app_user_provider
+            context: main
+            entry_point: App\Infrastructure\Security\ApiAuthenticationEntryPoint
+            json_login:
+                check_path: /api/login
+                username_path: email
+                password_path: password
+                success_handler: App\Infrastructure\Controller\ApiLoginController
+                failure_handler: App\Infrastructure\Controller\ApiLoginController
+        
         main:
             lazy: true
             provider: app_user_provider
+            context: main
             entry_point: form_login
             form_login:
                 login_path: app_login
@@ -45,6 +59,8 @@ security:
         - { path: ^/api/ai/chat, roles: PUBLIC_ACCESS }
         - { path: ^/api/cart, roles: ROLE_CUSTOMER }
         - { path: ^/api/orders, roles: ROLE_CUSTOMER }
+        - { path: ^/api/users/me/device-token, roles: ROLE_CUSTOMER }
+        - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/admin, roles: ROLE_ADMIN }
 
     role_hierarchy:

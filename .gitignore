@@ -55,3 +55,25 @@ yarn-error.log
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
+
+### Flutter / Mobile ###
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.metadata
+mobile/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/mobile_android.iml
+mobile/mobile.iml
+mobile/ios/Flutter/Generated.xcconfig
+mobile/ios/Flutter/flutter_export_environment.sh
+mobile/macos/Flutter/ephemeral/
+mobile/flutter_*.log
+*Zone.Identifier
+mobile/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+mobile/ios/Runner/GeneratedPluginRegistrant.*
+mobile/android/gradlew
+mobile/android/gradlew.bat
+mobile/android/gradle/wrapper/gradle-wrapper.jar
+tests/E2E/test-results/

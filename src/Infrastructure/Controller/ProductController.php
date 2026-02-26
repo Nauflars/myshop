@@ -44,6 +44,8 @@ class ProductController extends AbstractController
         $category = $request->query->get('category');
         $minPrice = $request->query->get('minPrice');
         $maxPrice = $request->query->get('maxPrice');
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
 
         $products = $this->searchProduct->execute(
             query: $query,
@@ -65,7 +67,19 @@ class ProductController extends AbstractController
             }
         }
 
-        return $this->json(array_map([$this, 'serializeProduct'], $products));
+        // Apply pagination
+        $total = count($products);
+        $offset = ($page - 1) * $limit;
+        $paginatedProducts = array_slice($products, $offset, $limit);
+        $hasMore = ($offset + $limit) < $total;
+
+        return $this->json([
+            'items' => array_map([$this, 'serializeProduct'], $paginatedProducts),
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'hasMore' => $hasMore,
+        ]);
     }
 
     /**
