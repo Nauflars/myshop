@@ -49,6 +49,9 @@ class Order
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $shippingAddress = null;
+
     public function __construct(User $user, ?string $orderNumber = null)
     {
         $this->id = Uuid::v4()->toRfc4122();
@@ -203,6 +206,17 @@ class Order
     public function getUpdatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function getShippingAddress(): ?array
+    {
+        return $this->shippingAddress;
+    }
+
+    public function setShippingAddress(?array $shippingAddress): void
+    {
+        $this->shippingAddress = $shippingAddress;
+        $this->touch();
     }
 
     private function touch(): void

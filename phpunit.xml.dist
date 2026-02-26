@@ -32,6 +32,9 @@
         <testsuite name="Contract">
             <directory>tests/Contract</directory>
         </testsuite>
+        <testsuite name="Infrastructure">
+            <directory>tests/Infrastructure</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>

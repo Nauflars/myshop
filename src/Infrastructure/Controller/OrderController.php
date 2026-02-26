@@ -25,10 +25,18 @@ class OrderController extends AbstractController
     }
 
     #[Route('', name: 'api_order_checkout', methods: ['POST'])]
-    public function checkout(#[CurrentUser] $user): JsonResponse
+    public function checkout(#[CurrentUser] $user, Request $request): JsonResponse
     {
         try {
+            $data = json_decode($request->getContent(), true) ?? [];
+            $shippingAddress = $data['shippingAddress'] ?? null;
+
             $order = $this->checkout->execute($user);
+
+            if ($shippingAddress && is_array($shippingAddress)) {
+                $order->setShippingAddress($shippingAddress);
+                $this->orderRepository->save($order);
+            }
 
             return $this->json($this->serializeOrder($order), Response::HTTP_CREATED);
         } catch (\Throwable $e) {
@@ -107,6 +115,7 @@ class OrderController extends AbstractController
             'totalInCents' => $order->getTotal()->getAmountInCents(),
             'currency' => $order->getTotal()->getCurrency(),
             'status' => $order->getStatus(),
+            'shippingAddress' => $order->getShippingAddress(),
             'createdAt' => $order->getCreatedAt()->format('c'),
             'updatedAt' => $order->getUpdatedAt()->format('c'),
         ];
