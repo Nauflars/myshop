@@ -17,11 +17,13 @@ security:
             security: false
         
         api:
-            pattern: ^/api/login
+            pattern: ^/api/
             stateless: false
             provider: app_user_provider
+            context: main
+            entry_point: App\Infrastructure\Security\ApiAuthenticationEntryPoint
             json_login:
-                check_path: api_login_check
+                check_path: /api/login
                 username_path: email
                 password_path: password
                 success_handler: App\Infrastructure\Controller\ApiLoginController
@@ -30,6 +32,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            context: main
             entry_point: form_login
             form_login:
                 login_path: app_login
