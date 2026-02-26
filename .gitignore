@@ -39,6 +39,27 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
+### Flutter/Dart ###
+mobile/.dart_tool/
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/App.framework
+mobile/ios/Flutter/engine/
+*.iml
+
 ### Symfony ###
 /bin/.phpunit
 /public/build/
@@ -55,3 +76,9 @@ yarn-error.log
 /.php-cs-fixer.php
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
+
+### WSL Zone Identifiers ###
+*:Zone.Identifier
+
+### E2E Test Results ###
+tests/E2E/test-results/

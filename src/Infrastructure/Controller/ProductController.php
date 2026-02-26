@@ -65,7 +65,19 @@ class ProductController extends AbstractController
             }
         }
 
-        return $this->json(array_map([$this, 'serializeProduct'], $products));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(50, max(1, (int) $request->query->get('limit', 20)));
+        $total = count($products);
+        $offset = ($page - 1) * $limit;
+        $paginatedProducts = array_slice($products, $offset, $limit);
+
+        return $this->json([
+            'items' => array_map([$this, 'serializeProduct'], $paginatedProducts),
+            'total' => $total,
+            'page' => $page,
+            'limit' => $limit,
+            'hasMore' => ($offset + $limit) < $total,
+        ]);
     }
 
     /**
@@ -262,6 +274,7 @@ class ProductController extends AbstractController
         return [
             'id' => $product->getId(),
             'name' => $product->getName(),
+            'nameEs' => $product->getNameEs(),
             'description' => $product->getDescription(),
             'price' => [
                 'amount' => $product->getPrice()->getAmountInCents(),
